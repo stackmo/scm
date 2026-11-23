@@ -1,5 +1,8 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using SCM.Application.Contracts.B2B;
+using SCM.Application.Contracts.B2B.Dtos;
+using SCM.Application.B2B;
 using SCM.Application.Contracts.Phlebotomy;
 using SCM.Application.Contracts.Phlebotomy.Dtos;
 using SCM.Application.Contracts.Queueing;
@@ -33,6 +36,13 @@ builder.Services.AddScoped<IColdChainAppService, ColdChainAppService>();
 // Add Wave 4 Reception & Smart Queueing Services
 builder.Services.AddScoped<ISmartQueueingService, SmartQueueingService>();
 builder.Services.AddScoped<IReceptionAppService, ReceptionAppService>();
+
+// Add Wave 2 B2B & Corporate Package Services
+builder.Services.AddScoped<IPackageAppService, PackageAppService>();
+builder.Services.AddScoped<ICompanyAppService, CompanyAppService>();
+builder.Services.AddScoped<ICompanyContractAppService, CompanyContractAppService>();
+builder.Services.AddScoped<ICompanyEmployeeAppService, CompanyEmployeeAppService>();
+builder.Services.AddScoped<IEmployeeImportAppService, EmployeeImportAppService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -621,6 +631,102 @@ queueingGroup.MapPost("/advance/{ticketId:guid}", async (Guid ticketId, ISmartQu
 {
     var next = await service.AutoAdvanceNextRoomAsync(ticketId);
     return Results.Ok(next);
+});
+
+// ==============================================================
+// Wave 2 B2B Corporate Packages & Workflow 01-04 APIs
+// ==============================================================
+var b2bPackageGroup = app.MapGroup("/api/b2b/packages");
+
+b2bPackageGroup.MapGet("/{id:guid}", async (Guid id, IPackageAppService service) =>
+{
+    var package = await service.GetAsync(id);
+    return Results.Ok(package);
+});
+
+b2bPackageGroup.MapGet("/by-company/{companyId:guid}", async (Guid companyId, IPackageAppService service) =>
+{
+    var list = await service.GetListByCompanyAsync(companyId);
+    return Results.Ok(list);
+});
+
+b2bPackageGroup.MapPost("/", async (CreateUpdatePackageDto input, IPackageAppService service) =>
+{
+    var created = await service.CreateAsync(input);
+    return Results.Created($"/api/b2b/packages/{created.Id}", created);
+});
+
+b2bPackageGroup.MapPut("/{id:guid}", async (Guid id, CreateUpdatePackageDto input, IPackageAppService service) =>
+{
+    var updated = await service.UpdateAsync(id, input);
+    return Results.Ok(updated);
+});
+
+b2bPackageGroup.MapDelete("/{id:guid}", async (Guid id, IPackageAppService service) =>
+{
+    await service.DeleteAsync(id);
+    return Results.NoContent();
+});
+
+b2bPackageGroup.MapPut("/{id:guid}/status", async (Guid id, ChangePackageStatusDto input, IPackageAppService service) =>
+{
+    var updated = await service.ChangeStatusAsync(id, input.NewStatus);
+    return Results.Ok(updated);
+});
+
+b2bPackageGroup.MapPost("/{id:guid}/target-groups", async (Guid id, CreateUpdatePackageTargetGroupDto input, IPackageAppService service) =>
+{
+    input.PackageId = id;
+    var group = await service.AddTargetGroupAsync(input);
+    return Results.Created($"/api/b2b/packages/{id}/target-groups/{group.Id}", group);
+});
+
+b2bPackageGroup.MapPost("/{id:guid}/services", async (Guid id, CreateUpdatePackageServiceDto input, IPackageAppService service) =>
+{
+    input.PackageId = id;
+    var srv = await service.AddServiceAsync(input);
+    return Results.Created($"/api/b2b/packages/{id}/services/{srv.Id}", srv);
+});
+
+b2bPackageGroup.MapPost("/{id:guid}/services/batch", async (Guid id, BatchAddPackageServicesDto input, IPackageAppService service) =>
+{
+    input.PackageId = id;
+    var list = await service.BatchAddServicesAsync(input);
+    return Results.Ok(list);
+});
+
+b2bPackageGroup.MapPut("/{id:guid}/services/batch", async (Guid id, BatchUpdatePackageServicesDto input, IPackageAppService service) =>
+{
+    input.PackageId = id;
+    var list = await service.BatchUpdateServicesAsync(input);
+    return Results.Ok(list);
+});
+
+b2bPackageGroup.MapDelete("/services/{serviceId:guid}", async (Guid serviceId, IPackageAppService service) =>
+{
+    await service.RemoveServiceAsync(serviceId);
+    return Results.NoContent();
+});
+
+b2bPackageGroup.MapPost("/{id:guid}/services/discount", async (Guid id, ApplyDiscountBatchDto input, IPackageAppService service) =>
+{
+    input.PackageId = id;
+    var list = await service.ApplyDiscountAsync(input);
+    return Results.Ok(list);
+});
+
+var b2bCompanyGroup = app.MapGroup("/api/b2b/companies");
+
+b2bCompanyGroup.MapGet("/", async (ICompanyAppService service) =>
+{
+    var list = await service.GetListAsync();
+    return Results.Ok(list);
+});
+
+b2bCompanyGroup.MapGet("/{id:guid}", async (Guid id, ICompanyAppService service) =>
+{
+    var company = await service.GetAsync(id);
+    return Results.Ok(company);
 });
 
 app.Run();
