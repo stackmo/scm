@@ -915,6 +915,20 @@ export default function App() {
 
   const totalPages = Math.ceil(filteredGridData.length / pageSize) || 1;
 
+  const getMiddleColumnCount = () => {
+    if (currentGroup.id === 'grp_diaban') return 4;
+    if (currentGroup.id === 'grp_congty') return 2;
+    if (currentGroup.entityType === 'service') return 6;
+    if (currentGroup.entityType === 'drug') return 6;
+    if (currentGroup.entityType === 'staff') return 5;
+    if (currentGroup.entityType === 'room') return 4;
+    if (currentGroup.entityType === 'demographics') return 3;
+    if (currentGroup.entityType === 'chain') return 4;
+    if (currentGroup.entityType === 'icd10') return 3;
+    if (currentGroup.entityType === 'm3') return 4;
+    return 1; // generic
+  };
+
   // Duplicate Selected Record Action
   const handleDuplicateSelected = () => {
     const current = filteredGridData.find(r => r.id === selectedRowId) || filteredGridData[0];
@@ -2449,7 +2463,7 @@ export default function App() {
 
                   {/* Cột Generic chung cho các nhóm còn lại */}
                   {currentGroup.id !== 'grp_diaban' && currentGroup.id !== 'grp_congty' && currentGroup.entityType === 'generic' && (
-                    <th className="px-4 py-2 font-bold border-r border-[#dee2e6]">Tên Danh Mục / Giá Trị</th>
+                    <th className="w-full px-4 py-2 font-bold border-r border-[#dee2e6]">Tên Danh Mục / Giá Trị</th>
                   )}
 
                   <th className="w-36 px-3 py-2 text-center font-bold">Thao tác</th>
@@ -2467,7 +2481,7 @@ export default function App() {
                       className="w-full px-1.5 py-0.5 bg-white border border-[#ced4da] rounded text-[11px] text-[#212529] focus:outline-none focus:border-[#1f63c9]"
                     />
                   </td>
-                  <td className="px-2 py-1 border-r border-[#dee2e6]" colSpan={6}>
+                  <td className="px-2 py-1 border-r border-[#dee2e6]" colSpan={getMiddleColumnCount()}>
                     <input
                       type="text"
                       value={filterName}
@@ -2484,7 +2498,7 @@ export default function App() {
               <tbody className="divide-y divide-[#dee2e6]">
                 {paginatedGridData.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-[#6c757d]">
+                    <td colSpan={getMiddleColumnCount() + 3} className="text-center py-12 text-[#6c757d]">
                       Không tìm thấy bản ghi nào phù hợp
                     </td>
                   </tr>
@@ -2728,7 +2742,7 @@ export default function App() {
 
                         {/* Generic Columns */}
                         {currentGroup.id !== 'grp_diaban' && currentGroup.id !== 'grp_congty' && currentGroup.entityType === 'generic' && (
-                          <td className="px-4 py-2 font-semibold text-[#212529] border-r border-[#dee2e6]">
+                          <td className="w-full px-4 py-2 font-semibold text-[#212529] border-r border-[#dee2e6]">
                             {row.name}
                           </td>
                         )}
@@ -2988,13 +3002,13 @@ export default function App() {
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-[#1f63c9]">
                       <Stethoscope className="w-4 h-4" />
-                      <span>1. THÔNG TIN CHUYÊN MÔN & KỸ THUẬT</span>
+                      <span>1. THÔNG TIN DỊCH VỤ</span>
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
                       <div className="col-span-1 space-y-1">
                         <label className="font-semibold text-[#495057]">
-                          Mã Dịch Vụ <span className="text-rose-600 font-bold">*</span>:
+                          Mã DV <span className="text-rose-600 font-bold">*</span>:
                         </label>
                         <input
                           type="text"
@@ -3007,7 +3021,7 @@ export default function App() {
                       </div>
                       <div className="col-span-2 space-y-1">
                         <label className="font-semibold text-[#495057]">
-                          Tên Dịch Vụ Kỹ Thuật <span className="text-rose-600 font-bold">*</span>:
+                          Tên Dịch Vụ <span className="text-rose-600 font-bold">*</span>:
                         </label>
                         <input
                           type="text"
@@ -3019,10 +3033,10 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* DÒNG 2: 3 CỘT (Cột 1: 1 ô Đơn Vị Tính; Cột sau: 2 ô Nhóm Kỹ Thuật + Nút Tạo Mới) */}
+                    {/* DÒNG 2: 3 CỘT (Cột 1: 1 ô ĐVT; Cột sau: 2 ô Nhóm Dịch Vụ) */}
                     <div className="grid grid-cols-3 gap-3">
                       <div className="col-span-1 space-y-1">
-                        <label className="font-semibold text-[#495057]">Đơn Vị Tính:</label>
+                        <label className="font-semibold text-[#495057]">ĐVT:</label>
                         <input
                           type="text"
                           value={selectedItemData.unit || 'Lần'}
@@ -3030,11 +3044,11 @@ export default function App() {
                           className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
                         />
                       </div>
-                      {/* DROPDOWN CHỌN NHÓM DỊCH VỤ + NÚT TẠO MỚI POPUP */}
+                      {/* DROPDOWN CHỌN NHÓM DỊCH VỤ KÈM LINK THÊM NHÓM MỚI */}
                       <div className="col-span-2 space-y-1">
                         <div className="flex items-center justify-between">
                           <label className="font-semibold text-[#495057]">
-                            Nhóm Kỹ Thuật / Chuyên Khoa <span className="text-rose-600 font-bold">*</span>:
+                            Nhóm Dịch Vụ <span className="text-rose-600 font-bold">*</span>:
                           </label>
                           <button
                             type="button"
@@ -3045,55 +3059,40 @@ export default function App() {
                             <span>Thêm nhóm mới</span>
                           </button>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <select
-                            value={selectedItemData.serviceGroupId || serviceGroups.find(g => g.groupName === selectedItemData.category)?.id || ''}
-                            onChange={(e) => {
-                              const grp = serviceGroups.find(g => g.id === e.target.value);
-                              setSelectedItemData({
-                                ...selectedItemData,
-                                serviceGroupId: e.target.value,
-                                category: grp ? grp.groupName : selectedItemData.category
-                              });
-                            }}
-                            className="flex-1 px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium bg-white focus:outline-none focus:border-[#1f63c9] cursor-pointer"
-                          >
-                            <option value="">-- Chọn nhóm chuyên khoa --</option>
-                            {serviceGroups.map(g => (
-                              <option key={g.id} value={g.id}>
-                                {g.groupName} ({g.serviceCount} dịch vụ)
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            onClick={handleOpenAddGroupModal}
-                            className="px-2.5 py-1.5 bg-[#f8f9fa] hover:bg-[#e9ecef] border border-[#ced4da] rounded text-[#1f63c9] font-bold flex items-center space-x-1 cursor-pointer transition shadow-xs text-xs shrink-0"
-                            title="Tạo nhóm dịch vụ mới"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Tạo mới</span>
-                          </button>
-                        </div>
+                        <select
+                          value={selectedItemData.serviceGroupId || serviceGroups.find(g => g.groupName === selectedItemData.category)?.id || ''}
+                          onChange={(e) => {
+                            const grp = serviceGroups.find(g => g.id === e.target.value);
+                            setSelectedItemData({
+                              ...selectedItemData,
+                              serviceGroupId: e.target.value,
+                              category: grp ? grp.groupName : selectedItemData.category
+                            });
+                          }}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium bg-white focus:outline-none focus:border-[#1f63c9] cursor-pointer"
+                        >
+                          <option value="">-- Chọn nhóm dịch vụ --</option>
+                          {serviceGroups.map(g => (
+                            <option key={g.id} value={g.id}>
+                              {g.groupName} ({g.serviceCount} dịch vụ)
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
 
-                  {/* HÌNH CHỮ NHẬT 2: KHUNG GIÁ ĐỐI TƯỢNG VỚI DIGIT GROUPING & MIỄN GIẢM (3 CỘT ĐỀU NHAU) */}
+                  {/* KHUNG GIÁ ĐỐI TƯỢNG VỚI DIGIT GROUPING & MIỄN GIẢM (3 CỘT ĐỀU NHAU) */}
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-emerald-700">
                       <CreditCard className="w-4 h-4" />
-                      <span>2. KHUNG GIÁ VIỆN PHÍ & NGUỒN CHI TRẢ ĐA ĐỐI TƯỢNG</span>
-                    </div>
-
-                    <div className="p-2.5 bg-blue-50/70 border border-blue-200 rounded text-[11px] text-blue-900 leading-relaxed">
-                      Khung giá phân cấp áp dụng đồng thời cho Viện phí ngoại trú, Cổng giám định BHYT 4210, Bảo hiểm thương mại (BHTM) và Dịch vụ theo yêu cầu / VIP.
+                      <span>2. BẢNG GIÁ ĐA ĐỐI TƯỢNG</span>
                     </div>
 
                     {/* Hàng giá 1: 3 cột đều nhau */}
                     <div className="grid grid-cols-3 gap-3">
                       <div className="col-span-1 space-y-1">
-                        <label className="font-semibold text-[#495057]">Giá Viện Phí Thường (VNĐ):</label>
+                        <label className="font-semibold text-[#495057]">Viện Phí (đ):</label>
                         <input
                           type="text"
                           value={formatNumberWithCommas(selectedItemData.price)}
@@ -3103,7 +3102,7 @@ export default function App() {
                         />
                       </div>
                       <div className="col-span-1 space-y-1">
-                        <label className="font-semibold text-[#495057]">Giá BHYT 4210 (VNĐ):</label>
+                        <label className="font-semibold text-[#495057]">BHYT 4210 (đ):</label>
                         <input
                           type="text"
                           value={formatNumberWithCommas(selectedItemData.insurancePrice)}
@@ -3113,7 +3112,7 @@ export default function App() {
                         />
                       </div>
                       <div className="col-span-1 space-y-1">
-                        <label className="font-semibold text-[#495057]">Giá Bảo Hiểm Thương Mại (BHTM):</label>
+                        <label className="font-semibold text-[#495057]">BHTM (đ):</label>
                         <input
                           type="text"
                           value={formatNumberWithCommas(selectedItemData.bhtmPrice ?? (selectedItemData.price ? Math.round(selectedItemData.price * 0.95) : 0))}
@@ -3127,7 +3126,7 @@ export default function App() {
                     {/* Hàng giá 2: 3 cột (2 cột giá + 1 cột trống để căn thẳng hàng tuyệt đối) */}
                     <div className="grid grid-cols-3 gap-3">
                       <div className="col-span-1 space-y-1">
-                        <label className="font-semibold text-[#495057]">Giá Dịch Vụ VIP / KSK Doanh Nghiệp (VNĐ):</label>
+                        <label className="font-semibold text-[#495057]">VIP / Doanh Nghiệp (đ):</label>
                         <input
                           type="text"
                           value={formatNumberWithCommas(selectedItemData.requestPrice ?? selectedItemData.corporatePrice)}
@@ -3137,7 +3136,7 @@ export default function App() {
                         />
                       </div>
                       <div className="col-span-1 space-y-1">
-                        <label className="font-semibold text-[#495057]">Giá Ưu Đãi Nội Bộ Cán Bộ NV (VNĐ):</label>
+                        <label className="font-semibold text-[#495057]">Nội Bộ NV (đ):</label>
                         <input
                           type="text"
                           value={formatNumberWithCommas(selectedItemData.staffPrice ?? (selectedItemData.price ? Math.round(selectedItemData.price * 0.8) : 0))}
@@ -3151,27 +3150,26 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Khối cấu hình mức giảm giá đối tượng (Chuẩn VSC.Main) */}
+                    {/* Khối cấu hình mức giảm giá đối tượng */}
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-2 mt-2">
-                      <div className="font-bold text-slate-700 flex items-center justify-between">
-                        <span>CHÍNH SÁCH MIỄN GIẢM GIÁ (THEO % HOẶC TIỀN CỐ ĐỊNH)</span>
-                        <span className="text-[10px] text-slate-500 font-normal">Quy chuẩn VSC Billing</span>
+                      <div className="font-bold text-slate-700">
+                        <span>CHÍNH SÁCH MIỄN GIẢM</span>
                       </div>
                       <div className="grid grid-cols-3 gap-3">
                         <div className="space-y-1">
-                          <label className="text-[11px] font-medium text-slate-600">Cách tính giảm giá:</label>
+                          <label className="text-[11px] font-medium text-slate-600">Hình thức giảm:</label>
                           <select
                             value={selectedItemData.discountType || 'percent'}
                             onChange={(e) => setSelectedItemData({ ...selectedItemData, discountType: e.target.value })}
                             className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-800"
                           >
-                            <option value="percent">Giảm theo tỷ lệ (%)</option>
-                            <option value="fixed">Giảm số tiền cố định (VNĐ)</option>
+                            <option value="percent">Theo tỷ lệ (%)</option>
+                            <option value="fixed">Số tiền cố định (đ)</option>
                           </select>
                         </div>
                         <div className="space-y-1">
                           <label className="text-[11px] font-medium text-slate-600">
-                            Mức giảm {selectedItemData.discountType === 'fixed' ? '(VNĐ)' : '(%)'}:
+                            Mức giảm {selectedItemData.discountType === 'fixed' ? '(đ)' : '(%)'}:
                           </label>
                           <input
                             type="text"
@@ -3189,16 +3187,16 @@ export default function App() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[11px] font-medium text-slate-600">Đối tượng áp dụng miễn giảm:</label>
+                          <label className="text-[11px] font-medium text-slate-600">Đối tượng áp dụng:</label>
                           <select
                             value={selectedItemData.discountTarget || 'all'}
                             onChange={(e) => setSelectedItemData({ ...selectedItemData, discountTarget: e.target.value })}
                             className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-800"
                           >
                             <option value="all">Tất cả đối tượng đủ điều kiện</option>
-                            <option value="bhtm">Thẻ Bảo hiểm thương mại (BHTM)</option>
-                            <option value="corporate">Khách khám đoàn công ty</option>
-                            <option value="vip">Khách hàng thân thiết VIP</option>
+                            <option value="bhtm">Bảo hiểm thương mại (BHTM)</option>
+                            <option value="corporate">Khám đoàn công ty</option>
+                            <option value="vip">Khách hàng VIP</option>
                             <option value="policy">Đối tượng chính sách / Bảo trợ</option>
                           </select>
                         </div>
