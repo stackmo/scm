@@ -62,6 +62,25 @@ export const ServiceSelectorModal: React.FC<ServiceSelectorModalProps> = ({
   
   // Map of selected items: key = service.id
   const [selectedMap, setSelectedMap] = useState<Map<string, SelectedServiceEntry>>(new Map());
+
+  // Live counters per mode (VSC Live Counters: Chon=Red, TuyChon=Green, LamThem=Blue)
+  const countChon = useMemo(() => {
+    let count = 0;
+    selectedMap.forEach(v => { if (v.mode === 'Chon') count++; });
+    return count;
+  }, [selectedMap]);
+
+  const countTuyChon = useMemo(() => {
+    let count = 0;
+    selectedMap.forEach(v => { if (v.mode === 'TuyChon') count++; });
+    return count;
+  }, [selectedMap]);
+
+  const countLamThem = useMemo(() => {
+    let count = 0;
+    selectedMap.forEach(v => { if (v.mode === 'LamThem') count++; });
+    return count;
+  }, [selectedMap]);
   
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -333,6 +352,42 @@ export const ServiceSelectorModal: React.FC<ServiceSelectorModalProps> = ({
 
           {/* RIGHT PANE: DANH SÁCH DỊCH VỤ */}
           <div className="flex-1 flex flex-col bg-white overflow-hidden">
+            {/* Top Selected Services Summary Board (Chuẩn VSC Desktop Highlight Màu Sắc) */}
+            <div className="bg-white border-b border-slate-300 p-3 shrink-0 min-h-[90px] max-h-[140px] overflow-y-auto">
+              {selectedMap.size === 0 ? (
+                <div className="h-full flex items-center justify-center text-xs text-slate-400 italic py-3 select-none">
+                  Chưa có dịch vụ nào được chọn. Chọn chế độ (Chọn / Tùy Chọn / Làm Thêm) bên dưới rồi tích vào bảng để thêm.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-xs">
+                  {Array.from(selectedMap.values()).map(entry => {
+                    let colorClass = 'text-red-600';
+                    if (entry.mode === 'TuyChon') colorClass = 'text-emerald-700';
+                    else if (entry.mode === 'LamThem') colorClass = 'text-blue-700';
+
+                    return (
+                      <div
+                        key={entry.service.id}
+                        onClick={() => handleToggleService(entry.service)}
+                        className="flex items-center space-x-1.5 group cursor-pointer hover:bg-slate-50 p-1 rounded transition select-none truncate"
+                        title="Click để bỏ chọn dịch vụ này"
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                          entry.mode === 'Chon' ? 'bg-red-600' : entry.mode === 'TuyChon' ? 'bg-emerald-600' : 'bg-blue-600'
+                        }`} />
+                        <span className={`font-semibold truncate transition group-hover:line-through ${colorClass}`}>
+                          {entry.service.serviceName}
+                        </span>
+                        <span className="text-slate-400 group-hover:text-red-500 text-[10px] shrink-0 font-bold ml-auto pl-1">
+                          ✕
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* Top Toolbar / Filter Banner */}
             <div className="bg-slate-100 border-b border-slate-300 p-2.5 flex flex-col gap-2">
               <div className="text-center font-bold text-xs uppercase text-slate-700 tracking-wide">
@@ -587,19 +642,19 @@ export const ServiceSelectorModal: React.FC<ServiceSelectorModalProps> = ({
             </button>
           </div>
 
-          {/* Right Legend */}
-          <div className="flex items-center gap-3 text-xs font-bold">
+          {/* Right Legend with Live Counters */}
+          <div className="flex items-center gap-4 text-xs font-bold">
             <span className="text-red-600 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-red-600"></span>
-              Chọn
+              <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+              Chọn : {countChon}
             </span>
             <span className="text-emerald-600 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-              Tùy Chọn
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              Tùy Chọn : {countTuyChon}
             </span>
             <span className="text-blue-600 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-              Làm Thêm
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+              Làm Thêm : {countLamThem}
             </span>
           </div>
         </div>

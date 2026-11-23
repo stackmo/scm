@@ -40,7 +40,8 @@ import {
   Mail,
   Award,
   Syringe,
-  Tag
+  Tag,
+  FolderTree
 } from 'lucide-react';
 import { PreExamPhlebotomyPage } from './pages/PreExamPhlebotomyPage';
 import { ReceptionQueuePage } from './pages/ReceptionQueuePage';
@@ -75,7 +76,7 @@ export interface MasterGroup {
   badge: string | number;
   badgeVariant?: 'primary' | 'warning' | 'danger' | 'success' | 'secondary';
   icon: React.ComponentType<{ className?: string }>;
-  entityType: 'service' | 'drug' | 'staff' | 'room' | 'demographics' | 'icd10' | 'chain' | 'm3' | 'generic';
+  entityType: 'service' | 'service_group' | 'drug' | 'staff' | 'room' | 'demographics' | 'icd10' | 'chain' | 'm3' | 'generic';
 }
 
 // 5 Unified Master Data Architectural Groups (Hợp nhất VSC & Cổng M3 TT32)
@@ -115,6 +116,7 @@ const MASTER_BLOCKS: MasterBlock[] = [
     subtitle: '640 Dịch vụ, 867 thuốc, nguồn chi trả, TT78',
     icon: CreditCard,
     groups: [
+      { id: 'grp_nhomdichvu', name: 'Nhóm Dịch Vụ Kỹ Thuật (12 Nhóm BYT)', badge: 12, badgeVariant: 'warning', icon: FolderTree, entityType: 'service_group' },
       { id: 'grp_dichvu', name: '640 Dịch Vụ Kỹ Thuật & Cận Lâm Sàng', badge: 640, badgeVariant: 'primary', icon: Layers, entityType: 'service' },
       { id: 'grp_thuoc', name: '867 Danh Mục Thuốc & Vật Tư Y Tế', badge: 867, badgeVariant: 'primary', icon: Pill, entityType: 'drug' },
       { id: 'grp_nguonchitro', name: 'Nguồn Chi Trả KSK (4040, 5083)', badge: 7, icon: CreditCard, entityType: 'generic' },
@@ -193,6 +195,19 @@ const PRESET_ICD10 = [
   { id: 10, icdCode: 'N39.0', diseaseNameVi: 'Nhiễm trùng đường tiết niệu, vị trí không xác định', diseaseNameEn: 'Urinary tract infection, site not specified', chapterCode: 'XIV', chapter: 'Chương XIV: Bệnh hệ sinh dục - tiết niệu (N00-N99)', isChronic: false, isActive: true }
 ];
 
+// Helper formatters with digit grouping (VSC Invariant)
+const formatNumberWithCommas = (val: number | string | undefined | null) => {
+  if (val === undefined || val === null || val === '') return '';
+  const num = typeof val === 'number' ? val : Number(String(val).replace(/[^0-9]/g, ''));
+  if (isNaN(num)) return '';
+  return num.toLocaleString('en-US');
+};
+
+const parseNumberFromCommas = (str: string) => {
+  const clean = String(str || '').replace(/[^0-9]/g, '');
+  return clean ? Number(clean) : 0;
+};
+
 export default function App() {
   // --- STATE HOOKS (RULES OF HOOKS) ---
   const [activeNavMenu, setActiveNavMenu] = useState<string>('system_group');
@@ -209,6 +224,7 @@ export default function App() {
 
   // VSC Backend Datasets
   const [vscServices, setVscServices] = useState<any[]>([]);
+  const [serviceGroups, setServiceGroups] = useState<any[]>([]);
   const [vscDrugs, setVscDrugs] = useState<any[]>([]);
   const [vscRooms, setVscRooms] = useState<any[]>([]);
   const [vscStaffs, setVscStaffs] = useState<any[]>([]);
@@ -496,18 +512,20 @@ export default function App() {
   // Load Real Data from VSC API
   const fetchData = useCallback(async () => {
     try {
-      const [srvRes, drgRes, rmRes, stfRes, icdRes] = await Promise.all([
+      const [srvRes, drgRes, rmRes, stfRes, icdRes, grpRes] = await Promise.all([
         fetch('/api/master-data/services'),
         fetch('/api/master-data/drugs'),
         fetch('/api/master-data/rooms'),
         fetch('/api/master-data/staffs'),
-        fetch('/api/master-data/icd10')
+        fetch('/api/master-data/icd10'),
+        fetch('/api/master-data/service-groups')
       ]);
 
       if (srvRes.ok) setVscServices(await srvRes.json());
       if (drgRes.ok) setVscDrugs(await drgRes.json());
       if (rmRes.ok) setVscRooms(await rmRes.json());
       if (stfRes.ok) setVscStaffs(await stfRes.json());
+      if (grpRes.ok) setServiceGroups(await grpRes.json());
       if (icdRes.ok) {
         const icdJson = await icdRes.json();
         if (Array.isArray(icdJson) && icdJson.length > 0) setVscIcd10(icdJson);
@@ -691,6 +709,19 @@ export default function App() {
       }));
     }
 
+    if (currentGroup.entityType === 'service_group' || currentGroup.id === 'grp_nhomdichvu') {
+      return serviceGroups.map((g, idx) => ({
+        id: idx + 1,
+        code: g.groupCode,
+        name: g.groupName,
+        serviceType: g.serviceType,
+        serviceTypeName: g.serviceType === 1 ? 'Khám Chuyên Khoa' : (g.serviceType === 2 ? 'Xét Nghiệm' : (g.serviceType === 3 ? 'Chẩn Đoán Hình Ảnh' : 'Thủ Thuật Ngoại Khoa')),
+        serviceCount: g.serviceCount || 0,
+        sortOrder: g.sortOrder || idx + 1,
+        isActive: g.isActive !== false
+      }));
+    }
+
     if (currentGroup.entityType === 'service') {
       return vscServices.map((s, idx) => ({
         id: idx + 1,
@@ -782,7 +813,7 @@ export default function App() {
     }
 
     return [];
-  }, [currentGroup, customDatasetMap, vscServices, vscDrugs, vscStaffs, vscRooms, vscIcd10, tinhMap]);
+  }, [currentGroup, customDatasetMap, vscServices, serviceGroups, vscDrugs, vscStaffs, vscRooms, vscIcd10, tinhMap]);
 
   // Distinct categories for Services
   const distinctServiceCategories = useMemo(() => {
@@ -940,6 +971,15 @@ export default function App() {
         isChronic: false,
         isActive: true
       };
+    } else if (currentGroup.entityType === 'service_group') {
+      newItem = {
+        ...newItem,
+        code: `GRP-${Date.now().toString().slice(-4)}`,
+        name: '',
+        serviceType: 1,
+        sortOrder: serviceGroups.length + 1,
+        isActive: true
+      };
     } else if (currentGroup.entityType === 'service') {
       newItem = {
         ...newItem,
@@ -1045,6 +1085,19 @@ export default function App() {
         isActive: selectedItemData.isActive !== false,
         isNew: undefined
       };
+    } else if (currentGroup.entityType === 'service_group') {
+      itemToSave = {
+        ...selectedItemData,
+        id: isNew ? Date.now() : targetId,
+        groupCode: codeToSave,
+        code: codeToSave,
+        groupName: nameToSave,
+        name: nameToSave,
+        serviceType: Number(selectedItemData.serviceType) || 1,
+        sortOrder: Number(selectedItemData.sortOrder) || 1,
+        isActive: selectedItemData.isActive !== false,
+        isNew: undefined
+      };
     } else if (currentGroup.entityType === 'service') {
       itemToSave = {
         ...selectedItemData,
@@ -1142,6 +1195,11 @@ export default function App() {
           return (idMatch || codeMatch) ? { ...item, ...itemToSave } : item;
         });
       });
+    } else if (currentGroup.entityType === 'service_group') {
+      setServiceGroups(prev => {
+        if (isNew) return [itemToSave, ...prev];
+        return prev.map(g => (g.groupCode === codeToSave || g.code === codeToSave || g.id === targetId) ? { ...g, ...itemToSave } : g);
+      });
     } else if (currentGroup.entityType === 'service') {
       setVscServices(prev => {
         if (isNew) return [itemToSave, ...prev];
@@ -1195,6 +1253,8 @@ export default function App() {
 
     if (currentGroup.entityType === 'icd10') {
       setVscIcd10(prev => prev.filter(item => (item.id ?? item.icdCode) !== targetId && item.icdCode !== targetCode));
+    } else if (currentGroup.entityType === 'service_group') {
+      setServiceGroups(prev => prev.filter(g => g.groupCode !== targetCode && g.code !== targetCode && g.id !== targetId));
     } else if (currentGroup.entityType === 'service') {
       setVscServices(prev => prev.filter(s => s.id !== targetId && s.serviceCode !== targetCode));
     } else if (currentGroup.entityType === 'drug') {
@@ -2772,6 +2832,82 @@ export default function App() {
             {/* Specialized Form Body per Entity Type - Gọn gàng trên một form duy nhất, không chia tabs */}
             <div className="p-5 space-y-5 text-xs overflow-y-auto flex-1">
               
+              {/* === 0. NHÓM DỊCH VỤ KỸ THUẬT DETAIL === */}
+              {currentGroup.entityType === 'service_group' && (
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-[#1f63c9]">
+                      <FolderTree className="w-4 h-4" />
+                      <span>1. THÔNG TIN NHÓM CHUYÊN KHOA BỘ Y TẾ</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-1 space-y-1">
+                        <label className="font-semibold text-[#495057]">
+                          Mã Nhóm <span className="text-rose-600 font-bold">*</span>:
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedItemData.code || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono font-bold text-[#1f63c9] focus:outline-none focus:border-[#1f63c9]"
+                          placeholder="VD: GRP-CDHA"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="col-span-2 space-y-1">
+                        <label className="font-semibold text-[#495057]">
+                          Tên Nhóm Dịch Vụ Kỹ Thuật <span className="text-rose-600 font-bold">*</span>:
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedItemData.name || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium focus:outline-none focus:border-[#1f63c9]"
+                          placeholder="VD: Chẩn Đoán Hình Ảnh (Siêu Âm & X-Quang)"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Phân Loại Kỹ Thuật:</label>
+                        <select
+                          value={selectedItemData.serviceType || 1}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, serviceType: Number(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] bg-white focus:outline-none focus:border-[#1f63c9] cursor-pointer"
+                        >
+                          <option value={1}>1 - Khám Chuyên Khoa</option>
+                          <option value={2}>2 - Xét Nghiệm</option>
+                          <option value={3}>3 - Chẩn Đoán Hình Ảnh</option>
+                          <option value={4}>4 - Thủ Thuật Ngoại Khoa</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Thứ Tự Sắp Xếp:</label>
+                        <input
+                          type="number"
+                          value={selectedItemData.sortOrder || 1}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, sortOrder: Number(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono text-center text-[#212529] focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
+                      <div className="space-y-1 flex flex-col justify-end">
+                        <label className="flex items-center space-x-2 py-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={selectedItemData.isActive !== false}
+                            onChange={(e) => setSelectedItemData({ ...selectedItemData, isActive: e.target.checked })}
+                            className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                          <span className="font-semibold text-[#212529]">Đang áp dụng</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* === 1. DỊCH VỤ KỸ THUẬT DETAIL (FORM LIỀN MẠCH, KHÔNG TAB) === */}
               {currentGroup.entityType === 'service' && (
                 <div className="space-y-4">
@@ -2820,76 +2956,156 @@ export default function App() {
                           className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
                         />
                       </div>
+                      {/* HÌNH CHỮ NHẬT 1: DROPDOWN CHỌN NHÓM DỊCH VỤ */}
                       <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Nhóm Kỹ Thuật / Chuyên Khoa:</label>
-                        <input
-                          type="text"
-                          value={selectedItemData.category || 'Khám & Thăm dò chức năng'}
-                          onChange={(e) => setSelectedItemData({ ...selectedItemData, category: e.target.value })}
-                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
-                        />
+                        <label className="font-semibold text-[#495057]">
+                          Nhóm Kỹ Thuật / Chuyên Khoa <span className="text-rose-600 font-bold">*</span>:
+                        </label>
+                        <select
+                          value={selectedItemData.serviceGroupId || serviceGroups.find(g => g.groupName === selectedItemData.category)?.id || ''}
+                          onChange={(e) => {
+                            const grp = serviceGroups.find(g => g.id === e.target.value);
+                            setSelectedItemData({
+                              ...selectedItemData,
+                              serviceGroupId: e.target.value,
+                              category: grp ? grp.groupName : selectedItemData.category
+                            });
+                          }}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium bg-white focus:outline-none focus:border-[#1f63c9] cursor-pointer"
+                        >
+                          <option value="">-- Chọn nhóm chuyên khoa --</option>
+                          {serviceGroups.map(g => (
+                            <option key={g.id} value={g.id}>
+                              {g.groupName} ({g.serviceCount} dịch vụ)
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
 
-                  {/* Phân vùng 2: Khung giá viện phí & BHYT */}
+                  {/* HÌNH CHỮ NHẬT 2: KHUNG GIÁ ĐỐI TƯỢNG VỚI DIGIT GROUPING & MIỄN GIẢM */}
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-emerald-700">
                       <CreditCard className="w-4 h-4" />
-                      <span>2. KHUNG GIÁ VIỆN PHÍ & NGUỒN CHI TRẢ</span>
+                      <span>2. KHUNG GIÁ VIỆN PHÍ & NGUỒN CHI TRẢ ĐA ĐỐI TƯỢNG</span>
                     </div>
 
                     <div className="p-2.5 bg-blue-50/70 border border-blue-200 rounded text-[11px] text-blue-900 leading-relaxed">
-                      Khung giá phân cấp áp dụng đồng thời cho Viện phí ngoại trú, Cổng giám định BHYT 4210 và Dịch vụ theo yêu cầu / VIP.
+                      Khung giá phân cấp áp dụng đồng thời cho Viện phí ngoại trú, Cổng giám định BHYT 4210, Bảo hiểm thương mại (BHTM) và Dịch vụ theo yêu cầu / VIP.
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-1">
                         <label className="font-semibold text-[#495057]">Giá Viện Phí Thường (VNĐ):</label>
                         <input
-                          type="number"
-                          value={selectedItemData.price || 0}
-                          onChange={(e) => setSelectedItemData({ ...selectedItemData, price: Number(e.target.value) })}
+                          type="text"
+                          value={formatNumberWithCommas(selectedItemData.price)}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, price: parseNumberFromCommas(e.target.value) })}
                           className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-emerald-700 text-right font-mono focus:outline-none focus:border-emerald-600"
+                          placeholder="0"
                         />
                       </div>
                       <div className="space-y-1">
                         <label className="font-semibold text-[#495057]">Giá BHYT 4210 (VNĐ):</label>
                         <input
-                          type="number"
-                          value={selectedItemData.insurancePrice || 0}
-                          onChange={(e) => setSelectedItemData({ ...selectedItemData, insurancePrice: Number(e.target.value) })}
+                          type="text"
+                          value={formatNumberWithCommas(selectedItemData.insurancePrice)}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, insurancePrice: parseNumberFromCommas(e.target.value) })}
                           className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-[#1f63c9] text-right font-mono focus:outline-none focus:border-[#1f63c9]"
+                          placeholder="0"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Giá Dịch Vụ VIP (VNĐ):</label>
+                        <label className="font-semibold text-[#495057]">Giá Bảo Hiểm Thương Mại (BHTM):</label>
                         <input
-                          type="number"
-                          value={selectedItemData.requestPrice || 0}
-                          onChange={(e) => setSelectedItemData({ ...selectedItemData, requestPrice: Number(e.target.value) })}
-                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-amber-700 text-right font-mono focus:outline-none focus:border-amber-600"
+                          type="text"
+                          value={formatNumberWithCommas(selectedItemData.bhtmPrice ?? (selectedItemData.price ? Math.round(selectedItemData.price * 0.95) : 0))}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, bhtmPrice: parseNumberFromCommas(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-indigo-700 text-right font-mono focus:outline-none focus:border-indigo-600"
+                          placeholder="0"
                         />
                       </div>
                     </div>
-                  </div>
 
-                  {/* Phân vùng 3: Nguồn gốc dữ liệu VSC (nếu có legacyId) */}
-                  {selectedItemData.legacyId && (
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-1.5">
-                      <div className="font-bold text-slate-700 flex items-center space-x-1.5">
-                        <HardDrive className="w-3.5 h-3.5 text-slate-500" />
-                        <span>3. NGUỒN GỐC DỮ LIỆU & ĐỐI SOÁT VSC DESKTOP</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Giá Dịch Vụ VIP / KSK Doanh Nghiệp (VNĐ):</label>
+                        <input
+                          type="text"
+                          value={formatNumberWithCommas(selectedItemData.requestPrice ?? selectedItemData.corporatePrice)}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, requestPrice: parseNumberFromCommas(e.target.value), corporatePrice: parseNumberFromCommas(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-amber-700 text-right font-mono focus:outline-none focus:border-amber-600"
+                          placeholder="0"
+                        />
                       </div>
-                      <div className="flex items-center justify-between text-[11px] text-[#6c757d]">
-                        <span>Khóa chính VSC (LegacyId): <strong className="font-mono text-emerald-700">{selectedItemData.legacyId}</strong></span>
-                        <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          100% Khớp dữ liệu sản xuất
-                        </span>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Giá Ưu Đãi Nội Bộ Cán Bộ NV (VNĐ):</label>
+                        <input
+                          type="text"
+                          value={formatNumberWithCommas(selectedItemData.staffPrice ?? (selectedItemData.price ? Math.round(selectedItemData.price * 0.8) : 0))}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, staffPrice: parseNumberFromCommas(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-teal-700 text-right font-mono focus:outline-none focus:border-teal-600"
+                          placeholder="0"
+                        />
                       </div>
                     </div>
-                  )}
+
+                    {/* Khối cấu hình mức giảm giá đối tượng (Chuẩn VSC.Main) */}
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-2 mt-2">
+                      <div className="font-bold text-slate-700 flex items-center justify-between">
+                        <span>CHÍNH SÁCH MIỄN GIẢM GIÁ (THEO % HOẶC TIỀN CỐ ĐỊNH)</span>
+                        <span className="text-[10px] text-slate-500 font-normal">Quy chuẩn VSC Billing</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-medium text-slate-600">Cách tính giảm giá:</label>
+                          <select
+                            value={selectedItemData.discountType || 'percent'}
+                            onChange={(e) => setSelectedItemData({ ...selectedItemData, discountType: e.target.value })}
+                            className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-800"
+                          >
+                            <option value="percent">Giảm theo tỷ lệ (%)</option>
+                            <option value="fixed">Giảm số tiền cố định (VNĐ)</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-medium text-slate-600">
+                            Mức giảm {selectedItemData.discountType === 'fixed' ? '(VNĐ)' : '(%)'}:
+                          </label>
+                          <input
+                            type="text"
+                            value={selectedItemData.discountType === 'fixed' 
+                              ? formatNumberWithCommas(selectedItemData.discountValue) 
+                              : (selectedItemData.discountValue ?? 10)}
+                            onChange={(e) => setSelectedItemData({
+                              ...selectedItemData,
+                              discountValue: selectedItemData.discountType === 'fixed'
+                                ? parseNumberFromCommas(e.target.value)
+                                : Number(e.target.value)
+                            })}
+                            className="w-full px-2 py-1 border border-slate-300 rounded text-xs font-mono font-bold text-right text-slate-800"
+                            placeholder={selectedItemData.discountType === 'fixed' ? 'VD: 50,000' : 'VD: 10'}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-medium text-slate-600">Đối tượng áp dụng miễn giảm:</label>
+                          <select
+                            value={selectedItemData.discountTarget || 'all'}
+                            onChange={(e) => setSelectedItemData({ ...selectedItemData, discountTarget: e.target.value })}
+                            className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white text-slate-800"
+                          >
+                            <option value="all">Tất cả đối tượng đủ điều kiện</option>
+                            <option value="bhtm">Thẻ Bảo hiểm thương mại (BHTM)</option>
+                            <option value="corporate">Khách khám đoàn công ty</option>
+                            <option value="vip">Khách hàng thân thiết VIP</option>
+                            <option value="policy">Đối tượng chính sách / Bảo trợ</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* HÌNH CHỮ NHẬT 3: ĐÃ XÓA MỤC 3 THEO YÊU CẦU */}
                 </div>
               )}
 

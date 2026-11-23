@@ -337,7 +337,19 @@ app.MapPost("/api/master-data/save", async (JsonElement body, SCMDbContext db) =
     {
         decimal price = itemElem.TryGetProperty("price", out var pProp) && pProp.TryGetDecimal(out var pVal) ? pVal : 0;
         decimal insPrice = itemElem.TryGetProperty("insurancePrice", out var ipProp) && ipProp.TryGetDecimal(out var ipVal) ? ipVal : 0;
+        decimal corpPrice = itemElem.TryGetProperty("corporatePrice", out var cpProp) && cpProp.TryGetDecimal(out var cpVal) ? cpVal : (itemElem.TryGetProperty("requestPrice", out var rpProp) && rpProp.TryGetDecimal(out var rpVal) ? rpVal : price);
         string unit = itemElem.TryGetProperty("unit", out var uProp) ? uProp.GetString() ?? "Lần" : "Lần";
+        Guid? srvGroupId = null;
+        if (itemElem.TryGetProperty("serviceGroupId", out var sgProp) && Guid.TryParse(sgProp.GetString(), out var sgVal))
+        {
+            srvGroupId = sgVal;
+        }
+        else if (itemElem.TryGetProperty("category", out var catProp))
+        {
+            string catName = catProp.GetString() ?? "";
+            var matchedGrp = await db.ServiceGroups.FirstOrDefaultAsync(g => g.GroupName == catName);
+            if (matchedGrp != null) srvGroupId = matchedGrp.Id;
+        }
         
         var existing = await db.MedicalServices.FirstOrDefaultAsync(s => s.ServiceCode == code);
         if (existing != null && !isNew)
@@ -345,16 +357,43 @@ app.MapPost("/api/master-data/save", async (JsonElement body, SCMDbContext db) =
             existing.ServiceName = name;
             existing.StandardPrice = price;
             existing.InsurancePrice = insPrice;
+            existing.CorporatePrice = corpPrice;
             existing.Unit = unit;
+            if (srvGroupId.HasValue) existing.ServiceGroupId = srvGroupId.Value;
         }
         else
         {
-            var defaultGroup = await db.ServiceGroups.FirstOrDefaultAsync();
-            var newService = new MedicalService(code, name, defaultGroup?.Id ?? Guid.NewGuid(), unit, price, insPrice, price);
+            var defaultGroup = srvGroupId.HasValue 
+                ? await db.ServiceGroups.FirstOrDefaultAsync(g => g.Id == srvGroupId.Value)
+                : await db.ServiceGroups.FirstOrDefaultAsync();
+            var newService = new MedicalService(code, name, defaultGroup?.Id ?? Guid.NewGuid(), unit, price, insPrice, corpPrice);
             db.MedicalServices.Add(newService);
         }
         await db.SaveChangesAsync();
         return Results.Ok(new { success = true, message = $"Đã lưu dịch vụ [{code}] vào Database SQL Server thành công!" });
+    }
+    else if (entityType == "service_group")
+    {
+        int sortOrder = itemElem.TryGetProperty("sortOrder", out var soProp) && soProp.TryGetInt32(out var soVal) ? soVal : 1;
+        int serviceType = itemElem.TryGetProperty("serviceType", out var stProp) && stProp.TryGetInt32(out var stVal) ? stVal : 1;
+        bool isActive = !itemElem.TryGetProperty("isActive", out var iaProp) || iaProp.GetBoolean();
+
+        var existing = await db.ServiceGroups.FirstOrDefaultAsync(g => g.GroupCode == code);
+        if (existing != null && !isNew)
+        {
+            existing.GroupName = name;
+            existing.SortOrder = sortOrder;
+            existing.ServiceType = (ServiceType)serviceType;
+            existing.IsActive = isActive;
+        }
+        else
+        {
+            var newGroup = new ServiceGroup(code, name, (ServiceType)serviceType, sortOrder);
+            newGroup.IsActive = isActive;
+            db.ServiceGroups.Add(newGroup);
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true, message = $"Đã lưu nhóm dịch vụ [{code}] vào Database SQL Server thành công!" });
     }
     else if (entityType == "drug")
     {
@@ -517,6 +556,21 @@ app.MapDelete("/api/master-data/{entityType}/{code}", async (string entityType, 
             db.ClinicRooms.Remove(item);
             await db.SaveChangesAsync();
             return Results.Ok(new { success = true, message = $"Đã xóa buồng khám [{code}] khỏi Database SQL Server!" });
+        }
+    }
+    else if (entityType == "service_group")
+    {
+        var item = await db.ServiceGroups.FirstOrDefaultAsync(g => g.GroupCode == code || g.Id.ToString() == code);
+        if (item != null)
+        {
+            bool hasServices = await db.MedicalServices.AnyAsync(s => s.ServiceGroupId == item.Id);
+            if (hasServices)
+            {
+                return Results.BadRequest(new { success = false, message = $"Không thể xóa nhóm [{code}] vì vẫn còn dịch vụ trực thuộc!" });
+            }
+            db.ServiceGroups.Remove(item);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true, message = $"Đã xóa nhóm dịch vụ [{code}] khỏi Database SQL Server!" });
         }
     }
     else if (entityType == "staff")

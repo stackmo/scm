@@ -289,14 +289,33 @@ export function B2BPackageManagementPage() {
   const [newTargetGroupOrder, setNewTargetGroupOrder] = useState<number>(5);
   const [newTargetGroupActive, setNewTargetGroupActive] = useState<boolean>(true);
 
-  // Modal 2: Dialog DỊCH VỤ (Hình 2)
+  // Modal 2: Dialog DỊCH VỤ (Hình 2 VSC)
   const [isServicePickerModalOpen, setIsServicePickerModalOpen] = useState<boolean>(false);
   const [pickerTargetGroupId, setPickerTargetGroupId] = useState<string>('tg-nam');
   const [pickerSelectedCategory, setPickerSelectedCategory] = useState<string>('ALL');
   const [pickerSearch, setPickerSearch] = useState<string>('');
-  const [pickerDefaultRegisterType, setPickerDefaultRegisterType] = useState<ServiceRegisterType>(2); // Default to Tuy_Chon
+  const [pickerDefaultRegisterType, setPickerDefaultRegisterType] = useState<ServiceRegisterType>(2); // 1 = Chon (Red), 2 = Tuy_Chon (Green), 3 = Lam_Them (Blue)
   const [pickerDefaultOutsource, setPickerDefaultOutsource] = useState<boolean>(false);
-  const [pickerCheckedServiceIds, setPickerCheckedServiceIds] = useState<Set<string>>(new Set());
+  const [pickerSelectedMap, setPickerSelectedMap] = useState<Map<string, { service: ServiceItem; registerType: ServiceRegisterType; isOutsource: boolean }>>(new Map());
+
+  // Counters for selected services per mode (VSC Live Counters: Chon=Red, TuyChon=Green, LamThem=Blue)
+  const countChon = useMemo(() => {
+    let count = 0;
+    pickerSelectedMap.forEach(v => { if (v.registerType === 1) count++; });
+    return count;
+  }, [pickerSelectedMap]);
+
+  const countTuyChon = useMemo(() => {
+    let count = 0;
+    pickerSelectedMap.forEach(v => { if (v.registerType === 2) count++; });
+    return count;
+  }, [pickerSelectedMap]);
+
+  const countLamThem = useMemo(() => {
+    let count = 0;
+    pickerSelectedMap.forEach(v => { if (v.registerType === 3) count++; });
+    return count;
+  }, [pickerSelectedMap]);
 
   // Modal 3: Import Excel & Template
   const [isImportModalOpen, setIsImportModalOpen] = useState<boolean>(false);
@@ -490,32 +509,60 @@ export function B2BPackageManagementPage() {
   // Open Service Picker Dialog for specific Target Group (Hình 2)
   const handleOpenServicePicker = (targetGroupId: string) => {
     setPickerTargetGroupId(targetGroupId);
-    setPickerCheckedServiceIds(new Set());
+    setPickerSelectedMap(new Map());
     setIsServicePickerModalOpen(true);
   };
 
-  // Toggle Picker Checkbox
-  const handleTogglePickerService = (serviceId: string) => {
-    setPickerCheckedServiceIds(prev => {
-      const next = new Set(prev);
-      if (next.has(serviceId)) next.delete(serviceId);
-      else next.add(serviceId);
+  // Toggle Picker Checkbox (VSC Style: Gán loại dịch vụ Chon / Tuy_Chon / Lam_Them theo radio hiện tại)
+  const handleTogglePickerService = (srv: ServiceItem) => {
+    setPickerSelectedMap(prev => {
+      const next = new Map(prev);
+      if (next.has(srv.id)) {
+        next.delete(srv.id);
+      } else {
+        next.set(srv.id, {
+          service: srv,
+          registerType: pickerDefaultRegisterType, // 1 (Chon), 2 (TuyChon), 3 (LamThem)
+          isOutsource: pickerDefaultOutsource
+        });
+      }
+      return next;
+    });
+  };
+
+  // Remove service from top summary board
+  const handleRemovePickedService = (serviceId: string) => {
+    setPickerSelectedMap(prev => {
+      const next = new Map(prev);
+      next.delete(serviceId);
       return next;
     });
   };
 
   // Select all visible services in picker
   const handleSelectAllPicker = () => {
-    if (pickerCheckedServiceIds.size === availableCatalogServices.length) {
-      setPickerCheckedServiceIds(new Set());
+    if (pickerSelectedMap.size === availableCatalogServices.length && availableCatalogServices.length > 0) {
+      setPickerSelectedMap(new Map());
     } else {
-      setPickerCheckedServiceIds(new Set(availableCatalogServices.map(s => s.id)));
+      setPickerSelectedMap(prev => {
+        const next = new Map(prev);
+        availableCatalogServices.forEach(srv => {
+          if (!next.has(srv.id)) {
+            next.set(srv.id, {
+              service: srv,
+              registerType: pickerDefaultRegisterType,
+              isOutsource: pickerDefaultOutsource
+            });
+          }
+        });
+        return next;
+      });
     }
   };
 
   // Save Selected Services to Target Group (VSC Save & Exit)
   const handleSavePickedServices = () => {
-    if (pickerCheckedServiceIds.size === 0) {
+    if (pickerSelectedMap.size === 0) {
       showToast('Vui lòng tick chọn ít nhất một dịch vụ.', 'error');
       return;
     }
@@ -528,37 +575,38 @@ export function B2BPackageManagementPage() {
     let currentOrder = maxOrder;
     let preType: ServiceRegisterType | null = null;
 
-    availableCatalogServices
-      .filter(s => pickerCheckedServiceIds.has(s.id))
-      .forEach(catSrv => {
-        // VSC Rules (lines 493-499): Nếu liên tiếp cùng loại Tuy_Chon (type = 2) -> Giữ nguyên STT để tạo nhóm
-        if (preType === 2 && pickerDefaultRegisterType === 2) {
-          // keep currentOrder
-        } else {
-          currentOrder++;
-        }
-        preType = pickerDefaultRegisterType;
+    Array.from(pickerSelectedMap.values()).forEach(entry => {
+      const catSrv = entry.service;
+      const regType = entry.registerType;
 
-        const floor = Math.round(catSrv.priceStandard * 0.6); // Giá sàn 60%
-        const deal = catSrv.priceDeal > 0 ? catSrv.priceDeal : catSrv.priceStandard;
+      // VSC Rules (lines 493-499): Nếu liên tiếp cùng loại Tuy_Chon (type = 2) -> Giữ nguyên STT để tạo nhóm
+      if (preType === 2 && regType === 2) {
+        // keep currentOrder
+      } else {
+        currentOrder++;
+      }
+      preType = regType;
 
-        newItems.push({
-          id: `ps-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          targetGroupId: pickerTargetGroupId,
-          targetGroupName: currentTargetGroup?.name ?? 'Đối tượng Nam',
-          serviceId: catSrv.id,
-          serviceCode: catSrv.code,
-          serviceName: catSrv.name,
-          orderIndex: currentOrder,
-          registerType: pickerDefaultRegisterType,
-          isSpecimenOutsource: pickerDefaultOutsource,
-          originalPrice: catSrv.priceStandard,
-          dealPrice: deal,
-          floorPrice: floor,
-          createdBy: 'ADMINISTRATOR',
-          createdAt: new Date().toLocaleString('vi-VN')
-        });
+      const floor = Math.round(catSrv.priceStandard * 0.6); // Giá sàn 60%
+      const deal = catSrv.priceDeal > 0 ? catSrv.priceDeal : catSrv.priceStandard;
+
+      newItems.push({
+        id: `ps-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        targetGroupId: pickerTargetGroupId,
+        targetGroupName: currentTargetGroup?.name ?? 'Đối tượng Nam',
+        serviceId: catSrv.id,
+        serviceCode: catSrv.code,
+        serviceName: catSrv.name,
+        orderIndex: currentOrder,
+        registerType: regType,
+        isSpecimenOutsource: entry.isOutsource,
+        originalPrice: catSrv.priceStandard,
+        dealPrice: deal,
+        floorPrice: floor,
+        createdBy: 'ADMINISTRATOR',
+        createdAt: new Date().toLocaleString('vi-VN')
       });
+    });
 
     setServicesList(prev => [...prev, ...newItems]);
     setIsServicePickerModalOpen(false);
@@ -1337,10 +1385,46 @@ export function B2BPackageManagementPage() {
 
               {/* CỘT PHẢI: DANH SÁCH DỊCH VỤ TẠI PHÒNG KHÁM */}
               <div className="flex-1 flex flex-col min-w-0 bg-white">
+                {/* ── BẢNG TỔNG HỢP DỊCH VỤ ĐÃ CHỌN TỰ ĐỘNG HIGHLIGHT MÀU SẮC (CHUẨN VSC DESKTOP) ── */}
+                <div className="bg-white border-b border-[#dee2e6] p-3 shrink-0 min-h-[90px] max-h-[140px] overflow-y-auto">
+                  {pickerSelectedMap.size === 0 ? (
+                    <div className="h-full flex items-center justify-center text-xs text-[#6c757d] italic py-3 select-none">
+                      Chưa có dịch vụ nào được chọn. Chọn chế độ (Chọn / Tùy Chọn / Làm Thêm) bên dưới rồi tích vào danh sách để thêm.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1 text-xs">
+                      {Array.from(pickerSelectedMap.values()).map(entry => {
+                        let colorClass = 'text-red-600';
+                        if (entry.registerType === 2) colorClass = 'text-emerald-600';
+                        else if (entry.registerType === 3) colorClass = 'text-blue-600';
+
+                        return (
+                          <div
+                            key={entry.service.id}
+                            onClick={() => handleRemovePickedService(entry.service.id)}
+                            className="flex items-center space-x-1.5 group cursor-pointer hover:bg-slate-50 p-1 rounded transition select-none truncate"
+                            title="Click để bỏ chọn dịch vụ này"
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                              entry.registerType === 1 ? 'bg-red-600' : entry.registerType === 2 ? 'bg-emerald-600' : 'bg-blue-600'
+                            }`} />
+                            <span className={`font-semibold truncate transition group-hover:line-through ${colorClass}`}>
+                              {entry.service.name}
+                            </span>
+                            <span className="text-[#adb5bd] group-hover:text-red-500 text-[10px] shrink-0 font-bold ml-auto pl-1">
+                              ✕
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 {/* Search bar & Type selection options (Hình 2 toolbar) */}
                 <div className="p-2.5 border-b border-[#dee2e6] bg-[#f8f9fa] space-y-2 shrink-0">
                   <div className="font-bold text-xs text-[#212529] uppercase tracking-wide">
-                    DANH SÁCH DỊCH VỤ TẠI PHÒNG KHÁM
+                    DANH SÁCH DỊCH VỤ TẠI PHÒNG KHÁM ({availableCatalogServices.length})
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     {/* Input search */}
@@ -1364,7 +1448,7 @@ export function B2BPackageManagementPage() {
                       )}
                     </div>
 
-                    {/* Radio Options: Chọn / Tùy Chọn / Làm Thêm / Lấy Máu Ngoài */}
+                    {/* Radio Options: Chọn (Đỏ) / Tùy Chọn (Xanh lá) / Làm Thêm (Xanh dương) / Lấy Máu Ngoài */}
                     <div className="flex items-center space-x-4 bg-white px-3 py-1 rounded border border-[#ced4da]">
                       <label className="flex items-center space-x-1 cursor-pointer">
                         <input
@@ -1416,7 +1500,7 @@ export function B2BPackageManagementPage() {
 
                 {/* Table Services with Checkboxes */}
                 <div className="flex-1 min-h-0 overflow-auto border-b border-[#dee2e6]">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full text-left border-collapse text-xs">
                     <thead className="bg-[#f1f3f6] text-[#495057] font-bold text-[11px] sticky top-0 border-b border-[#dee2e6]">
                       <tr>
                         <th className="py-2 px-3 w-12 text-center border-r border-[#dee2e6]">
@@ -1424,7 +1508,7 @@ export function B2BPackageManagementPage() {
                             type="checkbox"
                             checked={
                               availableCatalogServices.length > 0 &&
-                              pickerCheckedServiceIds.size === availableCatalogServices.length
+                              pickerSelectedMap.size === availableCatalogServices.length
                             }
                             onChange={handleSelectAllPicker}
                             className="w-4 h-4 text-[#1f63c9] rounded cursor-pointer"
@@ -1445,28 +1529,54 @@ export function B2BPackageManagementPage() {
                         </tr>
                       ) : (
                         availableCatalogServices.map(srv => {
-                          const isChecked = pickerCheckedServiceIds.has(srv.id);
+                          const selectedEntry = pickerSelectedMap.get(srv.id);
+                          const isChecked = !!selectedEntry;
+                          const regType = selectedEntry?.registerType;
+
+                          let textColorClass = 'text-[#212529]';
+                          let badge = null;
+                          if (isChecked) {
+                            if (regType === 1) {
+                              textColorClass = 'text-red-600 font-bold';
+                              badge = <span className="text-[9px] bg-red-100 text-red-700 px-1 py-0.2 rounded font-bold border border-red-200 ml-1.5">CHỌN</span>;
+                            } else if (regType === 2) {
+                              textColorClass = 'text-emerald-600 font-bold';
+                              badge = <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold border border-emerald-200 ml-1.5">TÙY CHỌN</span>;
+                            } else if (regType === 3) {
+                              textColorClass = 'text-blue-600 font-bold';
+                              badge = <span className="text-[9px] bg-blue-100 text-blue-800 px-1 py-0.2 rounded font-bold border border-blue-200 ml-1.5">LÀM THÊM</span>;
+                            }
+                          }
+
                           return (
                             <tr
                               key={srv.id}
-                              onClick={() => handleTogglePickerService(srv.id)}
-                              className={`cursor-pointer transition ${
-                                isChecked ? 'bg-blue-50/70' : 'hover:bg-[#f8f9fa]'
+                              onClick={() => handleTogglePickerService(srv)}
+                              className={`cursor-pointer transition select-none ${
+                                isChecked ? 'bg-blue-50/50 hover:bg-blue-50' : 'hover:bg-[#f8f9fa]'
                               }`}
                             >
                               <td className="py-2 px-3 text-center border-r border-[#dee2e6]" onClick={e => e.stopPropagation()}>
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
-                                  onChange={() => handleTogglePickerService(srv.id)}
+                                  onChange={() => handleTogglePickerService(srv)}
                                   className="w-4 h-4 text-[#1f63c9] rounded cursor-pointer"
                                 />
                               </td>
                               <td className="py-2 px-3 font-mono font-semibold text-[#6c757d] border-r border-[#dee2e6]">
                                 {srv.code}
                               </td>
-                              <td className="py-2 px-3 font-semibold text-[#212529] border-r border-[#dee2e6]">
-                                {srv.name}
+                              <td className={`py-2 px-3 border-r border-[#dee2e6] ${textColorClass}`}>
+                                <div className="flex items-center">
+                                  <span className="truncate" title={srv.name}>{srv.name}</span>
+                                  {badge}
+                                  {selectedEntry?.isOutsource && (
+                                    <span className="text-[9px] bg-purple-100 text-purple-700 px-1 rounded ml-1 border border-purple-200">
+                                      MẪU NGOÀI
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-[#6c757d] border-r border-[#dee2e6]">
                                 {srv.priceStandard.toLocaleString()}
@@ -1486,22 +1596,31 @@ export function B2BPackageManagementPage() {
                 <div className="px-4 py-2.5 bg-[#f8f9fa] flex items-center justify-between shrink-0">
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => setPickerCheckedServiceIds(new Set())}
+                      onClick={() => setPickerSelectedMap(new Map())}
                       className="px-3 py-1.5 bg-white border border-[#ced4da] hover:bg-[#e9ecef] text-[#495057] rounded font-medium cursor-pointer"
                     >
                       Reset Dữ Liệu Chọn
                     </button>
                     <span className="text-xs text-[#6c757d]">
-                      Đã chọn: <strong className="text-[#1f63c9]">{pickerCheckedServiceIds.size}</strong> dịch vụ
+                      Đã chọn: <strong className="text-[#1f63c9]">{pickerSelectedMap.size}</strong> dịch vụ
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-4">
-                    {/* Legend màu sắc */}
-                    <div className="flex flex-col text-right text-[11px] font-bold">
-                      <span className="text-red-600">Chọn</span>
-                      <span className="text-emerald-600">Tùy Chọn</span>
-                      <span className="text-blue-600">Làm Thêm</span>
+                  <div className="flex items-center space-x-5">
+                    {/* Legend màu sắc kèm số lượng live counters */}
+                    <div className="flex items-center space-x-4 text-xs font-bold">
+                      <span className="text-red-600 flex items-center gap-1">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+                        Chọn : {countChon}
+                      </span>
+                      <span className="text-emerald-600 flex items-center gap-1">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                        Tùy Chọn : {countTuyChon}
+                      </span>
+                      <span className="text-blue-600 flex items-center gap-1">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                        Làm Thêm : {countLamThem}
+                      </span>
                     </div>
 
                     <button
