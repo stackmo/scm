@@ -357,4 +357,140 @@ public class B2B_Application_Integration_Tests
         Assert.Equal(1, secondResult.FailureCount);
         Assert.Contains("đã tồn tại trong gói khám này trước đó", secondResult.Details[0].ErrorMessage);
     }
+
+    [Fact]
+    public async Task Package_BatchAddServices_With_TuyChon_GroupOrder_Rule_Should_Group_Correctly()
+    {
+        // Arrange
+        using var context = CreateInMemoryContext("SCM_B2B_BatchAddServices_Test_Db");
+        var packageService = new PackageAppService(context);
+
+        var company = new SCM.Domain.B2B.Company("TOTALGAZ", "Công ty TotalGaz Việt Nam", "0301234567");
+        var contract = new SCM.Domain.B2B.CompanyContract(company.Id, "HD-TG-2026", DateTime.Today, DateTime.Today, DateTime.Today.AddDays(180), 500, 1000000000m);
+        var package = new SCM.Domain.B2B.Package("GK-TG-2026", "Gói Khám Sức Khỏe TotalGaz", company.Id, contract.Id);
+
+        context.Companies.Add(company);
+        context.CompanyContracts.Add(contract);
+        context.Packages.Add(package);
+        await context.SaveChangesAsync();
+
+        // Add Target Group
+        var targetGroup = await packageService.AddTargetGroupAsync(new CreateUpdatePackageTargetGroupDto
+        {
+            PackageId = package.Id,
+            Code = "DT-NAM",
+            Name = "Đối tượng Nam",
+            OrderIndex = 1,
+            IsActive = true
+        });
+
+        // Batch Add Services: 1 Chon, 2 TuyChon (consecutive), 1 LamThem
+        var batchInput = new BatchAddPackageServicesDto
+        {
+            PackageId = package.Id,
+            TargetGroupId = targetGroup.Id,
+            Services = new List<CreateUpdatePackageServiceDto>
+            {
+                new CreateUpdatePackageServiceDto
+                {
+                    PackageId = package.Id,
+                    ServiceId = Guid.NewGuid(),
+                    ServiceCode = "XN-CTM",
+                    ServiceName = "Tổng phân tích tế bào máu ngoại vi",
+                    OriginalPrice = 120000m,
+                    DealPrice = 100000m,
+                    FloorPrice = 80000m,
+                    RegisterType = PackageServiceRegisterType.Chon,
+                    IsSpecimenOutsource = true
+                },
+                new CreateUpdatePackageServiceDto
+                {
+                    PackageId = package.Id,
+                    ServiceId = Guid.NewGuid(),
+                    ServiceCode = "XN-CRP",
+                    ServiceName = "Định lượng CRP hs (C-Reactive Protein)",
+                    OriginalPrice = 150000m,
+                    DealPrice = 130000m,
+                    FloorPrice = 100000m,
+                    RegisterType = PackageServiceRegisterType.TuyChon
+                },
+                new CreateUpdatePackageServiceDto
+                {
+                    PackageId = package.Id,
+                    ServiceId = Guid.NewGuid(),
+                    ServiceCode = "RHM-TB01",
+                    ServiceName = "Trám bít hố rãnh với Composite hoá trùng hợp",
+                    OriginalPrice = 200000m,
+                    DealPrice = 180000m,
+                    FloorPrice = 150000m,
+                    RegisterType = PackageServiceRegisterType.TuyChon
+                },
+                new CreateUpdatePackageServiceDto
+                {
+                    PackageId = package.Id,
+                    ServiceId = Guid.NewGuid(),
+                    ServiceCode = "CDHA-CT-CHEST",
+                    ServiceName = "Chụp cắt lớp vi tính lồng ngực liều thấp",
+                    OriginalPrice = 1500000m,
+                    DealPrice = 1200000m,
+                    FloorPrice = 90000m,
+                    RegisterType = PackageServiceRegisterType.LamThem
+                }
+            }
+        };
+
+        // Act
+        var addedServices = await packageService.BatchAddServicesAsync(batchInput);
+
+        // Assert
+        Assert.Equal(4, addedServices.Count);
+
+        // Service 1 (Chon): OrderIndex = 1, IsRequired = true, IsSpecimenOutsource = true
+        Assert.Equal(1, addedServices[0].OrderIndex);
+        Assert.Equal(PackageServiceRegisterType.Chon, addedServices[0].RegisterType);
+        Assert.True(addedServices[0].IsRequired);
+        Assert.True(addedServices[0].IsSpecimenOutsource);
+
+        // Service 2 & 3 (TuyChon consecutive): Share the SAME OrderIndex (OrderIndex = 2) for Rule X in Y!
+        Assert.Equal(2, addedServices[1].OrderIndex);
+        Assert.Equal(PackageServiceRegisterType.TuyChon, addedServices[1].RegisterType);
+        Assert.False(addedServices[1].IsRequired);
+
+        Assert.Equal(2, addedServices[2].OrderIndex); // MUST MATCH OrderIndex 2 (VSC consecutive rule)
+        Assert.Equal(PackageServiceRegisterType.TuyChon, addedServices[2].RegisterType);
+
+        // Service 4 (LamThem): OrderIndex = 3, RegisterType = LamThem
+        Assert.Equal(3, addedServices[3].OrderIndex);
+        Assert.Equal(PackageServiceRegisterType.LamThem, addedServices[3].RegisterType);
+
+        // Test BatchUpdate: Update OrderIndex or RegisterType
+        var updateInput = new BatchUpdatePackageServicesDto
+        {
+            PackageId = package.Id,
+            Items = new List<UpdatePackageServiceItemDto>
+            {
+                new UpdatePackageServiceItemDto
+                {
+                    Id = addedServices[0].Id,
+                    RegisterType = PackageServiceRegisterType.Chon,
+                    OrderIndex = 1,
+                    IsSpecimenOutsource = false,
+                    DealPrice = 95000m
+                }
+            }
+        };
+
+        var updated = await packageService.BatchUpdateServicesAsync(updateInput);
+        Assert.Equal(95000m, updated.First(x => x.Id == addedServices[0].Id).DealPrice);
+        Assert.False(updated.First(x => x.Id == addedServices[0].Id).IsSpecimenOutsource);
+
+        // Test ApplyDiscount: 10% discount
+        var discounted = await packageService.ApplyDiscountAsync(new ApplyDiscountBatchDto
+        {
+            PackageId = package.Id,
+            DiscountPercent = 10m
+        });
+        // Original price 120000 * 0.9 = 108000
+        Assert.Equal(108000m, discounted.First(x => x.Id == addedServices[0].Id).DealPrice);
+    }
 }

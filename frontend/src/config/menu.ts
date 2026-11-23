@@ -85,7 +85,8 @@ export const menuConfig: MenuItem[] = [
     title: 'Khám đoàn B2B',
     icon: Building2,
     subItems: [
-      { id: 'corporate_checkup', title: 'Khám đoàn doanh nghiệp B2B & TT14', icon: Building2 },
+      { id: 'b2b_packages', title: 'Quản lý Gói khám & Cấu hình Dịch vụ (WF 01-04)', icon: Package },
+      { id: 'corporate_checkup', title: 'Khám đoàn doanh nghiệp B2B & TT14 (Mẫu M3)', icon: Building2 },
       { id: 'pre_exam_phlebotomy', title: 'Lấy mẫu ngoại viện & Chuỗi lạnh (WF 03A)', icon: Syringe }
     ]
   },

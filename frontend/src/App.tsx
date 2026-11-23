@@ -39,10 +39,13 @@ import {
   Phone,
   Mail,
   Award,
-  Syringe
+  Syringe,
+  Tag
 } from 'lucide-react';
 import { PreExamPhlebotomyPage } from './pages/PreExamPhlebotomyPage';
 import { ReceptionQueuePage } from './pages/ReceptionQueuePage';
+import { B2BPackageManagementPage } from './pages/B2BPackageManagementPage';
+import { ServiceSelectorModal } from './components/ServiceSelectorModal';
 
 // --- CATALOG DATASETS (HỢP NHẤT VSC & CỔNG M3) ---
 import xaPhuongData from './data/catalogs/DiaChiHienTai_XaPhuong.json';
@@ -176,22 +179,33 @@ const PRESET_CHAINS = [
   { id: 4, code: 'CNTD', name: 'SmartClinic Cơ Sở TP. Thủ Đức', chainName: 'Clinic 365 Kỹ Thuật Số', address: '88 Võ Văn Ngân, TP. Thủ Đức, TP.HCM', hotline: '0978901234', doctorInCharge: 'BS.CKI Nguyễn Văn Hưng', licenseNo: '055214/HCM-GPHĐ' }
 ];
 
-// Predefined ICD-10 List (Chuẩn WHO + VSC)
+// Predefined ICD-10 List (Chuẩn WHO + VSC với Phân Nhóm Chương Bệnh Rõ Ràng)
 const PRESET_ICD10 = [
-  { id: 1, icdCode: 'I10', diseaseNameVi: 'Tăng huyết áp vô căn (nguyên phát)', diseaseNameEn: 'Essential (primary) hypertension', chapterCode: 'IX', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: true, isActive: true },
-  { id: 2, icdCode: 'E11.9', diseaseNameVi: 'Đái tháo đường týp 2 không có biến chứng', diseaseNameEn: 'Type 2 diabetes mellitus without complications', chapterCode: 'IV', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: true, isActive: true },
-  { id: 3, icdCode: 'J00', diseaseNameVi: 'Viêm mũi họng cấp [cảm thường]', diseaseNameEn: 'Acute nasopharyngitis [common cold]', chapterCode: 'X', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: false, isActive: true },
-  { id: 4, icdCode: 'J02.9', diseaseNameVi: 'Viêm họng cấp, không xác định', diseaseNameEn: 'Acute pharyngitis, unspecified', chapterCode: 'X', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: false, isActive: true },
-  { id: 5, icdCode: 'K29.0', diseaseNameVi: 'Viêm dạ dày cấp tính xuất huyết', diseaseNameEn: 'Acute hemorrhagic gastritis', chapterCode: 'XI', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: false, isActive: true },
-  { id: 6, icdCode: 'K29.7', diseaseNameVi: 'Viêm dạ dày, không xác định', diseaseNameEn: 'Gastritis, unspecified', chapterCode: 'XI', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: true, isActive: true }
+  { id: 1, icdCode: 'I10', diseaseNameVi: 'Tăng huyết áp vô căn (nguyên phát)', diseaseNameEn: 'Essential (primary) hypertension', chapterCode: 'IX', chapter: 'Chương IX: Bệnh hệ tuần hoàn (I00-I99)', isChronic: true, isActive: true },
+  { id: 2, icdCode: 'E11.9', diseaseNameVi: 'Đái tháo đường týp 2 không có biến chứng', diseaseNameEn: 'Type 2 diabetes mellitus without complications', chapterCode: 'IV', chapter: 'Chương IV: Bệnh nội tiết, chuyển hóa (E00-E90)', isChronic: true, isActive: true },
+  { id: 3, icdCode: 'J00', diseaseNameVi: 'Viêm mũi họng cấp [cảm thường]', diseaseNameEn: 'Acute nasopharyngitis [common cold]', chapterCode: 'X', chapter: 'Chương X: Bệnh hệ hô hấp (J00-J99)', isChronic: false, isActive: true },
+  { id: 4, icdCode: 'J02.9', diseaseNameVi: 'Viêm họng cấp, không xác định', diseaseNameEn: 'Acute pharyngitis, unspecified', chapterCode: 'X', chapter: 'Chương X: Bệnh hệ hô hấp (J00-J99)', isChronic: false, isActive: true },
+  { id: 5, icdCode: 'K29.0', diseaseNameVi: 'Viêm dạ dày cấp tính xuất huyết', diseaseNameEn: 'Acute hemorrhagic gastritis', chapterCode: 'XI', chapter: 'Chương XI: Bệnh hệ tiêu hóa (K00-K93)', isChronic: false, isActive: true },
+  { id: 6, icdCode: 'K29.7', diseaseNameVi: 'Viêm dạ dày, không xác định', diseaseNameEn: 'Gastritis, unspecified', chapterCode: 'XI', chapter: 'Chương XI: Bệnh hệ tiêu hóa (K00-K93)', isChronic: true, isActive: true },
+  { id: 7, icdCode: 'A09', diseaseNameVi: 'Tiêu chảy và viêm dạ dày-ruột do nhiễm trùng', diseaseNameEn: 'Infectious gastroenteritis and colitis', chapterCode: 'I', chapter: 'Chương I: Bệnh nhiễm trùng & ký sinh trùng (A00-B99)', isChronic: false, isActive: true },
+  { id: 8, icdCode: 'M54.5', diseaseNameVi: 'Đau thắt lưng cột sống cơ năng', diseaseNameEn: 'Low back pain', chapterCode: 'XIII', chapter: 'Chương XIII: Bệnh hệ cơ - xương - khớp (M00-M99)', isChronic: true, isActive: true },
+  { id: 9, icdCode: 'C50.9', diseaseNameVi: 'Khối u ác tính của vú, không đặc hiệu', diseaseNameEn: 'Malignant neoplasm of breast, unspecified', chapterCode: 'II', chapter: 'Chương II: Khối u & Ung thư (C00-D48)', isChronic: true, isActive: true },
+  { id: 10, icdCode: 'N39.0', diseaseNameVi: 'Nhiễm trùng đường tiết niệu, vị trí không xác định', diseaseNameEn: 'Urinary tract infection, site not specified', chapterCode: 'XIV', chapter: 'Chương XIV: Bệnh hệ sinh dục - tiết niệu (N00-N99)', isChronic: false, isActive: true }
 ];
 
 export default function App() {
   // --- STATE HOOKS (RULES OF HOOKS) ---
   const [activeNavMenu, setActiveNavMenu] = useState<string>('system_group');
+  const [corporateSubView, setCorporateSubView] = useState<'packages' | 'm3_portal'>('packages');
   const [selectedBlockId, setSelectedBlockId] = useState<string>('block_admin');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('grp_doituong');
   const [showSystemMenu, setShowSystemMenu] = useState<boolean>(false);
+
+  // Grouping & Category Filters (Dịch vụ, ICD-10, Địa bàn Tỉnh thành)
+  const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('ALL');
+  const [selectedIcdChapter, setSelectedIcdChapter] = useState<string>('ALL');
+  const [selectedCityCode, setSelectedCityCode] = useState<string>('ALL');
+  const [isGroupByView, setIsGroupByView] = useState<boolean>(true);
 
   // VSC Backend Datasets
   const [vscServices, setVscServices] = useState<any[]>([]);
@@ -216,6 +230,7 @@ export default function App() {
   // Confirmation dialog and Notification Toast state
   const [deleteConfirmItem, setDeleteConfirmItem] = useState<any | null>(null);
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isServiceSelectorOpen, setIsServiceSelectorOpen] = useState<boolean>(false);
 
   const showToast = useCallback((text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ type, text });
@@ -682,10 +697,10 @@ export default function App() {
         code: s.serviceCode,
         name: s.serviceName,
         unit: s.unit || 'Lần',
-        category: s.serviceGroupName || 'Dịch vụ Kỹ thuật',
-        price: s.hospitalPrice,
-        insurancePrice: s.insurancePrice,
-        requestPrice: s.requestPrice || s.hospitalPrice * 1.2,
+        category: s.serviceGroupName || 'Khám Lâm Sàng & Các Chuyên Khoa Khác',
+        price: s.standardPrice || s.hospitalPrice || 0,
+        insurancePrice: s.insurancePrice || 0,
+        requestPrice: s.corporatePrice || s.requestPrice || (s.standardPrice ? s.standardPrice * 1.2 : 0),
         legacyId: s.legacyId,
         isActive: s.isActive
       }));
@@ -769,14 +784,62 @@ export default function App() {
     return [];
   }, [currentGroup, customDatasetMap, vscServices, vscDrugs, vscStaffs, vscRooms, vscIcd10, tinhMap]);
 
+  // Distinct categories for Services
+  const distinctServiceCategories = useMemo(() => {
+    const cats = new Set<string>();
+    currentGridData.forEach((r: any) => {
+      if (r.category) cats.add(r.category);
+    });
+    return Array.from(cats);
+  }, [currentGridData]);
+
+  // Distinct chapters for ICD-10
+  const distinctIcdChapters = useMemo(() => {
+    const chapters = new Map<string, string>();
+    currentGridData.forEach((r: any) => {
+      if (r.chapterCode) {
+        chapters.set(r.chapterCode, r.chapter || `Chương ${r.chapterCode}`);
+      }
+    });
+    return Array.from(chapters.entries()).map(([code, name]) => ({ code, name }));
+  }, [currentGridData]);
+
+  // Distinct cities for DiaBan
+  const distinctCities = useMemo(() => {
+    if (!Array.isArray(tinhData)) return [];
+    return tinhData.map((t: any) => ({
+      code: String(t.Code),
+      name: t.Name
+    }));
+  }, []);
+
   // Filtered rows
   const filteredGridData = useMemo<any[]>(() => {
     let result: any[] = currentGridData;
+
+    // 1. Gom nhóm lọc Dịch Vụ
+    if (currentGroup.id === 'grp_dichvu' && selectedServiceCategory !== 'ALL') {
+      result = result.filter((r: any) => r.category === selectedServiceCategory);
+    }
+
+    // 2. Gom nhóm lọc ICD-10
+    if (currentGroup.id === 'grp_icd10' && selectedIcdChapter !== 'ALL') {
+      result = result.filter((r: any) => r.chapterCode === selectedIcdChapter || (r.chapter && r.chapter.includes(selectedIcdChapter)));
+    }
+
+    // 3. Gom nhóm lọc Tỉnh Thành / Địa Bàn
+    if (currentGroup.id === 'grp_diaban' && selectedCityCode !== 'ALL') {
+      result = result.filter((r: any) => r.cityCode === selectedCityCode);
+    }
+
     if (gridSearch.trim()) {
       const term = gridSearch.toLowerCase();
       result = result.filter((r: any) =>
         (r.name && String(r.name).toLowerCase().includes(term)) ||
         (r.code && String(r.code).toLowerCase().includes(term)) ||
+        (r.diseaseNameVi && String(r.diseaseNameVi).toLowerCase().includes(term)) ||
+        (r.cityName && String(r.cityName).toLowerCase().includes(term)) ||
+        (r.chapter && String(r.chapter).toLowerCase().includes(term)) ||
         (r.cchn && String(r.cchn).toLowerCase().includes(term)) ||
         (r.ingredient && String(r.ingredient).toLowerCase().includes(term))
       );
@@ -786,19 +849,25 @@ export default function App() {
     }
     if (filterName.trim()) {
       const term = filterName.toLowerCase().trim();
-      result = result.filter((r: any) => r.name && String(r.name).toLowerCase().includes(term));
+      result = result.filter((r: any) => (r.name || r.diseaseNameVi) && String(r.name || r.diseaseNameVi).toLowerCase().includes(term));
     }
     return result;
-  }, [currentGridData, gridSearch, filterId, filterName]);
+  }, [currentGridData, currentGroup.id, selectedServiceCategory, selectedIcdChapter, selectedCityCode, gridSearch, filterId, filterName]);
 
   // DataGrid Pagination States
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(25);
 
-  // Reset pageIndex on filter or group change
+  // Reset pageIndex & filters on group change
   useEffect(() => {
     setPageIndex(0);
-  }, [selectedGroupId, gridSearch, filterId, filterName]);
+  }, [selectedGroupId, selectedServiceCategory, selectedIcdChapter, selectedCityCode, gridSearch, filterId, filterName]);
+
+  useEffect(() => {
+    setSelectedServiceCategory('ALL');
+    setSelectedIcdChapter('ALL');
+    setSelectedCityCode('ALL');
+  }, [selectedGroupId]);
 
   // Paginated rows
   const paginatedGridData = useMemo(() => {
@@ -812,7 +881,7 @@ export default function App() {
   const handleDuplicateSelected = () => {
     const current = filteredGridData.find(r => r.id === selectedRowId) || filteredGridData[0];
     if (!current) {
-      alert('Vui lòng chọn một bản ghi trên bảng để nhân bản!');
+      showToast('Vui lòng chọn một bản ghi trên bảng để nhân bản!', 'error');
       return;
     }
     const cloned = {
@@ -849,7 +918,6 @@ export default function App() {
   const handleOpenDetail = (row: any) => {
     setSelectedItemData({ ...row });
     setSelectedRowId(row.id);
-    setDetailTab('info');
     setDrawerOpen(true);
   };
 
@@ -924,7 +992,6 @@ export default function App() {
     }
 
     setSelectedItemData(newItem);
-    setDetailTab('info');
     setDrawerOpen(true);
   };
 
@@ -939,7 +1006,6 @@ export default function App() {
       isNew: true
     };
     setSelectedItemData(cloned);
-    setDetailTab('info');
     setDrawerOpen(true);
   };
 
@@ -1448,8 +1514,44 @@ export default function App() {
       ) : activeNavMenu === 'phlebotomy_group' ? (
         <PreExamPhlebotomyPage />
       ) : activeNavMenu === 'corporate_group' ? (
-        /* ── B2B KHÁM ĐOÀN & LIÊN THÔNG CỔNG Y TẾ CỘNG ĐỒNG (MẪU M3 - TT 32/2023/TT-BYT) ── */
-        <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-white">
+          {/* Sub-navbar chuyển đổi giữa Quản lý Gói Khám (WF 01-04) và Mẫu M3 */}
+          <div className="bg-[#f1f3f6] border-b border-[#dee2e6] px-4 py-1.5 flex items-center justify-between shrink-0">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold text-[#495057] uppercase tracking-wide">PHÂN HỆ KHÁM ĐOÀN B2B:</span>
+              <button
+                onClick={() => setCorporateSubView('packages')}
+                className={`px-3 py-1 rounded text-xs font-bold transition cursor-pointer flex items-center space-x-1.5 ${
+                  corporateSubView === 'packages'
+                    ? 'bg-[#1f63c9] text-white shadow-xs'
+                    : 'bg-white text-[#495057] border border-[#ced4da] hover:bg-gray-100'
+                }`}
+              >
+                <Package className="w-3.5 h-3.5" />
+                <span>1. Quản Lý Gói Khám & Cấu Hình Dịch Vụ (Hình 1 - 4)</span>
+              </button>
+              <button
+                onClick={() => setCorporateSubView('m3_portal')}
+                className={`px-3 py-1 rounded text-xs font-bold transition cursor-pointer flex items-center space-x-1.5 ${
+                  corporateSubView === 'm3_portal'
+                    ? 'bg-[#1f63c9] text-white shadow-xs'
+                    : 'bg-white text-[#495057] border border-[#ced4da] hover:bg-gray-100'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>2. Phiếu Khám Sức Khỏe Mẫu M3 & Đẩy Cổng Y Tế (TT32)</span>
+              </button>
+            </div>
+            <div className="text-[11px] text-[#6c757d]">
+              Hệ thống SmartClinic B2B • Chuẩn VSC & Cổng Bộ Y Tế
+            </div>
+          </div>
+
+          {corporateSubView === 'packages' ? (
+            <B2BPackageManagementPage />
+          ) : (
+            /* ── B2B KHÁM ĐOÀN & LIÊN THÔNG CỔNG Y TẾ CỘNG ĐỒNG (MẪU M3 - TT 32/2023/TT-BYT) ── */
+            <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
           {/* Cột trái: Danh sách nhân viên trong đoàn khám */}
           <div className="w-80 border-r border-[#dee2e6] flex flex-col bg-[#f8f9fa] shrink-0">
             <div className="p-3 border-b border-[#dee2e6] bg-white space-y-1">
@@ -1857,6 +1959,8 @@ export default function App() {
                 )}
               </div>
             </div>
+          </div>
+          )}
         </div>
       ) : (
         /* ── WORKSPACE DANH MỤC HỆ THỐNG MASTER DATA (2 CỘT CHUẨN) ── */
@@ -1942,6 +2046,18 @@ export default function App() {
                 <span>+ Thêm bản ghi</span>
               </button>
 
+              {currentGroup.entityType === 'service' && (
+                <button
+                  type="button"
+                  onClick={() => setIsServiceSelectorOpen(true)}
+                  className="flex items-center space-x-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer shadow-2xs transition-colors"
+                  title="Mở cửa sổ chọn dịch vụ 2 cột theo nhóm chuyên khoa chuẩn VSC Desktop"
+                >
+                  <span className="w-4 h-4 rounded-full bg-red-600 text-white font-bold text-[10px] flex items-center justify-center">H</span>
+                  <span>Cửa Sổ Chọn Dịch Vụ VSC (2 Cột)</span>
+                </button>
+              )}
+
               <span className="text-xs font-bold text-[#212529] ml-2">
                 Dữ liệu Danh Mục: <span className="text-[#1f63c9]">{currentGroup.name}</span>
               </span>
@@ -1967,6 +2083,128 @@ export default function App() {
             </div>
           </div>
 
+          {/* Thanh Gom Nhóm Phân Loại Chuyên Sâu (Dịch Vụ / ICD-10 / Địa Bàn 63 Tỉnh Thành) */}
+          {(currentGroup.id === 'grp_dichvu' || currentGroup.id === 'grp_icd10' || currentGroup.id === 'grp_diaban') && (
+            <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border-b border-[#dee2e6] z-10 shrink-0 text-xs">
+              <div className="flex items-center space-x-3 flex-wrap gap-y-1">
+                <div className="flex items-center space-x-1.5 text-slate-700 font-semibold">
+                  <Layers className="w-4 h-4 text-[#1f63c9]" />
+                  <span>Phân nhóm:</span>
+                </div>
+
+                {/* 1. Nhóm Dịch Vụ Kỹ Thuật */}
+                {currentGroup.id === 'grp_dichvu' && (
+                  <div className="flex items-center space-x-1.5">
+                    <select
+                      value={selectedServiceCategory}
+                      onChange={(e) => setSelectedServiceCategory(e.target.value)}
+                      className="px-2.5 py-1 bg-white border border-[#ced4da] rounded text-xs font-semibold text-[#1f63c9] focus:outline-none focus:border-[#1f63c9] cursor-pointer shadow-2xs"
+                    >
+                      <option value="ALL">📁 Tất cả chuyên khoa ({currentGridData.length} dịch vụ)</option>
+                      {distinctServiceCategories.map(cat => {
+                        const count = currentGridData.filter((r: any) => r.category === cat).length;
+                        return (
+                          <option key={cat} value={cat}>
+                            {cat} ({count})
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {selectedServiceCategory !== 'ALL' && (
+                      <button
+                        onClick={() => setSelectedServiceCategory('ALL')}
+                        className="text-[11px] text-[#dc3545] hover:underline font-medium cursor-pointer"
+                      >
+                        ✕ Xóa lọc nhóm
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* 2. Chương Bệnh ICD-10 */}
+                {currentGroup.id === 'grp_icd10' && (
+                  <div className="flex items-center space-x-1.5">
+                    <select
+                      value={selectedIcdChapter}
+                      onChange={(e) => setSelectedIcdChapter(e.target.value)}
+                      className="px-2.5 py-1 bg-white border border-[#ced4da] rounded text-xs font-semibold text-rose-700 focus:outline-none focus:border-[#1f63c9] cursor-pointer shadow-2xs max-w-[420px] truncate"
+                    >
+                      <option value="ALL">🏥 Tất cả chương bệnh ({currentGridData.length} mã ICD-10)</option>
+                      {distinctIcdChapters.map(ch => {
+                        const count = currentGridData.filter((r: any) => r.chapterCode === ch.code || (r.chapter && r.chapter.includes(ch.code))).length;
+                        return (
+                          <option key={ch.code} value={ch.code}>
+                            Chương {ch.code}: {ch.name} ({count})
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {selectedIcdChapter !== 'ALL' && (
+                      <button
+                        onClick={() => setSelectedIcdChapter('ALL')}
+                        className="text-[11px] text-[#dc3545] hover:underline font-medium cursor-pointer"
+                      >
+                        ✕ Xóa lọc chương
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* 3. Địa Bàn Tỉnh / Thành Phố (VNeID) */}
+                {currentGroup.id === 'grp_diaban' && (
+                  <div className="flex items-center space-x-1.5">
+                    <select
+                      value={selectedCityCode}
+                      onChange={(e) => setSelectedCityCode(e.target.value)}
+                      className="px-2.5 py-1 bg-white border border-[#ced4da] rounded text-xs font-semibold text-teal-800 focus:outline-none focus:border-[#1f63c9] cursor-pointer shadow-2xs max-w-[320px]"
+                    >
+                      <option value="ALL">🏛️ Toàn quốc ({distinctCities.length} Tỉnh/Thành phố)</option>
+                      {distinctCities.map(city => {
+                        const count = currentGridData.filter((r: any) => r.cityCode === city.code).length;
+                        return (
+                          <option key={city.code} value={city.code}>
+                            {city.code} - {city.name} {count > 0 ? `(${count} xã/phường)` : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {selectedCityCode !== 'ALL' && (
+                      <button
+                        onClick={() => setSelectedCityCode('ALL')}
+                        className="text-[11px] text-[#dc3545] hover:underline font-medium cursor-pointer"
+                      >
+                        ✕ Xem toàn quốc
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* View toggle badge */}
+              <div className="flex items-center space-x-2 text-[11px] text-[#6c757d]">
+                <button
+                  type="button"
+                  onClick={() => setIsGroupByView(!isGroupByView)}
+                  className={`flex items-center space-x-1 px-2.5 py-0.5 rounded border transition-colors cursor-pointer ${
+                    isGroupByView
+                      ? 'bg-blue-100 text-[#1f63c9] border-blue-300 font-semibold shadow-2xs'
+                      : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                  }`}
+                  title="Bật/tắt chế độ hiển thị phân nhóm nổi bật"
+                >
+                  <Tag className="w-3 h-3" />
+                  <span>{isGroupByView ? 'Đang gom nhóm' : 'Danh sách phẳng'}</span>
+                </button>
+                <span>
+                  Khớp: <strong className="text-[#1f63c9] font-bold">{filteredGridData.length}</strong> bản ghi
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* DataGrid Table với Cột Đặc Thù Từng Thực Thể */}
           <div className="flex-1 overflow-auto bg-white">
             <table className="w-full text-left text-xs border-collapse">
@@ -1985,9 +2223,10 @@ export default function App() {
                   {/* Dynamic Headers based on entityType */}
                   {currentGroup.entityType === 'service' && (
                     <>
-                      <th className="w-32 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã Dịch Vụ</th>
+                      <th className="w-28 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã Dịch Vụ</th>
                       <th className="px-4 py-2 font-bold border-r border-[#dee2e6]">Tên Dịch Vụ Kỹ Thuật</th>
-                      <th className="w-24 px-3 py-2 font-bold border-r border-[#dee2e6]">Đơn Vị</th>
+                      <th className="w-56 px-3 py-2 font-bold border-r border-[#dee2e6]">Nhóm Chuyên Khoa (12 Nhóm BYT)</th>
+                      <th className="w-20 px-3 py-2 font-bold border-r border-[#dee2e6]">Đơn Vị</th>
                       <th className="w-28 px-3 py-2 font-bold text-right border-r border-[#dee2e6]">Giá Viện Phí</th>
                       <th className="w-28 px-3 py-2 font-bold text-right border-r border-[#dee2e6]">Giá BHYT</th>
                     </>
@@ -2158,6 +2397,11 @@ export default function App() {
                             <td className="px-4 py-2 text-[#212529] border-r border-[#dee2e6]">
                               <span className="font-semibold">{row.name}</span>
                             </td>
+                            <td className="px-3 py-2 border-r border-[#dee2e6]">
+                              <span className="inline-block text-[11px] px-2 py-0.5 rounded-full font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                {row.category}
+                              </span>
+                            </td>
                             <td className="px-3 py-2 text-[#6c757d] border-r border-[#dee2e6]">
                               {row.unit}
                             </td>
@@ -2275,13 +2519,24 @@ export default function App() {
                         {currentGroup.entityType === 'icd10' && (
                           <>
                             <td className="px-3 py-2 font-mono font-bold text-rose-700 border-r border-[#dee2e6]">
-                              {row.code}
+                              <span className="px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200">
+                                {row.code}
+                              </span>
                             </td>
                             <td className="px-4 py-2 font-semibold text-[#212529] border-r border-[#dee2e6]">
-                              {row.name}
+                              {row.name || row.diseaseNameVi || '—'}
                             </td>
                             <td className="px-4 py-2 text-[#6c757d] border-r border-[#dee2e6]">
-                              {row.chapter}
+                              <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                                <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold text-[11px] border border-indigo-200">
+                                  {row.chapter || (row.chapterCode ? `Chương ${row.chapterCode}` : 'Bệnh lý quốc tế ICD-10')}
+                                </span>
+                                {row.isChronic && (
+                                  <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold text-[10px] border border-amber-300">
+                                    Mạn tính
+                                  </span>
+                                )}
+                              </div>
                             </td>
                           </>
                         )}
@@ -2489,7 +2744,7 @@ export default function App() {
           onClick={() => setDrawerOpen(false)}
         >
           <div
-            className="bg-white rounded-lg shadow-2xl border border-[#dee2e6] w-[640px] max-w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+            className="bg-white rounded-lg shadow-2xl border border-[#dee2e6] w-[680px] max-w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             
@@ -2499,7 +2754,7 @@ export default function App() {
                 <span className="px-2 py-0.5 bg-[#1f63c9] text-white rounded text-[11px] font-bold font-mono shrink-0">
                   {selectedItemData.code || (selectedItemData.isNew ? 'MỚI' : `ID: ${selectedItemData.id}`)}
                 </span>
-                <h3 className="text-sm font-bold text-[#212529] truncate max-w-[420px]">
+                <h3 className="text-sm font-bold text-[#212529] truncate max-w-[460px]">
                   {selectedItemData.isNew
                     ? `+ Thêm mới: ${currentGroup.name}`
                     : (selectedItemData.name || selectedItemData.diseaseNameVi || 'Chi tiết bản ghi')}
@@ -2514,221 +2769,254 @@ export default function App() {
               </button>
             </div>
 
-            {/* Sub Tabs for Service & Drug */}
-            {(currentGroup.entityType === 'service' || currentGroup.entityType === 'drug') && (
-              <div className="flex border-b border-[#dee2e6] px-5 bg-[#f8f9fa] text-xs font-semibold shrink-0">
-                <button
-                  onClick={() => setDetailTab('info')}
-                  className={`py-2 px-3 border-b-2 transition ${
-                    detailTab === 'info'
-                      ? 'border-[#1f63c9] text-[#1f63c9]'
-                      : 'border-transparent text-[#6c757d] hover:text-[#212529]'
-                  }`}
-                >
-                  Thông tin chuyên môn
-                </button>
-                <button
-                  onClick={() => setDetailTab('pricing')}
-                  className={`py-2 px-3 border-b-2 transition ${
-                    detailTab === 'pricing'
-                      ? 'border-[#1f63c9] text-[#1f63c9]'
-                      : 'border-transparent text-[#6c757d] hover:text-[#212529]'
-                  }`}
-                >
-                  Bảng giá viện phí & BHYT
-                </button>
-                <button
-                  onClick={() => setDetailTab('audit')}
-                  className={`py-2 px-3 border-b-2 transition ${
-                    detailTab === 'audit'
-                      ? 'border-[#1f63c9] text-[#1f63c9]'
-                      : 'border-transparent text-[#6c757d] hover:text-[#212529]'
-                  }`}
-                >
-                  Nguồn dữ liệu VSC
-                </button>
-              </div>
-            )}
-
-            {/* Specialized Form Body per Entity Type */}
-            <div className="p-5 space-y-4 text-xs overflow-y-auto flex-1">
+            {/* Specialized Form Body per Entity Type - Gọn gàng trên một form duy nhất, không chia tabs */}
+            <div className="p-5 space-y-5 text-xs overflow-y-auto flex-1">
               
-              {/* === 1. DỊCH VỤ KỸ THUẬT DETAIL === */}
-              {currentGroup.entityType === 'service' && detailTab === 'info' && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-1 space-y-1">
-                      <label className="font-semibold text-[#495057]">Mã Dịch Vụ:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.code || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono text-[#212529]"
-                      />
+              {/* === 1. DỊCH VỤ KỸ THUẬT DETAIL (FORM LIỀN MẠCH, KHÔNG TAB) === */}
+              {currentGroup.entityType === 'service' && (
+                <div className="space-y-4">
+                  {/* Phân vùng 1: Chuyên môn kỹ thuật */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-[#1f63c9]">
+                      <Stethoscope className="w-4 h-4" />
+                      <span>1. THÔNG TIN CHUYÊN MÔN & KỸ THUẬT</span>
                     </div>
-                    <div className="col-span-2 space-y-1">
-                      <label className="font-semibold text-[#495057]">Tên Dịch Vụ Kỹ Thuật:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.name || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium"
-                      />
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-1 space-y-1">
+                        <label className="font-semibold text-[#495057]">
+                          Mã Dịch Vụ <span className="text-rose-600 font-bold">*</span>:
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedItemData.code || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono font-bold text-[#1f63c9] focus:outline-none focus:border-[#1f63c9]"
+                          placeholder="VD: KHAM-CK"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="col-span-2 space-y-1">
+                        <label className="font-semibold text-[#495057]">
+                          Tên Dịch Vụ Kỹ Thuật <span className="text-rose-600 font-bold">*</span>:
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedItemData.name || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium focus:outline-none focus:border-[#1f63c9]"
+                          placeholder="VD: Khám chuyên khoa nội / ngoại"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Đơn Vị Tính:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.unit || 'Lần'}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, unit: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Nhóm Kỹ Thuật / Chuyên Khoa:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.category || 'Khám & Thăm dò chức năng'}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, category: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Đơn Vị Tính:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.unit || 'Lần'}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, unit: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+                  {/* Phân vùng 2: Khung giá viện phí & BHYT */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-emerald-700">
+                      <CreditCard className="w-4 h-4" />
+                      <span>2. KHUNG GIÁ VIỆN PHÍ & NGUỒN CHI TRẢ</span>
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Nhóm Kỹ Thuật:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.category || 'Khám & Thăm dò chức năng'}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, category: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+
+                    <div className="p-2.5 bg-blue-50/70 border border-blue-200 rounded text-[11px] text-blue-900 leading-relaxed">
+                      Khung giá phân cấp áp dụng đồng thời cho Viện phí ngoại trú, Cổng giám định BHYT 4210 và Dịch vụ theo yêu cầu / VIP.
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Giá Viện Phí Thường (VNĐ):</label>
+                        <input
+                          type="number"
+                          value={selectedItemData.price || 0}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, price: Number(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-emerald-700 text-right font-mono focus:outline-none focus:border-emerald-600"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Giá BHYT 4210 (VNĐ):</label>
+                        <input
+                          type="number"
+                          value={selectedItemData.insurancePrice || 0}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, insurancePrice: Number(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-[#1f63c9] text-right font-mono focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Giá Dịch Vụ VIP (VNĐ):</label>
+                        <input
+                          type="number"
+                          value={selectedItemData.requestPrice || 0}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, requestPrice: Number(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-amber-700 text-right font-mono focus:outline-none focus:border-amber-600"
+                        />
+                      </div>
                     </div>
                   </div>
+
+                  {/* Phân vùng 3: Nguồn gốc dữ liệu VSC (nếu có legacyId) */}
+                  {selectedItemData.legacyId && (
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-1.5">
+                      <div className="font-bold text-slate-700 flex items-center space-x-1.5">
+                        <HardDrive className="w-3.5 h-3.5 text-slate-500" />
+                        <span>3. NGUỒN GỐC DỮ LIỆU & ĐỐI SOÁT VSC DESKTOP</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-[#6c757d]">
+                        <span>Khóa chính VSC (LegacyId): <strong className="font-mono text-emerald-700">{selectedItemData.legacyId}</strong></span>
+                        <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          100% Khớp dữ liệu sản xuất
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Service Pricing Tab */}
-              {currentGroup.entityType === 'service' && detailTab === 'pricing' && (
-                <div className="space-y-3">
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded text-[11px] text-blue-900">
-                    Khung giá phân cấp áp dụng đồng thời cho Viện phí ngoại trú, Cổng giám định BHYT 4210 và Gói khám chuyên gia.
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Giá Viện Phí Thường:</label>
-                      <input
-                        type="number"
-                        value={selectedItemData.price || 0}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, price: Number(e.target.value) })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-emerald-700"
-                      />
+              {/* === 2. THUỐC & DƯỢC DETAIL (FORM LIỀN MẠCH, KHÔNG TAB) === */}
+              {currentGroup.entityType === 'drug' && (
+                <div className="space-y-4">
+                  {/* Phân vùng 1: Thông tin thuốc & Hoạt chất */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-[#1f63c9]">
+                      <Pill className="w-4 h-4" />
+                      <span>1. THÔNG TIN THUỐC & HOẠT CHẤT</span>
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Giá BHYT 4210:</label>
-                      <input
-                        type="number"
-                        value={selectedItemData.insurancePrice || 0}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, insurancePrice: Number(e.target.value) })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-[#1f63c9]"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Giá Dịch Vụ VIP:</label>
-                      <input
-                        type="number"
-                        value={selectedItemData.requestPrice || 0}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, requestPrice: Number(e.target.value) })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-amber-700"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              {/* === 2. THUỐC & DƯỢC DETAIL === */}
-              {currentGroup.entityType === 'drug' && detailTab === 'info' && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-1 space-y-1">
-                      <label className="font-semibold text-[#495057]">Mã Thuốc (Code):</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.code || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono text-[#212529]"
-                      />
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-1 space-y-1">
+                        <label className="font-semibold text-[#495057]">
+                          Mã Thuốc <span className="text-rose-600 font-bold">*</span>:
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedItemData.code || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono font-bold text-[#1f63c9] focus:outline-none focus:border-[#1f63c9]"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="col-span-2 space-y-1">
+                        <label className="font-semibold text-[#495057]">
+                          Tên Biệt Dược <span className="text-rose-600 font-bold">*</span>:
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedItemData.name || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
                     </div>
-                    <div className="col-span-2 space-y-1">
-                      <label className="font-semibold text-[#495057]">Tên Biệt Dược:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.name || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Tên Hoạt Chất Chính:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.ingredient || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, ingredient: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Tên Hoạt Chất Chính:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.ingredient || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, ingredient: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Hàm lượng / Quy cách:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.concentration || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, concentration: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Hàm lượng / Quy cách:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.concentration || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, concentration: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Đường Dùng:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.route || 'Đường uống'}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, route: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Số Đăng Ký Lưu Hành (SĐK):</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.regNo || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, regNo: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Đường Dùng:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.route || 'Đường uống'}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, route: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+                  {/* Phân vùng 2: Khung giá thuốc & Bảo hiểm */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-emerald-700">
+                      <CreditCard className="w-4 h-4" />
+                      <span>2. KHUNG GIÁ THUỐC & BẢO HIỂM Y TẾ</span>
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Số Đăng Ký Lưu Hành (SĐK):</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.regNo || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, regNo: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              {/* Drug Pricing Tab */}
-              {currentGroup.entityType === 'drug' && detailTab === 'pricing' && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Giá Bán Lẻ Viện Phí:</label>
-                      <input
-                        type="number"
-                        value={selectedItemData.price || 0}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, price: Number(e.target.value) })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-emerald-700"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Giá Bảo Hiểm Y Tế:</label>
-                      <input
-                        type="number"
-                        value={selectedItemData.insurancePrice || 0}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, insurancePrice: Number(e.target.value) })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-[#1f63c9]"
-                      />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Giá Bán Lẻ Viện Phí (VNĐ):</label>
+                        <input
+                          type="number"
+                          value={selectedItemData.price || 0}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, price: Number(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-emerald-700 text-right font-mono focus:outline-none focus:border-emerald-600"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Giá Bảo Hiểm Y Tế (VNĐ):</label>
+                        <input
+                          type="number"
+                          value={selectedItemData.insurancePrice || 0}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, insurancePrice: Number(e.target.value) })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-[#1f63c9] text-right font-mono focus:outline-none focus:border-[#1f63c9]"
+                        />
+                      </div>
                     </div>
                   </div>
+
+                  {/* Phân vùng 3: Nguồn gốc dữ liệu VSC (nếu có legacyId) */}
+                  {selectedItemData.legacyId && (
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-1.5">
+                      <div className="font-bold text-slate-700 flex items-center space-x-1.5">
+                        <HardDrive className="w-3.5 h-3.5 text-slate-500" />
+                        <span>3. NGUỒN GỐC DỮ LIỆU & ĐỐI SOÁT VSC DESKTOP</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-[#6c757d]">
+                        <span>Khóa chính VSC (LegacyId): <strong className="font-mono text-emerald-700">{selectedItemData.legacyId}</strong></span>
+                        <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          100% Khớp dữ liệu sản xuất
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -3136,19 +3424,15 @@ export default function App() {
                 </div>
               )}
 
-              {/* VSC Audit Tab for Migrated Items */}
-              {detailTab === 'audit' && selectedItemData.legacyId && (
-                <div className="p-4 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-2 text-xs">
-                  <div className="flex justify-between py-1 border-b border-[#dee2e6]">
-                    <span className="text-[#6c757d]">Nguồn dữ liệu VSC Desktop:</span>
-                    <span className="font-mono font-bold text-[#212529]">(localdb)\MSSQLLocalDB / vsc</span>
+              {/* VSC Audit Block for Other Migrated Items */}
+              {selectedItemData.legacyId && currentGroup.entityType !== 'service' && currentGroup.entityType !== 'drug' && (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-1.5">
+                  <div className="font-bold text-slate-700 flex items-center space-x-1.5">
+                    <HardDrive className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Nguồn Gốc Dữ Liệu & Đối Soát VSC Desktop</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-[#dee2e6]">
-                    <span className="text-[#6c757d]">Khóa chính VSC (LegacyId):</span>
-                    <span className="font-mono font-bold text-emerald-700">{selectedItemData.legacyId}</span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-[#6c757d]">Trạng thái đối soát:</span>
+                  <div className="flex items-center justify-between text-[11px] text-[#6c757d]">
+                    <span>Khóa chính VSC (LegacyId): <strong className="font-mono text-emerald-700">{selectedItemData.legacyId}</strong></span>
                     <span className="text-emerald-700 font-semibold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       100% Khớp dữ liệu sản xuất
@@ -3232,6 +3516,15 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Cửa sổ Chọn Dịch Vụ VSC (2 Cột Theo Nhóm Chuyên Khoa) */}
+      <ServiceSelectorModal
+        isOpen={isServiceSelectorOpen}
+        onClose={() => setIsServiceSelectorOpen(false)}
+        onConfirm={(selected) => {
+          showToast(`✓ Đã chọn ${selected.length} dịch vụ kỹ thuật theo nhóm chuyên khoa thành công!`);
+        }}
+      />
 
       {/* Global Toast Notification */}
       {toastMessage && (

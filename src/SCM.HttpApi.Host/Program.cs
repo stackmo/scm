@@ -253,11 +253,53 @@ app.MapGet("/api/master-data/departments", async (SCMDbContext db) =>
 app.MapGet("/api/master-data/rooms", async (SCMDbContext db) => 
     await db.ClinicRooms.OrderBy(r => r.RoomCode).ToListAsync());
 
-app.MapGet("/api/master-data/service-groups", async (SCMDbContext db) => 
-    await db.ServiceGroups.OrderBy(g => g.SortOrder).ToListAsync());
+app.MapGet("/api/master-data/service-groups", async (SCMDbContext db) =>
+{
+    var groups = await db.ServiceGroups
+        .OrderBy(g => g.SortOrder)
+        .Select(g => new
+        {
+            g.Id,
+            g.GroupCode,
+            g.GroupName,
+            g.ServiceType,
+            g.SortOrder,
+            g.IsActive,
+            ServiceCount = db.MedicalServices.Count(s => s.ServiceGroupId == g.Id)
+        })
+        .ToListAsync();
+    return Results.Ok(groups);
+});
 
-app.MapGet("/api/master-data/services", async (SCMDbContext db) => 
-    await db.MedicalServices.OrderBy(s => s.ServiceCode).ToListAsync());
+app.MapGet("/api/master-data/services", async (SCMDbContext db, Guid? groupId) =>
+{
+    var query = db.MedicalServices.Include(s => s.ServiceGroup).AsQueryable();
+    if (groupId.HasValue && groupId.Value != Guid.Empty)
+    {
+        query = query.Where(s => s.ServiceGroupId == groupId.Value);
+    }
+    var list = await query.OrderBy(s => s.ServiceCode).ToListAsync();
+    return Results.Ok(list.Select(s => new
+    {
+        s.Id,
+        s.ServiceCode,
+        s.ServiceName,
+        s.ServiceGroupId,
+        ServiceGroupName = s.ServiceGroup != null ? s.ServiceGroup.GroupName : string.Empty,
+        ServiceGroupCode = s.ServiceGroup != null ? s.ServiceGroup.GroupCode : string.Empty,
+        s.Unit,
+        s.StandardPrice,
+        s.InsurancePrice,
+        s.CorporatePrice,
+        s.DoctorCommissionRate,
+        s.MinistryEquivalentCode,
+        s.MinistryEquivalentName,
+        s.DecisionNumber,
+        s.ExecutionRoomId,
+        s.IsActive,
+        s.LegacyId
+    }));
+});
 
 app.MapGet("/api/master-data/drugs", async (SCMDbContext db) => 
     await db.Drugs.OrderBy(d => d.DrugCode).ToListAsync());
