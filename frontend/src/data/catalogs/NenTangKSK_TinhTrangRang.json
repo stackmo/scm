@@ -1,0 +1,52 @@
+[
+  {
+    "Code": "0",
+    "ID": 191,
+    "Name": "Bình thường"
+  },
+  {
+    "Code": "1",
+    "ID": 192,
+    "Name": "Sâu"
+  },
+  {
+    "Code": "2",
+    "ID": 193,
+    "Name": "Trám sâu lại"
+  },
+  {
+    "Code": "3",
+    "ID": 194,
+    "Name": "Trám tốt"
+  },
+  {
+    "Code": "4",
+    "ID": 195,
+    "Name": "Mất do sâu"
+  },
+  {
+    "Code": "5",
+    "ID": 196,
+    "Name": "Mất lý do khác"
+  },
+  {
+    "Code": "6",
+    "ID": 197,
+    "Name": "Bít hố rãnh"
+  },
+  {
+    "Code": "7",
+    "ID": 198,
+    "Name": "Trụ, cầu, implant"
+  },
+  {
+    "Code": "8",
+    "ID": 220,
+    "Name": "Chưa mọc"
+  },
+  {
+    "Code": "9",
+    "ID": 221,
+    "Name": "Loại trừ"
+  }
+]

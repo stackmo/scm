@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SCM.Application.Contracts/SCM.Application.Contracts.csproj" />
+    <Project Path="src/SCM.Application/SCM.Application.csproj" />
+    <Project Path="src/SCM.Domain.Shared/SCM.Domain.Shared.csproj" />
+    <Project Path="src/SCM.Domain/SCM.Domain.csproj" />
+    <Project Path="src/SCM.EntityFrameworkCore/SCM.EntityFrameworkCore.csproj" />
+    <Project Path="src/SCM.HttpApi.Host/SCM.HttpApi.Host.csproj" />
+    <Project Path="src/SCM.HttpApi/SCM.HttpApi.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/SCM.Application.Tests/SCM.Application.Tests.csproj" />
+    <Project Path="test/SCM.Domain.Tests/SCM.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

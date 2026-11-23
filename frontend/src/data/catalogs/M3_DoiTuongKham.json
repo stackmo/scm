@@ -1,0 +1,86 @@
+[
+  {
+    "Id": 1,
+    "Name": "Sinh Viên, học viên"
+  },
+  {
+    "Id": 2,
+    "Name": "Người lao động chính thức (theo pháp luật về an toàn, vệ sinh lao động)"
+  },
+  {
+    "Id": 3,
+    "Name": "Người lao động phi chính thức"
+  },
+  {
+    "Id": 4,
+    "Name": "Người thuộc nhóm bảo trợ xã hội"
+  },
+  {
+    "Id": 5,
+    "Name": "Người cao tuổi"
+  },
+  {
+    "Id": 6,
+    "Name": "Người khuyết tật"
+  },
+  {
+    "Id": 7,
+    "Name": "Người thuộc hộ nghèo, cận nghèo"
+  },
+  {
+    "Id": 8,
+    "Name": "Người có công"
+  },
+  {
+    "Id": 9,
+    "Name": "Người mắc bệnh mạn tính"
+  },
+  {
+    "Id": 10,
+    "Name": "Người sống tại vùng đồng bào dân tộc thiểu số và miền núi"
+  },
+  {
+    "Id": 11,
+    "Name": "Người sống tại vùng có điều kiện kinh tế - xã hội khó khăn, đặc biệt khó khăn"
+  },
+  {
+    "Id": 12,
+    "Name": "Người sống tại xã đảo"
+  },
+  {
+    "Id": 13,
+    "Name": "Người sống tại đặc khu"
+  },
+  {
+    "Id": 14,
+    "Name": "Trẻ dưới 6 tuổi đi học (trẻ đang học mầm non)"
+  },
+  {
+    "Id": 15,
+    "Name": "Trẻ dưới 6 tuổi không đi học"
+  },
+  {
+    "Id": 16,
+    "Name": "Trẻ từ đủ 6 tuổi đến 18 tuổi đi học (lớp 1 đến lớp 12)"
+  },
+  {
+    "Id": 17,
+    "Name": "Trẻ từ đủ 6 tuổi đến 18 tuổi không đi học"
+  },
+  {
+    "Id": 18,
+    "Name": "Các đối tượng khác"
+  },
+  {
+    "Id": 19,
+    "Name": "Nhân khẩu đặc biệt"
+  },
+  {
+    "Id": 20,
+    "Name": "Diện bảo vệ sức khỏe trung ương"
+  },
+  {
+    "Id": 21,
+    "Name": "Diện bảo vệ sức khỏe thành phố"
+  }
+]

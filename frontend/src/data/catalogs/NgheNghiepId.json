@@ -1,0 +1,3962 @@
+[
+  {
+    "Code": "10110",
+    "Id": 227,
+    "Name": "Tổng Bí thư, Thường trực Ban Bí thư, Ban Bí thư, Ủy viên Bộ Chính trị, Ủy viên Ban Chấp hành Trung ương Đảng"
+  },
+  {
+    "Code": "10120",
+    "Id": 228,
+    "Name": "Bí thư, Phó Bí thư Đảng ủy cơ quan trung ương"
+  },
+  {
+    "Code": "10130",
+    "Id": 229,
+    "Name": "Bí thư, Phó Bí thư Đảng ủy khối trực thuộc trung ương"
+  },
+  {
+    "Code": "10140",
+    "Id": 230,
+    "Name": "Trưởng ban, Phó Trưởng ban Đảng và tương đương thuộc cấp trung ương "
+  },
+  {
+    "Code": "10150",
+    "Id": 231,
+    "Name": "Trợ lý Ủy viên Bộ Chính trị "
+  },
+  {
+    "Code": "10160",
+    "Id": 232,
+    "Name": "Vụ trưởng, Phó Vụ trưởng và tương đương"
+  },
+  {
+    "Code": "10210",
+    "Id": 233,
+    "Name": "Bí thư Tỉnh ủy, Phó Bí thư Tỉnh ủy, Ủy viên Ban Chấp hành Đảng bộ cấp tỉnh"
+  },
+  {
+    "Code": "10220",
+    "Id": 234,
+    "Name": "Bí thư, Phó Bí thư Đảng ủy sở, ban, ngành cấp tỉnh"
+  },
+  {
+    "Code": "10230",
+    "Id": 235,
+    "Name": "Bí thư, Phó Bí thư Đảng ủy khối cơ quan cấp tỉnh"
+  },
+  {
+    "Code": "10240",
+    "Id": 236,
+    "Name": "Trưởng ban, Phó Trưởng ban Đảng và tương đương thuộc cấp tỉnh"
+  },
+  {
+    "Code": "10310",
+    "Id": 237,
+    "Name": "Bí thư Huyện ủy, Phó Bí thư Huyện ủy, Ủy viên Ban Chấp hành Đảng bộ cấp huyện"
+  },
+  {
+    "Code": "10320",
+    "Id": 238,
+    "Name": "Bí thư, Phó Bí thư Đảng ủy ban, ngành cấp huyện"
+  },
+  {
+    "Code": "10330",
+    "Id": 239,
+    "Name": "Trưởng ban, Phó Trưởng ban Đảng và tương đương thuộc cấp huyện"
+  },
+  {
+    "Code": "10400",
+    "Id": 240,
+    "Name": "Bí thư, Phó Bí thư Đảng ủy cấp xã"
+  },
+  {
+    "Code": "10500",
+    "Id": 241,
+    "Name": "Bí thư, Phó Bí thư Đảng ủy"
+  },
+  {
+    "Code": "11110",
+    "Id": 242,
+    "Name": "Chủ tịch Quốc hội, Phó Chủ tịch Quốc hội, Ủy viên thường vụ Quốc hội "
+  },
+  {
+    "Code": "11120",
+    "Id": 243,
+    "Name": "Chủ nhiệm, Phó Chủ nhiệm Ủy ban và tương đương làm việc tại Văn phòng Quốc hội"
+  },
+  {
+    "Code": "11130",
+    "Id": 244,
+    "Name": "Vụ trưởng, Phó Vụ trưởng và tương đương"
+  },
+  {
+    "Code": "11210",
+    "Id": 245,
+    "Name": "Chủ tịch nước, Phó Chủ tịch nước"
+  },
+  {
+    "Code": "11220",
+    "Id": 246,
+    "Name": "Chủ nhiệm, Phó Chủ nhiệm tương đương Bộ trưởng, Thứ trưởng và tương đương làm việc tại Văn phòng Chủ tịch nước"
+  },
+  {
+    "Code": "11230",
+    "Id": 247,
+    "Name": "Vụ trưởng, Phó Vụ trưởng và tương đương"
+  },
+  {
+    "Code": "12110",
+    "Id": 248,
+    "Name": "Thủ tướng, Phó Thủ tướng Chính phủ"
+  },
+  {
+    "Code": "12120",
+    "Id": 249,
+    "Name": "Chủ nhiệm, Phó Chủ nhiệm và tương đương làm việc tại Văn phòng Chính phủ"
+  },
+  {
+    "Code": "12130",
+    "Id": 250,
+    "Name": "Vụ trưởng, Phó Vụ trưởng và tương đương"
+  },
+  {
+    "Code": "12210",
+    "Id": 251,
+    "Name": "Bộ trưởng, Thứ trưởng và tương đương của các bộ, ngành, các cơ quan ngang bộ, các cơ quan thuộc Chính phủ"
+  },
+  {
+    "Code": "12220",
+    "Id": 252,
+    "Name": "Trợ lý Bộ trưởng Bộ Ngoại giao"
+  },
+  {
+    "Code": "12230",
+    "Id": 253,
+    "Name": "Vụ trưởng, Phó Vụ trưởng, Trưởng ban, Phó Trưởng ban và tương đương"
+  },
+  {
+    "Code": "12310",
+    "Id": 254,
+    "Name": "Tổng cục trưởng, Phó Tổng cục trưởng và tương đương "
+  },
+  {
+    "Code": "12320",
+    "Id": 255,
+    "Name": "Vụ trưởng, Phó Vụ trưởng, Trưởng ban, Phó Trưởng ban và tương đương"
+  },
+  {
+    "Code": "13110",
+    "Id": 256,
+    "Name": "Chánh án, Phó Chánh án Tòa án nhân dân tối cao và cấp cao; Viện trưởng, Phó Viện trưởng Viện Kiểm sát nhân dân tối cao và cấp cao"
+  },
+  {
+    "Code": "13120",
+    "Id": 257,
+    "Name": "Vụ trưởng, Phó Vụ trưởng và tương đương làm việc ở Tòa án nhân dân tối cao và cấp cao và Viện Kiểm sát nhân dân tối cao và cấp cao"
+  },
+  {
+    "Code": "13210",
+    "Id": 258,
+    "Name": "Chánh án, Phó Chánh án Tòa án nhân dân; Viện trưởng, Phó Viện trưởng Viện Kiểm sát nhân dân cấp tỉnh"
+  },
+  {
+    "Code": "13220",
+    "Id": 259,
+    "Name": "Chánh án, Phó Chánh án Tòa án nhân dân cấp huyện"
+  },
+  {
+    "Code": "1330",
+    "Id": 260,
+    "Name": "Chánh án, Phó Chánh án Tòa án khác (trừ Tòa án Quân sự) do luật định"
+  },
+  {
+    "Code": "14110",
+    "Id": 261,
+    "Name": "Chủ tịch, Phó Chủ tịch và Thường trực Hội đồng nhân dân cấp tỉnh"
+  },
+  {
+    "Code": "14120",
+    "Id": 262,
+    "Name": "Trưởng ban, Phó Trưởng ban và tương đương trong các cơ quan của Hội đồng nhân dân cấp tỉnh"
+  },
+  {
+    "Code": "14130",
+    "Id": 263,
+    "Name": "Chủ tịch, Phó Chủ tịch và Thường trực Hội đồng nhân dân cấp huyện"
+  },
+  {
+    "Code": "14140",
+    "Id": 264,
+    "Name": "Trưởng ban, Phó Trưởng ban và tương đương trong các cơ quan của Hội đồng nhân dân cấp huyện"
+  },
+  {
+    "Code": "14150",
+    "Id": 265,
+    "Name": "Chủ tịch, Phó Chủ tịch Hội đồng nhân dân cấp xã"
+  },
+  {
+    "Code": "14210",
+    "Id": 266,
+    "Name": "Chủ tịch, Phó Chủ tịch và Ủy viên thường trực Ủy ban nhân dân cấp tỉnh"
+  },
+  {
+    "Code": "14220",
+    "Id": 267,
+    "Name": "Chủ tịch, Phó Chủ tịch và Ủy viên thường trực Ủy ban nhân dân cấp huyện"
+  },
+  {
+    "Code": "14230",
+    "Id": 268,
+    "Name": "Chủ tịch, Phó Chủ tịch Ủy ban nhân dân cấp xã"
+  },
+  {
+    "Code": "14240",
+    "Id": 269,
+    "Name": "Trưởng ngành, Phó Trưởng ngành, ban, sở và tương đương của các cơ quan chuyên môn cấp tỉnh"
+  },
+  {
+    "Code": "14250",
+    "Id": 270,
+    "Name": "Trưởng ngành, Phó Trưởng ngành, ban và tương đương của các cơ quan chuyên môn cấp huyện"
+  },
+  {
+    "Code": "15110",
+    "Id": 271,
+    "Name": "Chủ tịch, Phó Chủ tịch"
+  },
+  {
+    "Code": "15120",
+    "Id": 272,
+    "Name": "Ủy viên cấp trung ương"
+  },
+  {
+    "Code": "15130",
+    "Id": 273,
+    "Name": "Vụ trưởng, Phó Vụ trưởng và tương đương cấp trung ương"
+  },
+  {
+    "Code": "15140",
+    "Id": 274,
+    "Name": "Ủy viên cấp tỉnh"
+  },
+  {
+    "Code": "15150",
+    "Id": 275,
+    "Name": "Ủy viên cấp huyện"
+  },
+  {
+    "Code": "15210",
+    "Id": 276,
+    "Name": "Chủ tịch, Phó Chủ tịch"
+  },
+  {
+    "Code": "15220",
+    "Id": 277,
+    "Name": "Ủy viên của Tổng Liên đoàn Lao động Việt Nam"
+  },
+  {
+    "Code": "15230",
+    "Id": 278,
+    "Name": "Vụ trưởng, Phó Vụ trưởng và tương đương của Tổng Liên đoàn Lao động Việt Nam"
+  },
+  {
+    "Code": "15240",
+    "Id": 279,
+    "Name": "Ủy viên trở lên của Liên đoàn Lao động cấp tỉnh"
+  },
+  {
+    "Code": "15250",
+    "Id": 280,
+    "Name": "Ủy viên trở lên của Liên đoàn Lao động cấp huyện"
+  },
+  {
+    "Code": "15260",
+    "Id": 281,
+    "Name": "Chủ tịch, Phó Chủ tịch tổ chức công đoàn cơ quan bộ, ngành ở trung ương"
+  },
+  {
+    "Code": "15270",
+    "Id": 282,
+    "Name": "Chủ tịch, Phó Chủ tịch tổ chức công đoàn doanh nghiệp và các tổ chức sự nghiệp"
+  },
+  {
+    "Code": "16100",
+    "Id": 283,
+    "Name": "Chủ tịch, Phó Chủ tịch "
+  },
+  {
+    "Code": "16200",
+    "Id": 284,
+    "Name": "Chủ tịch, Phó Chủ tịch "
+  },
+  {
+    "Code": "17100",
+    "Id": 285,
+    "Name": "Chủ tịch, Phó Chủ tịch Hội đồng quản trị, Tổng giám đốc doanh nghiệp, Phó Tổng giám đốc doanh nghiệp, Chủ tịch, Phó Chủ tịch Hội đồng trường, Hiệu trưởng, Phó Hiệu trưởng trường đại học lớn và tương đương (chuyên trách)"
+  },
+  {
+    "Code": "17210",
+    "Id": 286,
+    "Name": "Nông nghiệp, lâm nghiệp và thủy sản"
+  },
+  {
+    "Code": "17220",
+    "Id": 287,
+    "Name": "Khai khoáng, công nghiệp chế biến, chế tạo, sản xuất và phân phối điện, khí đốt, nước nóng, hơi nước và điều hòa không khí"
+  },
+  {
+    "Code": "17230",
+    "Id": 288,
+    "Name": "Xây dựng"
+  },
+  {
+    "Code": "17240",
+    "Id": 289,
+    "Name": "Bán buôn, bán lẻ"
+  },
+  {
+    "Code": "17250",
+    "Id": 290,
+    "Name": "Dịch vụ lưu trú và ăn uống"
+  },
+  {
+    "Code": "17260",
+    "Id": 291,
+    "Name": "Vận tải, kho bãi; Thông tin và truyền thông"
+  },
+  {
+    "Code": "17270",
+    "Id": 292,
+    "Name": "Dịch vụ kinh doanh"
+  },
+  {
+    "Code": "17280",
+    "Id": 293,
+    "Name": "Dịch vụ cá nhân và cộng đồng"
+  },
+  {
+    "Code": "17290",
+    "Id": 294,
+    "Name": "Các đơn vị sản xuất và dịch vụ còn lại chưa được phân vào đâu"
+  },
+  {
+    "Code": "17310",
+    "Id": 295,
+    "Name": "Tài chính, kế toán, quản trị hành chính"
+  },
+  {
+    "Code": "17320",
+    "Id": 296,
+    "Name": "Tổ chức nhân sự và mối quan hệ công nghệ"
+  },
+  {
+    "Code": "17330",
+    "Id": 297,
+    "Name": "Bán hàng và tiếp thị"
+  },
+  {
+    "Code": "17340",
+    "Id": 298,
+    "Name": "Quảng cáo và các vấn đề liên quan đến công chúng"
+  },
+  {
+    "Code": "17350",
+    "Id": 299,
+    "Name": "Cung ứng và phân phối"
+  },
+  {
+    "Code": "17360",
+    "Id": 300,
+    "Name": "Dịch vụ và tính toán"
+  },
+  {
+    "Code": "17370",
+    "Id": 301,
+    "Name": "Nghiên cứu và phát triển"
+  },
+  {
+    "Code": "17390",
+    "Id": 302,
+    "Name": "Các đơn vị khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "17410",
+    "Id": 303,
+    "Name": "Nông nghiệp, lâm nghiệp và thủy sản"
+  },
+  {
+    "Code": "17420",
+    "Id": 304,
+    "Name": "Khai khoáng, công nghiệp chế biến, chế tạo, sản xuất và phân phối điện, khí đốt, nước nóng, hơi nước và điều hòa không khí"
+  },
+  {
+    "Code": "17430",
+    "Id": 305,
+    "Name": "Xây dựng"
+  },
+  {
+    "Code": "17440",
+    "Id": 306,
+    "Name": "Bán buôn, bán lẻ"
+  },
+  {
+    "Code": "17450",
+    "Id": 307,
+    "Name": "Dịch vụ lưu trú và ăn uống "
+  },
+  {
+    "Code": "17460",
+    "Id": 308,
+    "Name": "Vận tải kho bãi; Thông tin và truyền thông"
+  },
+  {
+    "Code": "17470",
+    "Id": 309,
+    "Name": "Dịch vụ kinh doanh"
+  },
+  {
+    "Code": "17480",
+    "Id": 310,
+    "Name": "Dịch vụ cá nhân và cộng đồng"
+  },
+  {
+    "Code": "17490",
+    "Id": 311,
+    "Name": "Các đơn vị sản xuất và dịch vụ còn lại chưa được phân vào đâu"
+  },
+  {
+    "Code": "21110",
+    "Id": 312,
+    "Name": "Nhà vật lý học và thiên văn học"
+  },
+  {
+    "Code": "21120",
+    "Id": 313,
+    "Name": "Nhà khí tượng học"
+  },
+  {
+    "Code": "21130",
+    "Id": 314,
+    "Name": "Nhà hóa học"
+  },
+  {
+    "Code": "21140",
+    "Id": 315,
+    "Name": "Nhà địa chất, địa vật lý"
+  },
+  {
+    "Code": "21211",
+    "Id": 316,
+    "Name": "Nhà toán học"
+  },
+  {
+    "Code": "21212",
+    "Id": 317,
+    "Name": "Nhà phân tích nghiên cứu hoạt động"
+  },
+  {
+    "Code": "21220",
+    "Id": 318,
+    "Name": "Nhà thống kê"
+  },
+  {
+    "Code": "21310",
+    "Id": 319,
+    "Name": "Nhà sinh vật học, thực vật học, động vật học và các chuyên môn liên quan"
+  },
+  {
+    "Code": "21321",
+    "Id": 320,
+    "Name": "Nhà trồng trọt"
+  },
+  {
+    "Code": "21322",
+    "Id": 321,
+    "Name": "Nhà tư vấn làm vườn"
+  },
+  {
+    "Code": "21323",
+    "Id": 322,
+    "Name": "Nhà bệnh học thực vật"
+  },
+  {
+    "Code": "21324",
+    "Id": 323,
+    "Name": "Nhà khoa học đất đai"
+  },
+  {
+    "Code": "21325",
+    "Id": 324,
+    "Name": "Nhà chăn nuôi"
+  },
+  {
+    "Code": "21326",
+    "Id": 325,
+    "Name": "Nhà nuôi cấy tế bào động vật"
+  },
+  {
+    "Code": "21327",
+    "Id": 326,
+    "Name": "Nhà nuôi cấy mô thực vật"
+  },
+  {
+    "Code": "21328",
+    "Id": 327,
+    "Name": "Nhà tư vấn nuôi trồng thủy sản"
+  },
+  {
+    "Code": "21329",
+    "Id": 328,
+    "Name": "Các chuyên gia nông, lâm, thủy sản khác"
+  },
+  {
+    "Code": "21330",
+    "Id": 329,
+    "Name": "Nhà chuyên môn về bảo vệ môi trường"
+  },
+  {
+    "Code": "21410",
+    "Id": 330,
+    "Name": "Kỹ sư công nghiệp chế biến, chế tạo"
+  },
+  {
+    "Code": "21420",
+    "Id": 331,
+    "Name": "Kỹ sư xây dựng"
+  },
+  {
+    "Code": "21430",
+    "Id": 332,
+    "Name": "Kỹ sư môi trường"
+  },
+  {
+    "Code": "21440",
+    "Id": 333,
+    "Name": "Kỹ sư cơ học, cơ khí"
+  },
+  {
+    "Code": "21450",
+    "Id": 334,
+    "Name": "Kỹ sư hóa học"
+  },
+  {
+    "Code": "21460",
+    "Id": 335,
+    "Name": "Kỹ sư khai thác mỏ, luyện kim và các nghề liên quan"
+  },
+  {
+    "Code": "21490",
+    "Id": 336,
+    "Name": "Kỹ sư kỹ thuật khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "21510",
+    "Id": 337,
+    "Name": "Kỹ sư điện"
+  },
+  {
+    "Code": "21520",
+    "Id": 338,
+    "Name": "Kỹ sư điện tử"
+  },
+  {
+    "Code": "21530",
+    "Id": 339,
+    "Name": "Kỹ sư viễn thông"
+  },
+  {
+    "Code": "21610",
+    "Id": 340,
+    "Name": "Kiến trúc sư xây dựng"
+  },
+  {
+    "Code": "21620",
+    "Id": 341,
+    "Name": "Kiến trúc sư cảnh quan"
+  },
+  {
+    "Code": "21631",
+    "Id": 342,
+    "Name": "Nhà thiết kế trang phục/thời trang, phụ kiện"
+  },
+  {
+    "Code": "21632",
+    "Id": 343,
+    "Name": "Nhà thiết kế công nghiệp và sản phẩm"
+  },
+  {
+    "Code": "21641",
+    "Id": 344,
+    "Name": "Nhà quy hoạch đô thị "
+  },
+  {
+    "Code": "21649",
+    "Id": 345,
+    "Name": "Nhà quy hoạch giao thông khác"
+  },
+  {
+    "Code": "21651",
+    "Id": 346,
+    "Name": "Nhà khảo sát chung"
+  },
+  {
+    "Code": "21652",
+    "Id": 347,
+    "Name": "Nhà khảo sát đất"
+  },
+  {
+    "Code": "21653",
+    "Id": 348,
+    "Name": "Nhà khảo sát thủy văn"
+  },
+  {
+    "Code": "21654",
+    "Id": 349,
+    "Name": "Người vẽ bản đồ"
+  },
+  {
+    "Code": "21659",
+    "Id": 350,
+    "Name": "Nhà khảo sát và vẽ bản đồ khác"
+  },
+  {
+    "Code": "21660",
+    "Id": 351,
+    "Name": "Nhà thiết kế đồ họa và truyền thông đa phương tiện"
+  },
+  {
+    "Code": "22110",
+    "Id": 352,
+    "Name": "Bác sỹ đa khoa"
+  },
+  {
+    "Code": "22121",
+    "Id": 353,
+    "Name": "Bác sỹ tim mạch"
+  },
+  {
+    "Code": "22122",
+    "Id": 354,
+    "Name": "Bác sỹ da liễu"
+  },
+  {
+    "Code": "22123",
+    "Id": 355,
+    "Name": "Bác sỹ tiêu hóa"
+  },
+  {
+    "Code": "22124",
+    "Id": 356,
+    "Name": "Bác sỹ nội khoa"
+  },
+  {
+    "Code": "22125",
+    "Id": 357,
+    "Name": "Bác sỹ ung bướu"
+  },
+  {
+    "Code": "22126",
+    "Id": 358,
+    "Name": "Bác sỹ nhi khoa"
+  },
+  {
+    "Code": "22127",
+    "Id": 359,
+    "Name": "Bác sỹ hô hấp"
+  },
+  {
+    "Code": "22128",
+    "Id": 360,
+    "Name": "Bác sỹ tâm thần"
+  },
+  {
+    "Code": "22129",
+    "Id": 361,
+    "Name": "Bác sỹ chuyên khoa khác"
+  },
+  {
+    "Code": "22210",
+    "Id": 362,
+    "Name": "Y tá/Điều dưỡng (cao cấp)"
+  },
+  {
+    "Code": "22220",
+    "Id": 363,
+    "Name": "Hộ sinh (cao cấp)"
+  },
+  {
+    "Code": "22300",
+    "Id": 364,
+    "Name": "Nhà chuyên môn về y học cổ truyền và hỗ trợ"
+  },
+  {
+    "Code": "22400",
+    "Id": 365,
+    "Name": "Bác sỹ phụ tá"
+  },
+  {
+    "Code": "22500",
+    "Id": 366,
+    "Name": "Bác sỹ thú y"
+  },
+  {
+    "Code": "22610",
+    "Id": 367,
+    "Name": "Bác sỹ răng - hàm - mặt"
+  },
+  {
+    "Code": "22621",
+    "Id": 368,
+    "Name": "Dược sỹ sản xuất thuốc"
+  },
+  {
+    "Code": "22629",
+    "Id": 369,
+    "Name": "Dược sỹ khác"
+  },
+  {
+    "Code": "22630",
+    "Id": 370,
+    "Name": "Nhà chuyên môn về vệ sinh môi trường và bệnh nghề nghiệp"
+  },
+  {
+    "Code": "22640",
+    "Id": 371,
+    "Name": "Nhà chuyên môn về vật lý trị liệu"
+  },
+  {
+    "Code": "22650",
+    "Id": 372,
+    "Name": "Nhà chuyên môn về dinh dưỡng"
+  },
+  {
+    "Code": "22660",
+    "Id": 373,
+    "Name": "Bác sỹ thính học và đặc trị các khuyết tật về ngôn ngữ"
+  },
+  {
+    "Code": "22670",
+    "Id": 374,
+    "Name": "Nhà chuyên môn về thị lực và nhãn khoa"
+  },
+  {
+    "Code": "22690",
+    "Id": 375,
+    "Name": "Nhà chuyên môn khác về sức khỏe chưa được phân vào đâu"
+  },
+  {
+    "Code": "23110",
+    "Id": 376,
+    "Name": "Giảng viên đại học và cao học"
+  },
+  {
+    "Code": "23120",
+    "Id": 377,
+    "Name": "Giảng viên cao đẳng"
+  },
+  {
+    "Code": "23200",
+    "Id": 378,
+    "Name": "Giáo viên trung cấp"
+  },
+  {
+    "Code": "23310",
+    "Id": 379,
+    "Name": "Giáo viên trung học phổ thông (cấp III)"
+  },
+  {
+    "Code": "23320",
+    "Id": 380,
+    "Name": "Giáo viên trung học cơ sở (cấp II)"
+  },
+  {
+    "Code": "23410",
+    "Id": 381,
+    "Name": "Giáo viên tiểu học (cấp I)"
+  },
+  {
+    "Code": "23420",
+    "Id": 382,
+    "Name": "Giáo viên mầm non"
+  },
+  {
+    "Code": "23910",
+    "Id": 383,
+    "Name": "Chuyên gia về phương pháp giáo dục"
+  },
+  {
+    "Code": "23920",
+    "Id": 384,
+    "Name": "Giáo viên theo các nhu cầu đặc biệt"
+  },
+  {
+    "Code": "23930",
+    "Id": 385,
+    "Name": "Giáo viên ngôn ngữ khác"
+  },
+  {
+    "Code": "23940",
+    "Id": 386,
+    "Name": "Giáo viên âm nhạc khác"
+  },
+  {
+    "Code": "23950",
+    "Id": 387,
+    "Name": "Giáo viên nghệ thuật khác"
+  },
+  {
+    "Code": "23960",
+    "Id": 388,
+    "Name": "Giáo viên công nghệ thông tin"
+  },
+  {
+    "Code": "23990",
+    "Id": 389,
+    "Name": "Nhà chuyên môn giảng dạy khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "24111",
+    "Id": 390,
+    "Name": "Kế toán (trừ kế toán thuế)"
+  },
+  {
+    "Code": "24112",
+    "Id": 391,
+    "Name": "Kiểm toán"
+  },
+  {
+    "Code": "24113",
+    "Id": 392,
+    "Name": "Kế toán thuế"
+  },
+  {
+    "Code": "24120",
+    "Id": 393,
+    "Name": "Nhà tư vấn tài chính và đầu tư"
+  },
+  {
+    "Code": "24131",
+    "Id": 394,
+    "Name": "Nhà phân tích tài chính"
+  },
+  {
+    "Code": "24132",
+    "Id": 395,
+    "Name": "Nhà phân tích rủi ro"
+  },
+  {
+    "Code": "24133",
+    "Id": 396,
+    "Name": "Nhà quản lý quỹ đầu tư"
+  },
+  {
+    "Code": "24134",
+    "Id": 397,
+    "Name": "Nhà quản lý quỹ ủy thác"
+  },
+  {
+    "Code": "24139",
+    "Id": 398,
+    "Name": "Nhà phân tích tài chính và các nhà chuyên môn có liên quan khác"
+  },
+  {
+    "Code": "24210",
+    "Id": 399,
+    "Name": "Nhà phân tích tổ chức và quản lý"
+  },
+  {
+    "Code": "24220",
+    "Id": 400,
+    "Name": "Nhà chuyên môn về quản trị chính sách"
+  },
+  {
+    "Code": "24230",
+    "Id": 401,
+    "Name": "Nhà chuyên môn về nhân sự và nghề nghiệp"
+  },
+  {
+    "Code": "24240",
+    "Id": 402,
+    "Name": "Nhà chuyên môn về đào tạo và phát triển nhân viên"
+  },
+  {
+    "Code": "24310",
+    "Id": 403,
+    "Name": "Nhà chuyên môn về quảng cáo và tiếp thị"
+  },
+  {
+    "Code": "24320",
+    "Id": 404,
+    "Name": "Nhà chuyên môn về quan hệ công chúng"
+  },
+  {
+    "Code": "24330",
+    "Id": 405,
+    "Name": "Nhà chuyên môn về bán hàng hóa kỹ thuật và y tế (không bao gồm công nghệ thông tin và truyền thông) "
+  },
+  {
+    "Code": "24340",
+    "Id": 406,
+    "Name": "Nhà chuyên môn về bán hàng hóa trong lĩnh vực công nghệ thông tin và truyền thông "
+  },
+  {
+    "Code": "24410",
+    "Id": 407,
+    "Name": "Nhà chuyên môn về hải quan của Chính phủ"
+  },
+  {
+    "Code": "24420",
+    "Id": 408,
+    "Name": "Nhà chuyên môn về thuế của Chính phủ"
+  },
+  {
+    "Code": "24430",
+    "Id": 409,
+    "Name": "Nhà chuyên môn về trợ cấp xã hội của Chính phủ"
+  },
+  {
+    "Code": "24440",
+    "Id": 410,
+    "Name": "Nhà chuyên môn về cấp phép của Chính phủ"
+  },
+  {
+    "Code": "24450",
+    "Id": 411,
+    "Name": "Kiểm lâm"
+  },
+  {
+    "Code": "24460",
+    "Id": 412,
+    "Name": "Nhà ngoại giao"
+  },
+  {
+    "Code": "24490",
+    "Id": 413,
+    "Name": "Nhà chuyên môn điều tiết của Chính phủ khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "25111",
+    "Id": 414,
+    "Name": "Nhà phân tích/thiết kế hệ thống"
+  },
+  {
+    "Code": "25112",
+    "Id": 415,
+    "Name": "Tư vấn quy trình kinh doanh công nghệ thông tin/phân tích kinh doanh"
+  },
+  {
+    "Code": "25113",
+    "Id": 416,
+    "Name": "Nhà kiến trúc giải pháp/doanh nghiệp"
+  },
+  {
+    "Code": "25120",
+    "Id": 417,
+    "Name": "Nhà phát triển phần mềm"
+  },
+  {
+    "Code": "25130",
+    "Id": 418,
+    "Name": "Nhà phát triển web và truyền thông đa phương tiện"
+  },
+  {
+    "Code": "25140",
+    "Id": 419,
+    "Name": "Nhà lập trình các ứng dụng"
+  },
+  {
+    "Code": "25190",
+    "Id": 420,
+    "Name": "Nhà chuyên môn về phát triển phần mềm ứng dụng và nhà phân tích chưa được phân vào đâu"
+  },
+  {
+    "Code": "25211",
+    "Id": 421,
+    "Name": "Nhà quản trị cơ sở dữ liệu"
+  },
+  {
+    "Code": "25212",
+    "Id": 422,
+    "Name": "Nhà thiết kế cơ sở dữ liệu"
+  },
+  {
+    "Code": "25220",
+    "Id": 423,
+    "Name": "Nhà quản trị hệ thống"
+  },
+  {
+    "Code": "25230",
+    "Id": 424,
+    "Name": "Nhà chuyên môn về mạng máy tính"
+  },
+  {
+    "Code": "25291",
+    "Id": 425,
+    "Name": "Nhà khoa học dữ liệu"
+  },
+  {
+    "Code": "25292",
+    "Id": 426,
+    "Name": "Nhà chuyên môn về mạng và cơ sở dữ liệu"
+  },
+  {
+    "Code": "26111",
+    "Id": 427,
+    "Name": "Luật sư tham gia tố tụng"
+  },
+  {
+    "Code": "26112",
+    "Id": 428,
+    "Name": "Luật sư tư vấn pháp luật"
+  },
+  {
+    "Code": "26119",
+    "Id": 429,
+    "Name": "Luật sư khác"
+  },
+  {
+    "Code": "26120",
+    "Id": 430,
+    "Name": "Thẩm phán"
+  },
+  {
+    "Code": "26191",
+    "Id": 431,
+    "Name": "Công chứng viên"
+  },
+  {
+    "Code": "26192",
+    "Id": 432,
+    "Name": "Thừa phát lại"
+  },
+  {
+    "Code": "26199",
+    "Id": 433,
+    "Name": "Nhà chuyên môn về luật khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "26210",
+    "Id": 434,
+    "Name": "Nhà chuyên môn về lưu trữ và giám tuyển"
+  },
+  {
+    "Code": "26220",
+    "Id": 435,
+    "Name": "Thủ thư và các nhà chuyên môn về thông tin liên quan"
+  },
+  {
+    "Code": "26310",
+    "Id": 436,
+    "Name": "Nhà kinh tế học "
+  },
+  {
+    "Code": "26320",
+    "Id": 437,
+    "Name": "Nhà xã hội học, nhà nhân chủng học và các nghề có liên quan"
+  },
+  {
+    "Code": "26330",
+    "Id": 438,
+    "Name": "Nhà triết học, sử học và khoa học chính trị"
+  },
+  {
+    "Code": "26340",
+    "Id": 439,
+    "Name": "Nhà tâm lý học"
+  },
+  {
+    "Code": "26350",
+    "Id": 440,
+    "Name": "Nhà chuyên môn về tư vấn và công tác xã hội "
+  },
+  {
+    "Code": "26360",
+    "Id": 441,
+    "Name": "Nhà chuyên môn về tôn giáo"
+  },
+  {
+    "Code": "26411",
+    "Id": 442,
+    "Name": "Nhà văn"
+  },
+  {
+    "Code": "26412",
+    "Id": 443,
+    "Name": "Người viết kịch bản "
+  },
+  {
+    "Code": "26413",
+    "Id": 444,
+    "Name": "Người viết lời quảng cáo"
+  },
+  {
+    "Code": "26414",
+    "Id": 445,
+    "Name": "Người viết tài liệu kỹ thuật"
+  },
+  {
+    "Code": "26415",
+    "Id": 446,
+    "Name": "Nhà biên tập kịch bản và kết nối"
+  },
+  {
+    "Code": "26416",
+    "Id": 447,
+    "Name": "Biên tập viên xuất bản phẩm"
+  },
+  {
+    "Code": "26419",
+    "Id": 448,
+    "Name": "Người viết khác và các nghề liên quan"
+  },
+  {
+    "Code": "26421",
+    "Id": 449,
+    "Name": "Nhà báo"
+  },
+  {
+    "Code": "26422",
+    "Id": 450,
+    "Name": "Biên tập viên"
+  },
+  {
+    "Code": "26431",
+    "Id": 451,
+    "Name": "Phiên dịch"
+  },
+  {
+    "Code": "26432",
+    "Id": 452,
+    "Name": "Biên dịch"
+  },
+  {
+    "Code": "26439",
+    "Id": 453,
+    "Name": "Nhà ngôn ngữ khác"
+  },
+  {
+    "Code": "26511",
+    "Id": 454,
+    "Name": "Nhà điêu khắc"
+  },
+  {
+    "Code": "26512",
+    "Id": 455,
+    "Name": "Hoạ sỹ"
+  },
+  {
+    "Code": "26513",
+    "Id": 456,
+    "Name": "Người vẽ tranh hoạt họa"
+  },
+  {
+    "Code": "26519",
+    "Id": 457,
+    "Name": "Nghệ sỹ hình ảnh khác"
+  },
+  {
+    "Code": "26521",
+    "Id": 458,
+    "Name": "Nhạc công"
+  },
+  {
+    "Code": "26522",
+    "Id": 459,
+    "Name": "Nhạc sỹ"
+  },
+  {
+    "Code": "26523",
+    "Id": 460,
+    "Name": "Nhạc trưởng/giám đốc dàn nhạc/ban nhạc/dàn hợp xướng"
+  },
+  {
+    "Code": "26524",
+    "Id": 461,
+    "Name": "Ca sỹ"
+  },
+  {
+    "Code": "26529",
+    "Id": 462,
+    "Name": "Nhạc công, ca sỹ và nhạc sỹ khác"
+  },
+  {
+    "Code": "26530",
+    "Id": 463,
+    "Name": "Vũ công và biên đạo múa"
+  },
+  {
+    "Code": "26540",
+    "Id": 464,
+    "Name": "Đạo diễn, nhà sản xuất phim, sân khấu và các nghề liên quan"
+  },
+  {
+    "Code": "26550",
+    "Id": 465,
+    "Name": "Diễn viên"
+  },
+  {
+    "Code": "26560",
+    "Id": 466,
+    "Name": "Phát thanh viên trên đài, truyền hình và các phương tiện truyền thông đại chúng khác"
+  },
+  {
+    "Code": "26590",
+    "Id": 467,
+    "Name": "Nghệ sỹ sáng tạo và trình diễn liên quan khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "31111",
+    "Id": 468,
+    "Name": "Kỹ thuật viên hóa học"
+  },
+  {
+    "Code": "31112",
+    "Id": 469,
+    "Name": "Kỹ thuật viên vật lí"
+  },
+  {
+    "Code": "31119",
+    "Id": 470,
+    "Name": "Kỹ thuật viên hóa học và vật lí khác"
+  },
+  {
+    "Code": "31121",
+    "Id": 471,
+    "Name": "Kỹ thuật viên xây dựng dân dụng"
+  },
+  {
+    "Code": "31122",
+    "Id": 472,
+    "Name": "Kỹ thuật viên kết cấu"
+  },
+  {
+    "Code": "31123",
+    "Id": 473,
+    "Name": "Kỹ thuật viên xây dựng công trình"
+  },
+  {
+    "Code": "31124",
+    "Id": 474,
+    "Name": "Kỹ thuật viên khảo sát đất đai"
+  },
+  {
+    "Code": "31129",
+    "Id": 475,
+    "Name": "Kỹ thuật viên xây dựng dân dụng khác"
+  },
+  {
+    "Code": "31131",
+    "Id": 476,
+    "Name": "Kỹ thuật viên điện dân dụng chung"
+  },
+  {
+    "Code": "31132",
+    "Id": 477,
+    "Name": "Kỹ thuật viên điện dân dụng cao tần"
+  },
+  {
+    "Code": "31139",
+    "Id": 478,
+    "Name": "Kỹ thuật viên điện dân dụng khác"
+  },
+  {
+    "Code": "31141",
+    "Id": 479,
+    "Name": "Kỹ thuật viên điện tử dân dụng (chung)"
+  },
+  {
+    "Code": "31142",
+    "Id": 480,
+    "Name": "Kỹ thuật viên bán dẫn"
+  },
+  {
+    "Code": "31143",
+    "Id": 481,
+    "Name": "Kỹ thuật viên thiết bị ghi âm, ghi hình"
+  },
+  {
+    "Code": "31144",
+    "Id": 482,
+    "Name": "Kỹ thuật viên thiết bị đo đạc "
+  },
+  {
+    "Code": "31149",
+    "Id": 483,
+    "Name": "Kỹ thuật viên điện tử dân dụng khác"
+  },
+  {
+    "Code": "31151",
+    "Id": 484,
+    "Name": "Kỹ thuật viên kỹ thuật cơ khí chung"
+  },
+  {
+    "Code": "31152",
+    "Id": 485,
+    "Name": "Kỹ thuật viên cơ khí hàng không"
+  },
+  {
+    "Code": "31153",
+    "Id": 486,
+    "Name": "Kỹ thuật viên máy tự động"
+  },
+  {
+    "Code": "31154",
+    "Id": 487,
+    "Name": "Kỹ thuật viên điều hòa không khí/điện lạnh"
+  },
+  {
+    "Code": "31155",
+    "Id": 488,
+    "Name": "Kỹ thuật viên máy móc, công cụ"
+  },
+  {
+    "Code": "31156",
+    "Id": 489,
+    "Name": "Người thiết kế khuôn/công cụ"
+  },
+  {
+    "Code": "31159",
+    "Id": 490,
+    "Name": "Kỹ thuật viên cơ khí dân dụng khác"
+  },
+  {
+    "Code": "31160",
+    "Id": 491,
+    "Name": "Kỹ thuật viên kỹ thuật hóa học"
+  },
+  {
+    "Code": "31170",
+    "Id": 492,
+    "Name": "Kỹ thuật viên khai thác mỏ và luyện kim"
+  },
+  {
+    "Code": "31180",
+    "Id": 493,
+    "Name": "Kỹ thuật viên phác thảo kỹ thuật"
+  },
+  {
+    "Code": "31190",
+    "Id": 494,
+    "Name": "Kỹ thuật viên khoa học vật lý và kỹ thuật chưa được phân vào đâu"
+  },
+  {
+    "Code": "31210",
+    "Id": 495,
+    "Name": "Giám sát viên khai thác mỏ"
+  },
+  {
+    "Code": "31220",
+    "Id": 496,
+    "Name": "Giám sát viên sản xuất"
+  },
+  {
+    "Code": "31230",
+    "Id": 497,
+    "Name": "Giám sát viên xây dựng"
+  },
+  {
+    "Code": "31310",
+    "Id": 498,
+    "Name": "Người vận hành trạm hoặc nhà máy phát điện"
+  },
+  {
+    "Code": "31320",
+    "Id": 499,
+    "Name": "Người vận hành lò đốt rác và nhà máy xử lý nước"
+  },
+  {
+    "Code": "31330",
+    "Id": 500,
+    "Name": "Kiểm soát viên nhà máy xử lý hoá chất"
+  },
+  {
+    "Code": "31340",
+    "Id": 501,
+    "Name": "Người vận hành nhà máy lọc dầu và khí tự nhiên"
+  },
+  {
+    "Code": "31350",
+    "Id": 502,
+    "Name": "Kiểm soát viên quy trình sản xuất kim loại"
+  },
+  {
+    "Code": "31390",
+    "Id": 503,
+    "Name": "Kỹ thuật viên kiểm soát quy trình khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "31410",
+    "Id": 504,
+    "Name": "Kỹ thuật viên khoa học sự sống (không kể y tế) "
+  },
+  {
+    "Code": "31420",
+    "Id": 505,
+    "Name": "Kỹ thuật viên nông nghiệp"
+  },
+  {
+    "Code": "31430",
+    "Id": 506,
+    "Name": "Kỹ thuật viên lâm nghiệp"
+  },
+  {
+    "Code": "31440",
+    "Id": 507,
+    "Name": "Kỹ thuật viên nuôi trồng thủy sản"
+  },
+  {
+    "Code": "31510",
+    "Id": 508,
+    "Name": "Kỹ thuật viên máy của tàu thủy"
+  },
+  {
+    "Code": "31520",
+    "Id": 509,
+    "Name": "Hoa tiêu và nhân viên văn phòng trên tàu"
+  },
+  {
+    "Code": "31530",
+    "Id": 510,
+    "Name": "Phi công phương tiện bay và kỹ thuật viên hỗ trợ liên quan"
+  },
+  {
+    "Code": "31540",
+    "Id": 511,
+    "Name": "Kiểm soát viên không lưu"
+  },
+  {
+    "Code": "31550",
+    "Id": 512,
+    "Name": "Kỹ thuật viên điện tử an toàn không lưu"
+  },
+  {
+    "Code": "32111",
+    "Id": 513,
+    "Name": "Kỹ thuật viên siêu âm"
+  },
+  {
+    "Code": "32112",
+    "Id": 514,
+    "Name": "Kỹ thuật viên X quang"
+  },
+  {
+    "Code": "32119",
+    "Id": 515,
+    "Name": "Kỹ thuật viên thiết bị y tế và hình ảnh khác"
+  },
+  {
+    "Code": "32120",
+    "Id": 516,
+    "Name": "Kỹ thuật viên phòng thí nghiệm y tế "
+  },
+  {
+    "Code": "32130",
+    "Id": 517,
+    "Name": "Kỹ thuật viên và trợ lý dược"
+  },
+  {
+    "Code": "32141",
+    "Id": 518,
+    "Name": "Kỹ thuật viên lắp chân tay giả và chỉnh hình"
+  },
+  {
+    "Code": "32142",
+    "Id": 519,
+    "Name": "Người làm và sửa các thiết bị chỉnh hình"
+  },
+  {
+    "Code": "32143",
+    "Id": 520,
+    "Name": "Kỹ thuật viên lắp răng giả, chân tay giả và các thiết bị chỉnh hình khác  "
+  },
+  {
+    "Code": "32210",
+    "Id": 521,
+    "Name": "Y tá/điều dưỡng, kỹ thuật viên chăm sóc bệnh nhân"
+  },
+  {
+    "Code": "32220",
+    "Id": 522,
+    "Name": "Hộ sinh"
+  },
+  {
+    "Code": "32300",
+    "Id": 523,
+    "Name": "Kỹ thuật viên y học cổ truyền và bổ trợ"
+  },
+  {
+    "Code": "32400",
+    "Id": 524,
+    "Name": "Kỹ thuật viên thú y và phụ tá"
+  },
+  {
+    "Code": "32510",
+    "Id": 525,
+    "Name": "Phụ tá nha khoa và trị liệu "
+  },
+  {
+    "Code": "32520",
+    "Id": 526,
+    "Name": "Kỹ thuật viên ghi chép sổ sách y tế và thông tin về sức khỏe"
+  },
+  {
+    "Code": "32530",
+    "Id": 527,
+    "Name": "Nhân viên y tế cộng đồng"
+  },
+  {
+    "Code": "32540",
+    "Id": 528,
+    "Name": "Kỹ thuật viên nhãn khoa"
+  },
+  {
+    "Code": "32550",
+    "Id": 529,
+    "Name": "Kỹ thuật viên vật lý trị liệu và phụ tá"
+  },
+  {
+    "Code": "32560",
+    "Id": 530,
+    "Name": "Nhân viên trợ giúp y tế"
+  },
+  {
+    "Code": "32570",
+    "Id": 531,
+    "Name": "Thanh tra viên và cộng tác viên môi trường và sức khỏe nghề nghiệp "
+  },
+  {
+    "Code": "32580",
+    "Id": 532,
+    "Name": "Nhân viên cấp cứu"
+  },
+  {
+    "Code": "32590",
+    "Id": 533,
+    "Name": "Kỹ thuật viên sức khỏe khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "33110",
+    "Id": 534,
+    "Name": "Nhân viên môi giới, buôn bán chứng khoán và tài chính"
+  },
+  {
+    "Code": "33120",
+    "Id": 535,
+    "Name": "Nhân viên phụ trách các khoản tín dụng và khoản vay"
+  },
+  {
+    "Code": "33130",
+    "Id": 536,
+    "Name": "Kế toán viên"
+  },
+  {
+    "Code": "33140",
+    "Id": 537,
+    "Name": "Nhân viên về thống kê và toán học ứng dụng có liên quan"
+  },
+  {
+    "Code": "33151",
+    "Id": 538,
+    "Name": "Thẩm định viên/định giá (trừ tài sản vô hình)"
+  },
+  {
+    "Code": "33152",
+    "Id": 539,
+    "Name": "Giám định viên"
+  },
+  {
+    "Code": "33153",
+    "Id": 540,
+    "Name": "Nhân viên định giá tài sản vô hình"
+  },
+  {
+    "Code": "33160",
+    "Id": 541,
+    "Name": "Thủ quỹ"
+  },
+  {
+    "Code": "33211",
+    "Id": 542,
+    "Name": "Đại lý môi giới bảo hiểm (gồm cả nhà kế hoạch tài chính \nđộc lập)"
+  },
+  {
+    "Code": "33219",
+    "Id": 543,
+    "Name": "Đại diện bảo hiểm và các nhân viên hỗ trợ liên quan khác"
+  },
+  {
+    "Code": "33220",
+    "Id": 544,
+    "Name": "Nhân viên đại diện bán hàng hóa thương mại"
+  },
+  {
+    "Code": "33231",
+    "Id": 545,
+    "Name": "Nhân viên thu mua"
+  },
+  {
+    "Code": "33232",
+    "Id": 546,
+    "Name": "Đại lý thu mua"
+  },
+  {
+    "Code": "33240",
+    "Id": 547,
+    "Name": "Nhân viên môi giới thương mại "
+  },
+  {
+    "Code": "33310",
+    "Id": 548,
+    "Name": "Nhân viên làm thủ tục thông quan và vận tải hàng hóa"
+  },
+  {
+    "Code": "33320",
+    "Id": 549,
+    "Name": "Nhân viên tổ chức hội thảo và sự kiện"
+  },
+  {
+    "Code": "33330",
+    "Id": 550,
+    "Name": "Nhân viên môi giới việc làm và nhà thầu"
+  },
+  {
+    "Code": "33340",
+    "Id": 551,
+    "Name": "Nhân viên môi giới bất động sản và quản lý tài sản/bất động sản"
+  },
+  {
+    "Code": "33390",
+    "Id": 552,
+    "Name": "Nhân viên/đại lý dịch vụ kinh doanh khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "33410",
+    "Id": 553,
+    "Name": "Giám sát viên văn phòng"
+  },
+  {
+    "Code": "33420",
+    "Id": 554,
+    "Name": "Thư ký luật"
+  },
+  {
+    "Code": "33430",
+    "Id": 555,
+    "Name": "Thư ký hành chính và điều hành"
+  },
+  {
+    "Code": "33440",
+    "Id": 556,
+    "Name": "Thư ký y tế"
+  },
+  {
+    "Code": "33510",
+    "Id": 557,
+    "Name": "Nhân viên hải quan của Chính phủ"
+  },
+  {
+    "Code": "33520",
+    "Id": 558,
+    "Name": "Nhân viên thuế của Chính phủ"
+  },
+  {
+    "Code": "33530",
+    "Id": 559,
+    "Name": "Nhân viên trợ cấp xã hội của Chính phủ"
+  },
+  {
+    "Code": "33540",
+    "Id": 560,
+    "Name": "Nhân viên cấp phép của Chính phủ"
+  },
+  {
+    "Code": "33550",
+    "Id": 561,
+    "Name": "Kiểm lâm"
+  },
+  {
+    "Code": "33590",
+    "Id": 562,
+    "Name": "Nhân viên điều tiết của Chính phủ khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "34110",
+    "Id": 563,
+    "Name": "Nhân viên về luật pháp"
+  },
+  {
+    "Code": "34120",
+    "Id": 564,
+    "Name": "Nhân viên về công tác xã hội "
+  },
+  {
+    "Code": "34130",
+    "Id": 565,
+    "Name": "Nhân viên về tôn giáo"
+  },
+  {
+    "Code": "34210",
+    "Id": 566,
+    "Name": "Vận động viên và người chơi thể thao"
+  },
+  {
+    "Code": "34221",
+    "Id": 567,
+    "Name": "Huấn luyện viên thể thao"
+  },
+  {
+    "Code": "34222",
+    "Id": 568,
+    "Name": "Nhân viên hướng dẫn thể dục thẩm mỹ"
+  },
+  {
+    "Code": "34223",
+    "Id": 569,
+    "Name": "Nhân viên hướng dẫn tập thể hình"
+  },
+  {
+    "Code": "34224",
+    "Id": 570,
+    "Name": "Nhân viên làm việc trong lĩnh vực thể thao"
+  },
+  {
+    "Code": "34229",
+    "Id": 571,
+    "Name": "Huấn luyện viên, nhân viên hướng dẫn thể thao và làm việc trong lĩnh vực thể thao khác"
+  },
+  {
+    "Code": "34230",
+    "Id": 572,
+    "Name": "Người hướng dẫn tập luyện và giải trí, người chỉ đạo chương trình"
+  },
+  {
+    "Code": "34310",
+    "Id": 573,
+    "Name": "Nhiếp ảnh gia"
+  },
+  {
+    "Code": "34320",
+    "Id": 574,
+    "Name": "Nhà thiết kế và trang trí nội thất"
+  },
+  {
+    "Code": "34330",
+    "Id": 575,
+    "Name": "Kỹ thuật viên thư viện, viện bảo tàng và triển lãm"
+  },
+  {
+    "Code": "34340",
+    "Id": 576,
+    "Name": "Đầu bếp trưởng"
+  },
+  {
+    "Code": "34390",
+    "Id": 577,
+    "Name": "Nhân viên về nghệ thuật và văn hóa khác "
+  },
+  {
+    "Code": "35110",
+    "Id": 578,
+    "Name": "Kỹ thuật viên vận hành công nghệ thông tin và truyền thông"
+  },
+  {
+    "Code": "35120",
+    "Id": 579,
+    "Name": "Kỹ thuật viên hỗ trợ người sử dụng công nghệ thông tin và truyền thông"
+  },
+  {
+    "Code": "35130",
+    "Id": 580,
+    "Name": "Kỹ thuật viên hệ thống và mạng máy tính "
+  },
+  {
+    "Code": "35140",
+    "Id": 581,
+    "Name": "Kỹ thuật viên web"
+  },
+  {
+    "Code": "35211",
+    "Id": 582,
+    "Name": "Kỹ thuật viên điều hành chương trình"
+  },
+  {
+    "Code": "35212",
+    "Id": 583,
+    "Name": "Nhân viên điều khiển máy quay phim"
+  },
+  {
+    "Code": "35213",
+    "Id": 584,
+    "Name": "Nhân viên điều khiển máy quay hình động/tivi"
+  },
+  {
+    "Code": "35214",
+    "Id": 585,
+    "Name": "Nhân viên điều khiển thiết bị phòng thu phát thanh truyền hình"
+  },
+  {
+    "Code": "35215",
+    "Id": 586,
+    "Name": "Nhân viên điều khiển thiết bị ghi âm"
+  },
+  {
+    "Code": "35216",
+    "Id": 587,
+    "Name": "Nhân viên dựng phim"
+  },
+  {
+    "Code": "35219",
+    "Id": 588,
+    "Name": "Các kỹ thuật viên phát thanh và nghe nhìn khác"
+  },
+  {
+    "Code": "35220",
+    "Id": 589,
+    "Name": "Kỹ thuật viên kỹ thuật viễn thông"
+  },
+  {
+    "Code": "36100",
+    "Id": 590,
+    "Name": "Giáo viên tiểu học"
+  },
+  {
+    "Code": "36200",
+    "Id": 591,
+    "Name": "Giáo viên mầm non"
+  },
+  {
+    "Code": "36300",
+    "Id": 592,
+    "Name": "Giáo viên dạy các đối tượng bị khuyết tật"
+  },
+  {
+    "Code": "36410",
+    "Id": 593,
+    "Name": "Giáo viên sơ cấp"
+  },
+  {
+    "Code": "36420",
+    "Id": 594,
+    "Name": "Giáo viên đào tạo khác"
+  },
+  {
+    "Code": "41101",
+    "Id": 595,
+    "Name": "Nhân viên văn phòng (gồm cả sắp xếp tài liệu và sao chụp)"
+  },
+  {
+    "Code": "41102",
+    "Id": 596,
+    "Name": "Nhân viên nguồn nhân lực/tổ chức"
+  },
+  {
+    "Code": "41109",
+    "Id": 597,
+    "Name": "Nhân viên hành chính khác "
+  },
+  {
+    "Code": "41200",
+    "Id": 598,
+    "Name": "Thư ký (tổng hợp)"
+  },
+  {
+    "Code": "41310",
+    "Id": 599,
+    "Name": "Nhân viên đánh máy"
+  },
+  {
+    "Code": "41320",
+    "Id": 600,
+    "Name": "Nhân viên nhập dữ liệu"
+  },
+  {
+    "Code": "42111",
+    "Id": 601,
+    "Name": "Nhân viên giao dịch ngân hàng"
+  },
+  {
+    "Code": "42112",
+    "Id": 602,
+    "Name": "Nhân viên thu ngân dịch vụ bưu điện"
+  },
+  {
+    "Code": "42113",
+    "Id": 603,
+    "Name": "Nhân viên đổi tiền"
+  },
+  {
+    "Code": "42119",
+    "Id": 604,
+    "Name": "Nhân viên giao dịch và thu ngân khác"
+  },
+  {
+    "Code": "42120",
+    "Id": 605,
+    "Name": "Nhân viên chia bài trong sòng bạc và các nghề liên quan đến cờ bạc khác"
+  },
+  {
+    "Code": "42131",
+    "Id": 606,
+    "Name": "Chủ hiệu cầm đồ"
+  },
+  {
+    "Code": "42132",
+    "Id": 607,
+    "Name": "Người cho vay tiền"
+  },
+  {
+    "Code": "42141",
+    "Id": 608,
+    "Name": "Người thu nợ"
+  },
+  {
+    "Code": "42149",
+    "Id": 609,
+    "Name": "Người thu nợ khác và làm công việc có liên quan "
+  },
+  {
+    "Code": "42210",
+    "Id": 610,
+    "Name": "Nhân viên và tư vấn viên du lịch"
+  },
+  {
+    "Code": "42220",
+    "Id": 611,
+    "Name": "Nhân viên trung tâm thông tin liên lạc"
+  },
+  {
+    "Code": "42230",
+    "Id": 612,
+    "Name": "Nhân viên vận hành tổng đài điện thoại"
+  },
+  {
+    "Code": "42240",
+    "Id": 613,
+    "Name": "Nhân viên lễ tân khách sạn"
+  },
+  {
+    "Code": "42250",
+    "Id": 614,
+    "Name": "Nhân viên hướng dẫn"
+  },
+  {
+    "Code": "42260",
+    "Id": 615,
+    "Name": "Lễ tân (tổng hợp)"
+  },
+  {
+    "Code": "42270",
+    "Id": 616,
+    "Name": "Phỏng vấn viên điều tra và nghiên cứu thị trường"
+  },
+  {
+    "Code": "42290",
+    "Id": 617,
+    "Name": "Nhân viên thông tin khách hàng chưa được phân vào đâu"
+  },
+  {
+    "Code": "43110",
+    "Id": 618,
+    "Name": "Nhân viên kế toán"
+  },
+  {
+    "Code": "43120",
+    "Id": 619,
+    "Name": "Nhân viên thống kê, tài chính và bảo hiểm"
+  },
+  {
+    "Code": "43130",
+    "Id": 620,
+    "Name": "Nhân viên kế toán tiền lương"
+  },
+  {
+    "Code": "43210",
+    "Id": 621,
+    "Name": "Nhân viên ghi chép tồn kho"
+  },
+  {
+    "Code": "43220",
+    "Id": 622,
+    "Name": "Nhân viên sản xuất"
+  },
+  {
+    "Code": "43230",
+    "Id": 623,
+    "Name": "Nhân viên vận chuyển"
+  },
+  {
+    "Code": "44010",
+    "Id": 624,
+    "Name": "Nhân viên thư viện"
+  },
+  {
+    "Code": "44020",
+    "Id": 625,
+    "Name": "Nhân viên phân loại và vận chuyển thư"
+  },
+  {
+    "Code": "44030",
+    "Id": 626,
+    "Name": "Nhân viên đánh mã, đọc và sửa bản in thử"
+  },
+  {
+    "Code": "44040",
+    "Id": 627,
+    "Name": "Người ghi chép thuê và người làm các công việc có liên quan"
+  },
+  {
+    "Code": "44050",
+    "Id": 628,
+    "Name": "Nhân viên văn thư và phô tô"
+  },
+  {
+    "Code": "44060",
+    "Id": 629,
+    "Name": "Nhân viên tổ chức nhân sự"
+  },
+  {
+    "Code": "44090",
+    "Id": 630,
+    "Name": "Nhân viên hỗ trợ văn phòng khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "51110",
+    "Id": 631,
+    "Name": "Tiếp viên trên tàu hoặc máy bay"
+  },
+  {
+    "Code": "51120",
+    "Id": 632,
+    "Name": "Nhân viên phụ tàu xe"
+  },
+  {
+    "Code": "51131",
+    "Id": 633,
+    "Name": "Nhân viên hướng dẫn khu thiên nhiên"
+  },
+  {
+    "Code": "51132",
+    "Id": 634,
+    "Name": "Nhân viên hướng dẫn công viên chủ đề"
+  },
+  {
+    "Code": "51139",
+    "Id": 635,
+    "Name": "Nhân viên hướng dẫn du lịch khác (như di tích lịch sử, \nbảo tàng)"
+  },
+  {
+    "Code": "51200",
+    "Id": 636,
+    "Name": "Đầu bếp"
+  },
+  {
+    "Code": "51311",
+    "Id": 637,
+    "Name": "Tổ trưởng/Giám sát bồi bàn"
+  },
+  {
+    "Code": "51312",
+    "Id": 638,
+    "Name": "Bồi bàn (trừ bồi bàn rượu)"
+  },
+  {
+    "Code": "51313",
+    "Id": 639,
+    "Name": "Bồi bàn rượu"
+  },
+  {
+    "Code": "51320",
+    "Id": 640,
+    "Name": "Nhân viên pha chế"
+  },
+  {
+    "Code": "51410",
+    "Id": 641,
+    "Name": "Thợ làm đầu"
+  },
+  {
+    "Code": "51420",
+    "Id": 642,
+    "Name": "Nhân viên làm đẹp và nhân viên có liên quan"
+  },
+  {
+    "Code": "51510",
+    "Id": 643,
+    "Name": "Người giám sát việc dọn dẹp và vệ sinh trong văn phòng, khách sạn và các cơ quan khác"
+  },
+  {
+    "Code": "51520",
+    "Id": 644,
+    "Name": "Người quản lý công việc gia đình"
+  },
+  {
+    "Code": "51530",
+    "Id": 645,
+    "Name": "Người chăm sóc, bảo vệ tòa nhà"
+  },
+  {
+    "Code": "51610",
+    "Id": 646,
+    "Name": "Nhà chiêm tinh, nhà tướng số và những người có liên quan đến tâm linh khác"
+  },
+  {
+    "Code": "51620",
+    "Id": 647,
+    "Name": "Người bồi phòng và những người được thuê để làm bầu bạn"
+  },
+  {
+    "Code": "51630",
+    "Id": 648,
+    "Name": "Người làm nghề phục vụ tang lễ và ướp xác"
+  },
+  {
+    "Code": "51640",
+    "Id": 649,
+    "Name": "Nhân viên chăm sóc và làm đẹp động vật"
+  },
+  {
+    "Code": "51650",
+    "Id": 650,
+    "Name": "Giáo viên hướng dẫn lái xe"
+  },
+  {
+    "Code": "51690",
+    "Id": 651,
+    "Name": "Nhân viên dịch vụ cá nhân khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "52110",
+    "Id": 652,
+    "Name": "Người bán hàng trong quầy hàng và tại chợ"
+  },
+  {
+    "Code": "52120",
+    "Id": 653,
+    "Name": "Người bán đồ ăn trên đường phố"
+  },
+  {
+    "Code": "52210",
+    "Id": 654,
+    "Name": "Chủ cửa hiệu"
+  },
+  {
+    "Code": "52220",
+    "Id": 655,
+    "Name": "Nhân viên giám sát cửa hàng"
+  },
+  {
+    "Code": "52230",
+    "Id": 656,
+    "Name": "Nhân viên trợ giúp bán hàng"
+  },
+  {
+    "Code": "52301",
+    "Id": 657,
+    "Name": "Nhân viên thu ngân và bán vé"
+  },
+  {
+    "Code": "52302",
+    "Id": 658,
+    "Name": "Nhân viên thu ngân"
+  },
+  {
+    "Code": "52309",
+    "Id": 659,
+    "Name": "Nhân viên thu ngân và bán vé có liên quan khác"
+  },
+  {
+    "Code": "52410",
+    "Id": 660,
+    "Name": "Nhân viên làm mẫu "
+  },
+  {
+    "Code": "52420",
+    "Id": 661,
+    "Name": "Nhân viên thuyết minh giới thiệu hàng hóa"
+  },
+  {
+    "Code": "52430",
+    "Id": 662,
+    "Name": "Nhân viên bán hàng tận nhà"
+  },
+  {
+    "Code": "52440",
+    "Id": 663,
+    "Name": "Nhân viên bán hàng qua trung tâm liên lạc"
+  },
+  {
+    "Code": "52450",
+    "Id": 664,
+    "Name": "Nhân viên phục vụ ở các trạm dịch vụ"
+  },
+  {
+    "Code": "52460",
+    "Id": 665,
+    "Name": "Nhân viên phục vụ đồ ăn uống"
+  },
+  {
+    "Code": "52490",
+    "Id": 666,
+    "Name": "Nhân viên bán hàng khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "53110",
+    "Id": 667,
+    "Name": "Nhân viên chăm sóc trẻ em"
+  },
+  {
+    "Code": "53120",
+    "Id": 668,
+    "Name": "Người phụ tá cho giáo viên"
+  },
+  {
+    "Code": "53210",
+    "Id": 669,
+    "Name": "Nhân viên hỗ trợ về chăm sóc sức khỏe"
+  },
+  {
+    "Code": "53221",
+    "Id": 670,
+    "Name": "Nhân viên chăm sóc cá nhân (như vật lý trị liệu)"
+  },
+  {
+    "Code": "53222",
+    "Id": 671,
+    "Name": "Điều dưỡng tại nhà"
+  },
+  {
+    "Code": "53290",
+    "Id": 672,
+    "Name": "Nhân viên chăm sóc cá nhân trong các dịch vụ y tế chưa được phân vào đâu"
+  },
+  {
+    "Code": "54010",
+    "Id": 673,
+    "Name": "Nhân viên an ninh (trừ công an)"
+  },
+  {
+    "Code": "54091",
+    "Id": 674,
+    "Name": "Thám tử tư"
+  },
+  {
+    "Code": "54092",
+    "Id": 675,
+    "Name": "Nhân viên bảo vệ rừng"
+  },
+  {
+    "Code": "54099",
+    "Id": 676,
+    "Name": "Nhân viên dịch vụ bảo vệ khác còn lại chưa được phân vào đâu"
+  },
+  {
+    "Code": "61111",
+    "Id": 677,
+    "Name": "Lao động trồng, thu hoạch lúa"
+  },
+  {
+    "Code": "61112",
+    "Id": 678,
+    "Name": "Lao động trồng, thu hoạch rau các loại"
+  },
+  {
+    "Code": "61119",
+    "Id": 679,
+    "Name": "Lao động trồng, thu hoạch cây mùa vụ khác"
+  },
+  {
+    "Code": "61121",
+    "Id": 680,
+    "Name": "Lao động trồng, thu hoạch sản phẩm cây cà phê"
+  },
+  {
+    "Code": "61122",
+    "Id": 681,
+    "Name": "Lao động trồng, thu hoạch sản phẩm cây chè"
+  },
+  {
+    "Code": "61123",
+    "Id": 682,
+    "Name": "Lao động trồng, thu hoạch sản phẩm cây tiêu"
+  },
+  {
+    "Code": "61124",
+    "Id": 683,
+    "Name": "Lao động trồng, thu hoạch sản phẩm cây điều"
+  },
+  {
+    "Code": "61125",
+    "Id": 684,
+    "Name": "Lao động trồng, thu hoạch sản phẩm cây cao su"
+  },
+  {
+    "Code": "61129",
+    "Id": 685,
+    "Name": "Lao động trồng, thu hoạch sản phẩm cây bụi và cây thân gỗ khác"
+  },
+  {
+    "Code": "61131",
+    "Id": 686,
+    "Name": "Lao động trồng, thu hoạch hoa, cây cảnh"
+  },
+  {
+    "Code": "61139",
+    "Id": 687,
+    "Name": "Lao động làm vườn, trồng vườn và vườn ươm khác"
+  },
+  {
+    "Code": "61140",
+    "Id": 688,
+    "Name": "Lao động trồng trọt hỗn hợp"
+  },
+  {
+    "Code": "61211",
+    "Id": 689,
+    "Name": "Lao động chăn nuôi trâu bò"
+  },
+  {
+    "Code": "61212",
+    "Id": 690,
+    "Name": "Lao động chăn nuôi dê, cừu, hươu"
+  },
+  {
+    "Code": "61213",
+    "Id": 691,
+    "Name": "Lao động chăn nuôi lợn"
+  },
+  {
+    "Code": "61219",
+    "Id": 692,
+    "Name": "Lao động chăn nuôi gia súc khác"
+  },
+  {
+    "Code": "61221",
+    "Id": 693,
+    "Name": "Lao động chăn nuôi gà"
+  },
+  {
+    "Code": "61222",
+    "Id": 694,
+    "Name": "Lao động chăn nuôi vịt, ngan, ngỗng"
+  },
+  {
+    "Code": "61229",
+    "Id": 695,
+    "Name": "Lao động chăn nuôi gia cầm khác"
+  },
+  {
+    "Code": "61231",
+    "Id": 696,
+    "Name": "Lao động nuôi ong"
+  },
+  {
+    "Code": "61232",
+    "Id": 697,
+    "Name": "Lao động nuôi tằm"
+  },
+  {
+    "Code": "61290",
+    "Id": 698,
+    "Name": "Lao động chăn nuôi chưa được phân vào đâu"
+  },
+  {
+    "Code": "61300",
+    "Id": 699,
+    "Name": "Lao động trồng trọt và chăn nuôi hỗn hợp"
+  },
+  {
+    "Code": "62101",
+    "Id": 700,
+    "Name": "Lao động ươm giống cây lâm nghiệp"
+  },
+  {
+    "Code": "62102",
+    "Id": 701,
+    "Name": "Lao động trồng rừng và chăm sóc rừng lấy gỗ"
+  },
+  {
+    "Code": "62103",
+    "Id": 702,
+    "Name": "Lao động trồng rừng và chăm sóc rừng tre, nứa"
+  },
+  {
+    "Code": "62109",
+    "Id": 703,
+    "Name": "Lao động trong lâm nghiệp và lĩnh vực có liên quan khác"
+  },
+  {
+    "Code": "62211",
+    "Id": 704,
+    "Name": "Lao động nuôi cá"
+  },
+  {
+    "Code": "62212",
+    "Id": 705,
+    "Name": "Lao động nuôi tôm"
+  },
+  {
+    "Code": "62219",
+    "Id": 706,
+    "Name": "Lao động nuôi trồng thủy sản khác"
+  },
+  {
+    "Code": "62221",
+    "Id": 707,
+    "Name": "Lao động khai thác cá trong nội địa"
+  },
+  {
+    "Code": "62229",
+    "Id": 708,
+    "Name": "Lao động khai thác thủy sản khác trong nội địa"
+  },
+  {
+    "Code": "62231",
+    "Id": 709,
+    "Name": "Lao động khai thác cá trong vùng biển Việt Nam"
+  },
+  {
+    "Code": "62239",
+    "Id": 710,
+    "Name": "Lao động khai thác thủy sản khác trong vùng biển Việt Nam"
+  },
+  {
+    "Code": "62240",
+    "Id": 711,
+    "Name": "Lao động săn bắn, đánh bẫy"
+  },
+  {
+    "Code": "63100",
+    "Id": 712,
+    "Name": "Lao động trồng trọt tự cung tự cấp"
+  },
+  {
+    "Code": "63200",
+    "Id": 713,
+    "Name": "Lao động chăn nuôi gia súc tự cung tự cấp"
+  },
+  {
+    "Code": "63300",
+    "Id": 714,
+    "Name": "Lao động trồng trọt và chăn nuôi hỗn hợp tự cung tự cấp "
+  },
+  {
+    "Code": "63400",
+    "Id": 715,
+    "Name": "Lao động đánh cá, săn bắn, đánh bẫy và thu hái tự cung tự cấp"
+  },
+  {
+    "Code": "71110",
+    "Id": 716,
+    "Name": "Thợ xây nhà"
+  },
+  {
+    "Code": "71120",
+    "Id": 717,
+    "Name": "Thợ nề và các thợ có liên quan"
+  },
+  {
+    "Code": "71131",
+    "Id": 718,
+    "Name": "Thợ đẽo đá/thợ khắc đá"
+  },
+  {
+    "Code": "71132",
+    "Id": 719,
+    "Name": "Thợ xây nhà bằng đá"
+  },
+  {
+    "Code": "71141",
+    "Id": 720,
+    "Name": "Thợ đổ bê tông cốt thép (chung)"
+  },
+  {
+    "Code": "71142",
+    "Id": 721,
+    "Name": "Thợ bê tông"
+  },
+  {
+    "Code": "71149",
+    "Id": 722,
+    "Name": "Thợ bê tông khác, thợ hoàn thiện bê tông và thợ liên quan khác"
+  },
+  {
+    "Code": "71150",
+    "Id": 723,
+    "Name": "Thợ mộc và thợ làm đồ gỗ"
+  },
+  {
+    "Code": "71191",
+    "Id": 724,
+    "Name": "Thợ giàn giáo"
+  },
+  {
+    "Code": "71192",
+    "Id": 725,
+    "Name": "Thợ phá dỡ"
+  },
+  {
+    "Code": "71193",
+    "Id": 726,
+    "Name": "Thợ ốp tường"
+  },
+  {
+    "Code": "71199",
+    "Id": 727,
+    "Name": "Thợ xây khác và thợ có liên quan chưa được phân vào đâu"
+  },
+  {
+    "Code": "71210",
+    "Id": 728,
+    "Name": "Thợ lợp mái"
+  },
+  {
+    "Code": "71220",
+    "Id": 729,
+    "Name": "Thợ lát sàn và thợ lát đá"
+  },
+  {
+    "Code": "71230",
+    "Id": 730,
+    "Name": "Thợ thạch cao"
+  },
+  {
+    "Code": "71241",
+    "Id": 731,
+    "Name": "Thợ lắp đặt cách điện xây dựng"
+  },
+  {
+    "Code": "71242",
+    "Id": 732,
+    "Name": "Thợ nồi hơi/thợ ống cách điện"
+  },
+  {
+    "Code": "71243",
+    "Id": 733,
+    "Name": "Thợ lắp đặt cách điện thiết bị điều hòa không khí"
+  },
+  {
+    "Code": "71244",
+    "Id": 734,
+    "Name": "Thợ lắp đặt vật liệu chịu lửa"
+  },
+  {
+    "Code": "71249",
+    "Id": 735,
+    "Name": "Thợ lắp đặt vật liệu cách âm, cách nhiệt khác"
+  },
+  {
+    "Code": "71250",
+    "Id": 736,
+    "Name": "Thợ lắp kính"
+  },
+  {
+    "Code": "71260",
+    "Id": 737,
+    "Name": "Thợ ống nước"
+  },
+  {
+    "Code": "71270",
+    "Id": 738,
+    "Name": "Thợ cơ khí thiết bị điều hòa không khí và làm lạnh"
+  },
+  {
+    "Code": "71311",
+    "Id": 739,
+    "Name": "Thợ sơn"
+  },
+  {
+    "Code": "71312",
+    "Id": 740,
+    "Name": "Thợ dán giấy dán tường/trần"
+  },
+  {
+    "Code": "71321",
+    "Id": 741,
+    "Name": "Thợ sơn kết cấu thép/sơn tàu"
+  },
+  {
+    "Code": "71322",
+    "Id": 742,
+    "Name": "Thợ phun sơn xe cơ giới"
+  },
+  {
+    "Code": "71323",
+    "Id": 743,
+    "Name": "Thợ vẽ bảng hiệu"
+  },
+  {
+    "Code": "71324",
+    "Id": 744,
+    "Name": "Thợ phun sơn (trừ tàu, xe cơ giới và biển báo)"
+  },
+  {
+    "Code": "71329",
+    "Id": 745,
+    "Name": "Thợ sơn khác và thợ có liên quan"
+  },
+  {
+    "Code": "71330",
+    "Id": 746,
+    "Name": "Người lau dọn tòa nhà"
+  },
+  {
+    "Code": "72110",
+    "Id": 747,
+    "Name": "Thợ tạo khuôn và lõi kim loại"
+  },
+  {
+    "Code": "72121",
+    "Id": 748,
+    "Name": "Thợ hàn"
+  },
+  {
+    "Code": "72122",
+    "Id": 749,
+    "Name": "Thợ cắt kim loại bằng nhiệt"
+  },
+  {
+    "Code": "72130",
+    "Id": 750,
+    "Name": "Thợ luyện kim loại"
+  },
+  {
+    "Code": "72140",
+    "Id": 751,
+    "Name": "Thợ chuẩn bị và lắp ráp các cấu kiện kim loại "
+  },
+  {
+    "Code": "72150",
+    "Id": 752,
+    "Name": "Thợ lắp ráp và thợ nối cáp"
+  },
+  {
+    "Code": "72210",
+    "Id": 753,
+    "Name": "Thợ rèn, thợ quai búa và thợ rèn ép nén kim loại"
+  },
+  {
+    "Code": "72220",
+    "Id": 754,
+    "Name": "Thợ chế tạo dụng cụ và thợ có liên quan"
+  },
+  {
+    "Code": "72230",
+    "Id": 755,
+    "Name": "Thợ lắp ráp và vận hành máy công cụ kim loại"
+  },
+  {
+    "Code": "72240",
+    "Id": 756,
+    "Name": "Thợ đánh bóng, thợ mài kim loại và dụng cụ kim loại"
+  },
+  {
+    "Code": "72311",
+    "Id": 757,
+    "Name": "Thợ cơ khí xe có động cơ"
+  },
+  {
+    "Code": "72312",
+    "Id": 758,
+    "Name": "Thợ sửa chữa xe có động cơ"
+  },
+  {
+    "Code": "72321",
+    "Id": 759,
+    "Name": "Thợ cơ khí máy bay"
+  },
+  {
+    "Code": "72322",
+    "Id": 760,
+    "Name": "Thợ sửa chữa động cơ máy bay"
+  },
+  {
+    "Code": "72331",
+    "Id": 761,
+    "Name": "Thợ cơ khí máy móc (chung)"
+  },
+  {
+    "Code": "72332",
+    "Id": 762,
+    "Name": "Thợ sửa chữa máy móc (chung)"
+  },
+  {
+    "Code": "72333",
+    "Id": 763,
+    "Name": "Thợ cơ khí máy móc công nghiệp/máy văn phòng"
+  },
+  {
+    "Code": "72334",
+    "Id": 764,
+    "Name": "Thợ sửa chữa động cơ biển"
+  },
+  {
+    "Code": "72335",
+    "Id": 765,
+    "Name": "Thợ lắp đặt máy móc, thiết bị"
+  },
+  {
+    "Code": "72339",
+    "Id": 766,
+    "Name": "Thợ cơ khí và sửa chữa máy móc khác (như thợ cơ khí máy móc nông nghiệp)"
+  },
+  {
+    "Code": "72340",
+    "Id": 767,
+    "Name": "Thợ sửa chữa xe đạp và thợ có liên quan "
+  },
+  {
+    "Code": "73110",
+    "Id": 768,
+    "Name": "Thợ sản xuất và sửa chữa dụng cụ chính xác"
+  },
+  {
+    "Code": "73120",
+    "Id": 769,
+    "Name": "Thợ sản xuất và điều chỉnh nhạc cụ"
+  },
+  {
+    "Code": "73131",
+    "Id": 770,
+    "Name": "Thợ kim hoàn (nói chung)"
+  },
+  {
+    "Code": "73132",
+    "Id": 771,
+    "Name": "Thợ cắt và đánh bóng đá quý"
+  },
+  {
+    "Code": "73133",
+    "Id": 772,
+    "Name": "Thợ vàng/thợ bạc"
+  },
+  {
+    "Code": "73134",
+    "Id": 773,
+    "Name": "Thợ khắc kim hoàn"
+  },
+  {
+    "Code": "73139",
+    "Id": 774,
+    "Name": "Thợ kim hoàn khác"
+  },
+  {
+    "Code": "73141",
+    "Id": 775,
+    "Name": "Thợ gốm"
+  },
+  {
+    "Code": "73142",
+    "Id": 776,
+    "Name": "Thợ gạch ngói"
+  },
+  {
+    "Code": "73149",
+    "Id": 777,
+    "Name": "Thợ gốm và thợ có liên quan khác"
+  },
+  {
+    "Code": "73150",
+    "Id": 778,
+    "Name": "Thợ sản xuất, thợ cắt, thợ mài và thợ hoàn thiện đồ thủy tinh"
+  },
+  {
+    "Code": "73161",
+    "Id": 779,
+    "Name": "Thợ khắc thủy tinh/thợ khắc axit"
+  },
+  {
+    "Code": "73162",
+    "Id": 780,
+    "Name": "Thợ vẽ/thợ trang trí thủy tinh và gốm"
+  },
+  {
+    "Code": "73169",
+    "Id": 781,
+    "Name": "Thợ vẽ biển quảng cáo, thợ trang trí, thợ khắc và thợ khắc axit khác"
+  },
+  {
+    "Code": "73170",
+    "Id": 782,
+    "Name": "Thợ thủ công sản xuất đồ gỗ, rổ rá và các nguyên liệu có liên quan"
+  },
+  {
+    "Code": "73180",
+    "Id": 783,
+    "Name": "Thợ thủ công dệt vải, da và các nguyên liệu có liên quan"
+  },
+  {
+    "Code": "73190",
+    "Id": 784,
+    "Name": "Thợ thủ công khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "73210",
+    "Id": 785,
+    "Name": "Thợ thực hiện công đoạn trước in"
+  },
+  {
+    "Code": "73221",
+    "Id": 786,
+    "Name": "Thợ in offset, in lõm, in cao, in lưới và in kỹ thuật số"
+  },
+  {
+    "Code": "73229",
+    "Id": 787,
+    "Name": "Thợ in khác"
+  },
+  {
+    "Code": "73230",
+    "Id": 788,
+    "Name": "Thợ hoàn thiện sản phẩm in"
+  },
+  {
+    "Code": "74110",
+    "Id": 789,
+    "Name": "Thợ lắp điện cho tòa nhà và thợ điện có liên quan"
+  },
+  {
+    "Code": "74121",
+    "Id": 790,
+    "Name": "Thợ lắp ráp điện (chung)"
+  },
+  {
+    "Code": "74122",
+    "Id": 791,
+    "Name": "Thợ lắp ráp điện thang máy, thang cuốn và các thiết bị liên quan"
+  },
+  {
+    "Code": "74123",
+    "Id": 792,
+    "Name": "Thợ sửa chữa điện gia dụng"
+  },
+  {
+    "Code": "74129",
+    "Id": 793,
+    "Name": "Thơ lắp ráp và thợ cơ khí điện khác"
+  },
+  {
+    "Code": "74131",
+    "Id": 794,
+    "Name": "Thợ lắp đặt đường dây điện"
+  },
+  {
+    "Code": "74132",
+    "Id": 795,
+    "Name": "Thợ ghép cáp điện"
+  },
+  {
+    "Code": "74139",
+    "Id": 796,
+    "Name": "Thợ lắp đặt và sửa chữa đường dây điện khác"
+  },
+  {
+    "Code": "74211",
+    "Id": 797,
+    "Name": "Thợ lắp đặt thiết bị điện tử (chung)"
+  },
+  {
+    "Code": "74212",
+    "Id": 798,
+    "Name": "Thợ cơ khí thiết bị video và âm thanh"
+  },
+  {
+    "Code": "74219",
+    "Id": 799,
+    "Name": "Thợ lắp đặt thiết bị điện tử khác"
+  },
+  {
+    "Code": "74221",
+    "Id": 800,
+    "Name": "Thợ lắp đặt phát sóng rada, phát thanh truyền hình/thiết bị truyền dẫn"
+  },
+  {
+    "Code": "74222",
+    "Id": 801,
+    "Name": "Thợ lắp đặt và sửa chữa máy tính và thiết bị điện tử liên quan"
+  },
+  {
+    "Code": "74223",
+    "Id": 802,
+    "Name": "Thợ kéo dây cáp viễn thông"
+  },
+  {
+    "Code": "74224",
+    "Id": 803,
+    "Name": "Thợ cài đặt viễn thông/dịch vụ viễn thông"
+  },
+  {
+    "Code": "75111",
+    "Id": 804,
+    "Name": "Thợ giết mổ"
+  },
+  {
+    "Code": "75119",
+    "Id": 805,
+    "Name": "Thợ giết mổ, chuẩn bị thịt, cá và thực phẩm khác có liên quan"
+  },
+  {
+    "Code": "75121",
+    "Id": 806,
+    "Name": "Thợ làm bánh (chung)"
+  },
+  {
+    "Code": "75122",
+    "Id": 807,
+    "Name": "Thợ làm bánh mỳ"
+  },
+  {
+    "Code": "75123",
+    "Id": 808,
+    "Name": "Thợ làm bánh ngọt và bánh kẹo"
+  },
+  {
+    "Code": "75130",
+    "Id": 809,
+    "Name": "Thợ làm sản phẩm từ sữa"
+  },
+  {
+    "Code": "75140",
+    "Id": 810,
+    "Name": "Thợ bảo quản rau, hoa quả tươi và các thứ có liên quan"
+  },
+  {
+    "Code": "75151",
+    "Id": 811,
+    "Name": "Thợ nếm cà phê và trà"
+  },
+  {
+    "Code": "75159",
+    "Id": 812,
+    "Name": "Thợ nếm và phân loại đồ uống, thực phẩm khác"
+  },
+  {
+    "Code": "75160",
+    "Id": 813,
+    "Name": "Thợ sản xuất và chuẩn bị thuốc lá"
+  },
+  {
+    "Code": "75211",
+    "Id": 814,
+    "Name": "Thợ lò sấy"
+  },
+  {
+    "Code": "75212",
+    "Id": 815,
+    "Name": "Thợ xử lý gỗ"
+  },
+  {
+    "Code": "75219",
+    "Id": 816,
+    "Name": "Thợ xử lý gỗ khác"
+  },
+  {
+    "Code": "75221",
+    "Id": 817,
+    "Name": "Thợ sản xuất đồ nội thất"
+  },
+  {
+    "Code": "75222",
+    "Id": 818,
+    "Name": "Thợ hoàn thiện đồ gỗ"
+  },
+  {
+    "Code": "75223",
+    "Id": 819,
+    "Name": "Thợ sản xuất khung hình"
+  },
+  {
+    "Code": "75229",
+    "Id": 820,
+    "Name": "Thợ sản xuất đồ gỗ và các thợ có liên quan khác"
+  },
+  {
+    "Code": "75230",
+    "Id": 821,
+    "Name": "Thợ lắp đặt và vận hành máy công cụ chế biến gỗ"
+  },
+  {
+    "Code": "75310",
+    "Id": 822,
+    "Name": "Thợ may, thợ làm da thú và thợ làm mũ"
+  },
+  {
+    "Code": "75321",
+    "Id": 823,
+    "Name": "Thợ tạo mẫu"
+  },
+  {
+    "Code": "75322",
+    "Id": 824,
+    "Name": "Thợ cắt"
+  },
+  {
+    "Code": "75329",
+    "Id": 825,
+    "Name": "Thợ tạo và cắt mẫu áo quần và các mẫu có liên quan khác"
+  },
+  {
+    "Code": "75330",
+    "Id": 826,
+    "Name": "Thợ khâu vá, thợ thêu và các thợ có liên quan"
+  },
+  {
+    "Code": "75340",
+    "Id": 827,
+    "Name": "Thợ làm nghề bọc đồ đạc và các thợ có liên quan"
+  },
+  {
+    "Code": "75350",
+    "Id": 828,
+    "Name": "Thợ thuộc da sống, thợ nhuộm và thợ chuyên lột da, lông thú"
+  },
+  {
+    "Code": "75361",
+    "Id": 829,
+    "Name": "Thợ đóng giày"
+  },
+  {
+    "Code": "75362",
+    "Id": 830,
+    "Name": "Thợ sản xuất giày chỉnh hình"
+  },
+  {
+    "Code": "75363",
+    "Id": 831,
+    "Name": "Thợ vá giày"
+  },
+  {
+    "Code": "75364",
+    "Id": 832,
+    "Name": "Thợ sản xuất/lắp ráp hàng da"
+  },
+  {
+    "Code": "75369",
+    "Id": 833,
+    "Name": "Thợ đóng giày và các thợ có liên quan khác"
+  },
+  {
+    "Code": "75410",
+    "Id": 834,
+    "Name": "Thợ lặn"
+  },
+  {
+    "Code": "75420",
+    "Id": 835,
+    "Name": "Thợ giật mìn phá đá "
+  },
+  {
+    "Code": "75430",
+    "Id": 836,
+    "Name": "Thợ phân loại và kiểm tra sản phẩm (trừ thực phẩm và đồ uống)"
+  },
+  {
+    "Code": "75440",
+    "Id": 837,
+    "Name": "Thợ hun khói và thợ kiểm soát thực vật, động vật có hại khác"
+  },
+  {
+    "Code": "75490",
+    "Id": 838,
+    "Name": "Thợ thủ công và các thợ khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "81110",
+    "Id": 839,
+    "Name": "Thợ khai thác mỏ và đá"
+  },
+  {
+    "Code": "81120",
+    "Id": 840,
+    "Name": "Thợ vận hành thiết bị chế biến khoáng sản và đá"
+  },
+  {
+    "Code": "81131",
+    "Id": 841,
+    "Name": "Thợ khoan giếng (giếng dầu khí)"
+  },
+  {
+    "Code": "81132",
+    "Id": 842,
+    "Name": "Thợ khoan giếng (trừ giếng dầu khí)"
+  },
+  {
+    "Code": "81133",
+    "Id": 843,
+    "Name": "Thợ vận hành máy khoan sâu"
+  },
+  {
+    "Code": "81139",
+    "Id": 844,
+    "Name": "Thợ khoan, đào giếng và các thợ có liên quan khác"
+  },
+  {
+    "Code": "81141",
+    "Id": 845,
+    "Name": "Thợ vận hành máy sản xuất sản phẩm bê tông đúc sẵn"
+  },
+  {
+    "Code": "81142",
+    "Id": 846,
+    "Name": "Thợ vận hành máy sản xuất xi măng amiăng"
+  },
+  {
+    "Code": "81143",
+    "Id": 847,
+    "Name": "Thợ vận hành máy làm gạch đất nung, ngói"
+  },
+  {
+    "Code": "81144",
+    "Id": 848,
+    "Name": "Thợ vận hành máy trộn bê tông"
+  },
+  {
+    "Code": "81145",
+    "Id": 849,
+    "Name": "Thợ vận hành bơm bê tông"
+  },
+  {
+    "Code": "81149",
+    "Id": 850,
+    "Name": "Thợ vận hành máy chế biến và các sản phẩm khoáng sản khác"
+  },
+  {
+    "Code": "81210",
+    "Id": 851,
+    "Name": "Thợ vận hành thiết bị xử lý kim loại"
+  },
+  {
+    "Code": "81220",
+    "Id": 852,
+    "Name": "Thợ vận hành máy hoàn thiện, tráng, mạ kim loại"
+  },
+  {
+    "Code": "81311",
+    "Id": 853,
+    "Name": "Thợ vận hành thiết bị nghiền/trộn hóa chất"
+  },
+  {
+    "Code": "81312",
+    "Id": 854,
+    "Name": "Thợ vận hành máy xử lý nhiệt hóa học"
+  },
+  {
+    "Code": "81313",
+    "Id": 855,
+    "Name": "Thợ vận hành máy lọc và tách hóa chất"
+  },
+  {
+    "Code": "81314",
+    "Id": 856,
+    "Name": "Thợ vận hành hóa chất tĩnh/lò phản ứng"
+  },
+  {
+    "Code": "81315",
+    "Id": 857,
+    "Name": "Thợ vận hành máy sợi tổng hợp"
+  },
+  {
+    "Code": "81319",
+    "Id": 858,
+    "Name": "Thợ vận hành máy và thiết bị sản xuất hóa học khác"
+  },
+  {
+    "Code": "81320",
+    "Id": 859,
+    "Name": "Thợ vận hành máy sản xuất sản phẩm phim ảnh"
+  },
+  {
+    "Code": "81411",
+    "Id": 860,
+    "Name": "Thợ vận hành máy phay cao su"
+  },
+  {
+    "Code": "81412",
+    "Id": 861,
+    "Name": "Thợ vận hành máy cán cao su"
+  },
+  {
+    "Code": "81419",
+    "Id": 862,
+    "Name": "Thợ vận hành máy sản xuất sản phẩm cao su khác"
+  },
+  {
+    "Code": "81420",
+    "Id": 863,
+    "Name": "Thợ vận hành máy sản xuất sản phẩm nhựa"
+  },
+  {
+    "Code": "81431",
+    "Id": 864,
+    "Name": "Thợ vận hành máy làm thùng catong/hộp giấy"
+  },
+  {
+    "Code": "81432",
+    "Id": 865,
+    "Name": "Thợ vận hành máy sản xuất sản phẩm giấy"
+  },
+  {
+    "Code": "81439",
+    "Id": 866,
+    "Name": "Thợ vận hành máy sản xuất sản phẩm giấy và thùng catong khác"
+  },
+  {
+    "Code": "81511",
+    "Id": 867,
+    "Name": "Thợ vận hành máy xe chỉ (chỉ và sợi)"
+  },
+  {
+    "Code": "81512",
+    "Id": 868,
+    "Name": "Thợ vận hành máy cuộn chỉ (chỉ và sợi)"
+  },
+  {
+    "Code": "81521",
+    "Id": 869,
+    "Name": "Thợ vận hành máy dệt"
+  },
+  {
+    "Code": "81522",
+    "Id": 870,
+    "Name": "Thợ vận hành máy đan"
+  },
+  {
+    "Code": "81531",
+    "Id": 871,
+    "Name": "Thợ vận hành máy may"
+  },
+  {
+    "Code": "81532",
+    "Id": 872,
+    "Name": "Thợ vận hành máy thêu"
+  },
+  {
+    "Code": "81541",
+    "Id": 873,
+    "Name": "Thợ vận hành máy tẩy trắng"
+  },
+  {
+    "Code": "81542",
+    "Id": 874,
+    "Name": "Thợ vận hành máy nhuộm"
+  },
+  {
+    "Code": "81543",
+    "Id": 875,
+    "Name": "Thợ vận hành máy làm sạch sợi"
+  },
+  {
+    "Code": "81549",
+    "Id": 876,
+    "Name": "Thợ vận hành máy tẩy trắng, máy nhuộm và làm sạch sợi khác"
+  },
+  {
+    "Code": "81550",
+    "Id": 877,
+    "Name": "Thợ vận hành máy chuẩn bị da, lông thú"
+  },
+  {
+    "Code": "81560",
+    "Id": 878,
+    "Name": "Thợ vận hành máy đóng giầy, dép và các thợ có liên quan"
+  },
+  {
+    "Code": "81570",
+    "Id": 879,
+    "Name": "Thợ vận hành máy giặt là"
+  },
+  {
+    "Code": "81590",
+    "Id": 880,
+    "Name": "Thợ vận hành máy sản xuất nguyên liệu dệt, da lông thú và da thuộc chưa được phân vào đâu"
+  },
+  {
+    "Code": "81601",
+    "Id": 881,
+    "Name": "Thợ vận hành máy sản xuất các sản phẩm từ thịt và cá"
+  },
+  {
+    "Code": "81602",
+    "Id": 882,
+    "Name": "Thợ vận hành máy sản xuất sữa và bánh kẹo"
+  },
+  {
+    "Code": "81603",
+    "Id": 883,
+    "Name": "Thợ vận hành máy xay ngũ cốc và gia vị"
+  },
+  {
+    "Code": "81604",
+    "Id": 884,
+    "Name": "Thợ vận hành máy nướng và các sản phẩm từ ngũ cốc"
+  },
+  {
+    "Code": "81605",
+    "Id": 885,
+    "Name": "Thợ vận hành máy sản xuất các sản phẩm từ trái cây, rau quả"
+  },
+  {
+    "Code": "81606",
+    "Id": 886,
+    "Name": "Thợ vận hành máy chế biến và tinh chế đường"
+  },
+  {
+    "Code": "81607",
+    "Id": 887,
+    "Name": "Thợ vận hành máy sản xuất bia, rượu và nước giải khát khác"
+  },
+  {
+    "Code": "81608",
+    "Id": 888,
+    "Name": "Thợ vận hành máy sản xuất thuốc lá"
+  },
+  {
+    "Code": "81609",
+    "Id": 889,
+    "Name": "Thợ vận hành máy sản xuất thực phẩm và các thợ có liên quan chưa được phân vào đâu"
+  },
+  {
+    "Code": "81711",
+    "Id": 890,
+    "Name": "Thợ vận hành thiết bị chế tạo bột giấy"
+  },
+  {
+    "Code": "81712",
+    "Id": 891,
+    "Name": "Thợ vận hành thiết bị chế tạo giấy"
+  },
+  {
+    "Code": "81719",
+    "Id": 892,
+    "Name": "Thợ vận hành thiết bị chế tạo bột giấy và giấy"
+  },
+  {
+    "Code": "81721",
+    "Id": 893,
+    "Name": "Thợ cưa"
+  },
+  {
+    "Code": "81722",
+    "Id": 894,
+    "Name": "Thợ vận hành máy cắt"
+  },
+  {
+    "Code": "81723",
+    "Id": 895,
+    "Name": "Thợ sơn lõi ván ép"
+  },
+  {
+    "Code": "81724",
+    "Id": 896,
+    "Name": "Thợ vận hành máy ép ván ép"
+  },
+  {
+    "Code": "81725",
+    "Id": 897,
+    "Name": "Thợ phân loại gỗ"
+  },
+  {
+    "Code": "81726",
+    "Id": 898,
+    "Name": "Thợ vận hành máy chế biến gỗ"
+  },
+  {
+    "Code": "81727",
+    "Id": 899,
+    "Name": "Thợ vận hành máy cưa gỗ chính xác"
+  },
+  {
+    "Code": "81729",
+    "Id": 900,
+    "Name": "Thợ vận hành thiết bị chế biến gỗ khác"
+  },
+  {
+    "Code": "81811",
+    "Id": 901,
+    "Name": "Thợ vận hành lò nung thủy tinh/gốm"
+  },
+  {
+    "Code": "81812",
+    "Id": 902,
+    "Name": "Thợ sản xuất sợi thủy tinh"
+  },
+  {
+    "Code": "81819",
+    "Id": 903,
+    "Name": "Thợ vận hành thiết bị sản xuất thủy tinh và gốm"
+  },
+  {
+    "Code": "81821",
+    "Id": 904,
+    "Name": "Thợ vận hành động cơ hơi nước"
+  },
+  {
+    "Code": "81822",
+    "Id": 905,
+    "Name": "Thợ đốt lò"
+  },
+  {
+    "Code": "81829",
+    "Id": 906,
+    "Name": "Thợ vận hành động cơ hơi nước và nồi hơi khác"
+  },
+  {
+    "Code": "81830",
+    "Id": 907,
+    "Name": "Thợ vận hành thiết bị đóng gói, đóng chai và dán nhãn"
+  },
+  {
+    "Code": "81891",
+    "Id": 908,
+    "Name": "Thợ vận hành máy in, máy đóng sách và máy có liên quan"
+  },
+  {
+    "Code": "81892",
+    "Id": 909,
+    "Name": "Thợ vận hành máy cắt dây cáp và dây tải điện"
+  },
+  {
+    "Code": "81893",
+    "Id": 910,
+    "Name": "Thợ vận hành máy sản xuất con chip silicon"
+  },
+  {
+    "Code": "81894",
+    "Id": 911,
+    "Name": "Thợ vận hành dây chuyền lắp ráp tự động và vận hành rô bốt công nghiệp"
+  },
+  {
+    "Code": "81899",
+    "Id": 912,
+    "Name": "Thợ vận hành thiết bị khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "82010",
+    "Id": 913,
+    "Name": "Thợ lắp ráp máy cơ khí"
+  },
+  {
+    "Code": "82021",
+    "Id": 914,
+    "Name": "Thợ lắp ráp thiết bị điện/linh kiện điện"
+  },
+  {
+    "Code": "82022",
+    "Id": 915,
+    "Name": "Thợ lắp ráp thiết bị điện tử/linh kiện điện tử"
+  },
+  {
+    "Code": "82023",
+    "Id": 916,
+    "Name": "Thợ lắp ráp pin"
+  },
+  {
+    "Code": "82091",
+    "Id": 917,
+    "Name": "Thợ lắp ráp đồ chơi"
+  },
+  {
+    "Code": "82099",
+    "Id": 918,
+    "Name": "Thợ lắp ráp khác chưa được phân vào đâu (lắp ráp sản phẩm nhựa, lắp ráp sản phẩm cao su)"
+  },
+  {
+    "Code": "83110",
+    "Id": 919,
+    "Name": "Lái các phương tiện vận chuyển trên đường ray"
+  },
+  {
+    "Code": "83121",
+    "Id": 920,
+    "Name": "Nhân viên điều khiển tín hiệu, bẻ ghi và chuyển hướng tàu hỏa"
+  },
+  {
+    "Code": "83129",
+    "Id": 921,
+    "Name": "Nhân viên đường sắt khác và nhân viên có liên quan"
+  },
+  {
+    "Code": "83211",
+    "Id": 922,
+    "Name": "Người chở người, chở hàng bằng xe máy (không phải là thư)"
+  },
+  {
+    "Code": "83212",
+    "Id": 923,
+    "Name": "Người chở người, chở hàng bằng xe máy sử dụng các thiết bị di động cá nhân (lái xe máy công nghệ)"
+  },
+  {
+    "Code": "83221",
+    "Id": 924,
+    "Name": "Lái xe taxi"
+  },
+  {
+    "Code": "83222",
+    "Id": 925,
+    "Name": "Lái xe con"
+  },
+  {
+    "Code": "83223",
+    "Id": 926,
+    "Name": "Lái xe tải hạng nhẹ"
+  },
+  {
+    "Code": "83224",
+    "Id": 927,
+    "Name": "Lái xe cứu thương"
+  },
+  {
+    "Code": "83225",
+    "Id": 928,
+    "Name": "Người trông bãi đỗ xe"
+  },
+  {
+    "Code": "83229",
+    "Id": 929,
+    "Name": "Lái xe con và xe hạng nhẹ khác"
+  },
+  {
+    "Code": "83311",
+    "Id": 930,
+    "Name": "Lái xe buýt"
+  },
+  {
+    "Code": "83312",
+    "Id": 931,
+    "Name": "Lái xe điện"
+  },
+  {
+    "Code": "83321",
+    "Id": 932,
+    "Name": "Lái xe tải hạng nặng"
+  },
+  {
+    "Code": "83322",
+    "Id": 933,
+    "Name": "Lái xe tải rơ móoc (bao gồm cả lái xe chính)"
+  },
+  {
+    "Code": "83323",
+    "Id": 934,
+    "Name": "Lái xe cứu hỏa"
+  },
+  {
+    "Code": "83324",
+    "Id": 935,
+    "Name": "Lái thiết bị di động sân bay"
+  },
+  {
+    "Code": "83325",
+    "Id": 936,
+    "Name": "Lái xe tải trộn bê tông"
+  },
+  {
+    "Code": "83326",
+    "Id": 937,
+    "Name": "Lái xe tải chở chất thải (bao gồm cả xe tải móc với thùng chứa cuộn)"
+  },
+  {
+    "Code": "83329",
+    "Id": 938,
+    "Name": "Lái xe tải hạng vừa và xe tải hạng nặng khác"
+  },
+  {
+    "Code": "83410",
+    "Id": 939,
+    "Name": "Thợ vận hành thiết bị nông nghiệp và lâm nghiệp"
+  },
+  {
+    "Code": "83421",
+    "Id": 940,
+    "Name": "Thợ vận hành máy đào"
+  },
+  {
+    "Code": "83422",
+    "Id": 941,
+    "Name": "Thợ vận hành máy ủi"
+  },
+  {
+    "Code": "83423",
+    "Id": 942,
+    "Name": "Thợ vận hành máy nạo vét"
+  },
+  {
+    "Code": "83424",
+    "Id": 943,
+    "Name": "Thợ vận hành máy đóng cọc/máy khoan"
+  },
+  {
+    "Code": "83425",
+    "Id": 944,
+    "Name": "Thợ vận hành máy làm đường"
+  },
+  {
+    "Code": "83426",
+    "Id": 945,
+    "Name": "Thợ vận hành máy đào hầm (kể cả thợ vận hành máy kích ống)"
+  },
+  {
+    "Code": "83429",
+    "Id": 946,
+    "Name": "Thợ vận hành máy đào đất và thợ vận hành thiết bị có liên quan khác"
+  },
+  {
+    "Code": "83431",
+    "Id": 947,
+    "Name": "Thợ vận hành cần trục (chung)"
+  },
+  {
+    "Code": "83432",
+    "Id": 948,
+    "Name": "Thợ vận hành cần trục (hải cảng)"
+  },
+  {
+    "Code": "83439",
+    "Id": 949,
+    "Name": "Thợ vận hành cần trục và thợ vận hành các thiết bị có liên quan khác"
+  },
+  {
+    "Code": "83501",
+    "Id": 950,
+    "Name": "Người lái tàu"
+  },
+  {
+    "Code": "83502",
+    "Id": 951,
+    "Name": "Thủy thủ (bao gồm cả người chủ tàu)"
+  },
+  {
+    "Code": "83509",
+    "Id": 952,
+    "Name": "Thủy thủ trên tàu và những thợ có liên quan khác"
+  },
+  {
+    "Code": "91111",
+    "Id": 953,
+    "Name": "Người giúp việc gia đình (chung)"
+  },
+  {
+    "Code": "91119",
+    "Id": 954,
+    "Name": "Người quét dọn và giúp việc gia đình khác"
+  },
+  {
+    "Code": "91121",
+    "Id": 955,
+    "Name": "Người dọn dẹp văn phòng"
+  },
+  {
+    "Code": "91122",
+    "Id": 956,
+    "Name": "Người dọn dẹp khách sạn"
+  },
+  {
+    "Code": "91123",
+    "Id": 957,
+    "Name": "Người dọn dẹp cơ sở công nghiệp"
+  },
+  {
+    "Code": "91124",
+    "Id": 958,
+    "Name": "Người dọn dẹp cơ sở thực phẩm và đồ uống (như nhà hàng, trung tâm bán hàng rong)"
+  },
+  {
+    "Code": "91125",
+    "Id": 959,
+    "Name": "Người dọn dẹp khu dân cư (như chung cư, căn hộ riêng, khu vực chung trong khu dân cư)"
+  },
+  {
+    "Code": "91126",
+    "Id": 960,
+    "Name": "Người dọn dẹp khu vực công cộng (như trạm dừng xe buýt, đường sắt, cống rãnh, cầu trên cao, đường giao thông, đường cao tốc, công viên, bãi biển)"
+  },
+  {
+    "Code": "91127",
+    "Id": 961,
+    "Name": "Người dọn dẹp các phương tiện (như máy bay, tàu hỏa, tàu điện ngầm)"
+  },
+  {
+    "Code": "91129",
+    "Id": 962,
+    "Name": "Người dọn dẹp ở các cơ sở khác (như trung tâm mua sắm, trường học, bệnh viện, những nơi thờ tự)"
+  },
+  {
+    "Code": "91210",
+    "Id": 963,
+    "Name": "Thợ giặt là bằng tay"
+  },
+  {
+    "Code": "91220",
+    "Id": 964,
+    "Name": "Thợ rửa xe cộ"
+  },
+  {
+    "Code": "91230",
+    "Id": 965,
+    "Name": "Thợ làm sạch cửa sổ"
+  },
+  {
+    "Code": "92010",
+    "Id": 966,
+    "Name": "Lao động trồng trọt"
+  },
+  {
+    "Code": "92020",
+    "Id": 967,
+    "Name": "Lao động chăn nuôi"
+  },
+  {
+    "Code": "92030",
+    "Id": 968,
+    "Name": "Lao động trồng trọt và chăn nuôi hỗn hợp"
+  },
+  {
+    "Code": "92040",
+    "Id": 969,
+    "Name": "Lao động làm vườn"
+  },
+  {
+    "Code": "92050",
+    "Id": 970,
+    "Name": "Lao động lâm nghiệp"
+  },
+  {
+    "Code": "92061",
+    "Id": 971,
+    "Name": "Lao động nuôi trồng thủy sản"
+  },
+  {
+    "Code": "92062",
+    "Id": 972,
+    "Name": "Lao động khai thác thủy sản trong nội địa"
+  },
+  {
+    "Code": "92063",
+    "Id": 973,
+    "Name": "Lao động khai thác thủy sản trong vùng biển Việt Nam"
+  },
+  {
+    "Code": "93110",
+    "Id": 974,
+    "Name": "Lao động trong khai thác mỏ và khai thác đá"
+  },
+  {
+    "Code": "93120",
+    "Id": 975,
+    "Name": "Lao động trong xây dựng công trình kỹ thuật (không phải nhà)"
+  },
+  {
+    "Code": "93130",
+    "Id": 976,
+    "Name": "Thợ phụ xây dựng"
+  },
+  {
+    "Code": "93210",
+    "Id": 977,
+    "Name": "Lao động đóng gói thủ công"
+  },
+  {
+    "Code": "93290",
+    "Id": 978,
+    "Name": "Lao động công nghiệp khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "93310",
+    "Id": 979,
+    "Name": "Lái xe bằng tay và đạp chân"
+  },
+  {
+    "Code": "93320",
+    "Id": 980,
+    "Name": "Người điều khiển máy kéo và phương tiện do gia súc kéo"
+  },
+  {
+    "Code": "93331",
+    "Id": 981,
+    "Name": "Người mang vác hàng hóa xuống tàu và lên bờ"
+  },
+  {
+    "Code": "93332",
+    "Id": 982,
+    "Name": "Người mang vác đường sắt/đường bộ"
+  },
+  {
+    "Code": "93333",
+    "Id": 983,
+    "Name": "Người bốc xếp máy bay (như hành lý sân bay/xử lý hàng hóa)"
+  },
+  {
+    "Code": "93334",
+    "Id": 984,
+    "Name": "Người bốc xếp tại kho"
+  },
+  {
+    "Code": "93335",
+    "Id": 985,
+    "Name": "Người phục vụ xe vận chuyển hàng hóa"
+  },
+  {
+    "Code": "93336",
+    "Id": 986,
+    "Name": "Người đẩy hàng"
+  },
+  {
+    "Code": "93337",
+    "Id": 987,
+    "Name": "Người buộc dây hàng hóa"
+  },
+  {
+    "Code": "93339",
+    "Id": 988,
+    "Name": "Người mang vác hàng khác"
+  },
+  {
+    "Code": "93340",
+    "Id": 989,
+    "Name": "Người bày hàng lên giá"
+  },
+  {
+    "Code": "94010",
+    "Id": 990,
+    "Name": "Người chuẩn bị đồ ăn nhanh"
+  },
+  {
+    "Code": "94020",
+    "Id": 991,
+    "Name": "Người phụ bếp"
+  },
+  {
+    "Code": "95100",
+    "Id": 992,
+    "Name": "Lao động trên đường phố và lao động có liên quan"
+  },
+  {
+    "Code": "95200",
+    "Id": 993,
+    "Name": "Người bán hàng rong trên đường phố (trừ đồ ăn)"
+  },
+  {
+    "Code": "96110",
+    "Id": 994,
+    "Name": "Người thu gom rác và tái chế"
+  },
+  {
+    "Code": "96120",
+    "Id": 995,
+    "Name": "Người thu dọn, sắp xếp, phân loại rác"
+  },
+  {
+    "Code": "96130",
+    "Id": 996,
+    "Name": "Người quét dọn và lao động khác có liên quan"
+  },
+  {
+    "Code": "96211",
+    "Id": 997,
+    "Name": "Người đưa thư"
+  },
+  {
+    "Code": "96212",
+    "Id": 998,
+    "Name": "Người giao hàng"
+  },
+  {
+    "Code": "96213",
+    "Id": 999,
+    "Name": "Người khuân vác ở khách sạn"
+  },
+  {
+    "Code": "96214",
+    "Id": 1000,
+    "Name": "Người khuân vác (trừ khách sạn)"
+  },
+  {
+    "Code": "96220",
+    "Id": 1001,
+    "Name": "Người làm công việc lặt vặt"
+  },
+  {
+    "Code": "96230",
+    "Id": 1002,
+    "Name": "Người đọc đồng hồ đo và người thu tiền từ máy bán hàng tự động"
+  },
+  {
+    "Code": "96240",
+    "Id": 1003,
+    "Name": "Người thu gom nước và củi"
+  },
+  {
+    "Code": "96290",
+    "Id": 1004,
+    "Name": "Lao động giản đơn khác chưa được phân vào đâu"
+  },
+  {
+    "Code": "1100",
+    "Id": 1005,
+    "Name": "Sĩ quan"
+  },
+  {
+    "Code": "1200",
+    "Id": 1006,
+    "Name": "Hạ sĩ quan, binh sĩ"
+  },
+  {
+    "Code": "1300",
+    "Id": 1007,
+    "Name": "Lực lượng khác trong quân đội"
+  },
+  {
+    "Code": "2100",
+    "Id": 1008,
+    "Name": "Sĩ quan"
+  },
+  {
+    "Code": "2200",
+    "Id": 1009,
+    "Name": "Hạ sĩ quan, chiến sĩ"
+  },
+  {
+    "Code": "2300",
+    "Id": 1010,
+    "Name": "Lực lượng khác trong công an"
+  },
+  {
+    "Code": "3100",
+    "Id": 1011,
+    "Name": "Cơ yếu"
+  },
+  {
+    "Code": "3200",
+    "Id": 1012,
+    "Name": "Lực lượng vũ trang khác"
+  },
+  {
+    "Code": "NN1013",
+    "Id": 1013,
+    "Name": "Nội trợ"
+  },
+  {
+    "Code": "NN1014",
+    "Id": 1014,
+    "Name": "Hưu trí"
+  },
+  {
+    "Code": "NN1015",
+    "Id": 1015,
+    "Name": "Lao động tự do"
+  },
+  {
+    "Code": "NN1016",
+    "Id": 2021,
+    "Name": "Công nhân"
+  },
+  {
+    "Code": "NN1017",
+    "Id": 2022,
+    "Name": "Học sinh"
+  },
+  {
+    "Code": "NN1018",
+    "Id": 2023,
+    "Name": "Sinh viên"
+  }
+]

@@ -1,0 +1,310 @@
+[
+  {
+    "Id": 15,
+    "Name": "Kinh"
+  },
+  {
+    "Id": 16,
+    "Name": "Tày"
+  },
+  {
+    "Id": 17,
+    "Name": "Thái"
+  },
+  {
+    "Id": 18,
+    "Name": "Hoa"
+  },
+  {
+    "Id": 19,
+    "Name": "Khme"
+  },
+  {
+    "Id": 20,
+    "Name": "Mường"
+  },
+  {
+    "Id": 21,
+    "Name": "Nùng"
+  },
+  {
+    "Id": 22,
+    "Name": "Hán"
+  },
+  {
+    "Id": 23,
+    "Name": "Dao"
+  },
+  {
+    "Id": 24,
+    "Name": "Gia rai"
+  },
+  {
+    "Id": 25,
+    "Name": "Cao lan"
+  },
+  {
+    "Id": 26,
+    "Name": "Ê đê"
+  },
+  {
+    "Id": 27,
+    "Name": "Ba na"
+  },
+  {
+    "Id": 28,
+    "Name": "Xơ đăng"
+  },
+  {
+    "Id": 29,
+    "Name": "Sán Chay"
+  },
+  {
+    "Id": 30,
+    "Name": "Cơ ho"
+  },
+  {
+    "Id": 31,
+    "Name": "Chăm"
+  },
+  {
+    "Id": 32,
+    "Name": "Sán chỉ"
+  },
+  {
+    "Id": 33,
+    "Name": "Hrê"
+  },
+  {
+    "Id": 34,
+    "Name": "M nông"
+  },
+  {
+    "Id": 35,
+    "Name": "Raglai"
+  },
+  {
+    "Id": 36,
+    "Name": "Xtiêng"
+  },
+  {
+    "Id": 37,
+    "Name": "Bru (Khùa)"
+  },
+  {
+    "Id": 38,
+    "Name": "Thổ"
+  },
+  {
+    "Id": 39,
+    "Name": "Giấy"
+  },
+  {
+    "Id": 40,
+    "Name": "Cơ Tu"
+  },
+  {
+    "Id": 41,
+    "Name": "Giẻ Triêng"
+  },
+  {
+    "Id": 42,
+    "Name": "Mạ"
+  },
+  {
+    "Id": 43,
+    "Name": "Khơ mú"
+  },
+  {
+    "Id": 44,
+    "Name": "Co (Cùa)"
+  },
+  {
+    "Id": 45,
+    "Name": "Tà ôi"
+  },
+  {
+    "Id": 46,
+    "Name": "Chơ-ro"
+  },
+  {
+    "Id": 47,
+    "Name": "Kháng"
+  },
+  {
+    "Id": 48,
+    "Name": "Xinh mun"
+  },
+  {
+    "Id": 49,
+    "Name": "Hà nhì"
+  },
+  {
+    "Id": 50,
+    "Name": "Chu ru"
+  },
+  {
+    "Id": 51,
+    "Name": "Lào"
+  },
+  {
+    "Id": 52,
+    "Name": "La chí"
+  },
+  {
+    "Id": 53,
+    "Name": "La ha"
+  },
+  {
+    "Id": 54,
+    "Name": "Phù lá"
+  },
+  {
+    "Id": 55,
+    "Name": "La hụ"
+  },
+  {
+    "Id": 56,
+    "Name": "Lự"
+  },
+  {
+    "Id": 57,
+    "Name": "Lô Lô"
+  },
+  {
+    "Id": 58,
+    "Name": "Cà Doòng"
+  },
+  {
+    "Id": 59,
+    "Name": "Mảng"
+  },
+  {
+    "Id": 60,
+    "Name": "Pà thẻn"
+  },
+  {
+    "Id": 61,
+    "Name": "Cờ lao"
+  },
+  {
+    "Id": 62,
+    "Name": "Cống"
+  },
+  {
+    "Id": 63,
+    "Name": "Bố Y"
+  },
+  {
+    "Id": 64,
+    "Name": "Si la"
+  },
+  {
+    "Id": 65,
+    "Name": "Pu piéo"
+  },
+  {
+    "Id": 66,
+    "Name": "Brâu"
+  },
+  {
+    "Id": 67,
+    "Name": "Ơ đu"
+  },
+  {
+    "Id": 68,
+    "Name": "Rơ măm"
+  },
+  {
+    "Id": 1017,
+    "Name": "Tày Poọng"
+  },
+  {
+    "Id": 1018,
+    "Name": "Thù lao"
+  },
+  {
+    "Id": 1019,
+    "Name": "Pa dí"
+  },
+  {
+    "Id": 1020,
+    "Name": "Cao lan"
+  },
+  {
+    "Id": 1021,
+    "Name": "Quý châu(Pu nà)"
+  },
+  {
+    "Id": 1022,
+    "Name": "Thuỷ"
+  },
+  {
+    "Id": 1023,
+    "Name": "Vân kiều"
+  },
+  {
+    "Id": 1024,
+    "Name": "Pa cô"
+  },
+  {
+    "Id": 1025,
+    "Name": "Ba hy"
+  },
+  {
+    "Id": 1026,
+    "Name": "Tù riềng"
+  },
+  {
+    "Id": 1027,
+    "Name": "Hà lăng"
+  },
+  {
+    "Id": 1028,
+    "Name": "Treng"
+  },
+  {
+    "Id": 1029,
+    "Name": "Xil (Chil)"
+  },
+  {
+    "Id": 1031,
+    "Name": "Hroi"
+  },
+  {
+    "Id": 1032,
+    "Name": "Tu dí"
+  },
+  {
+    "Id": 1033,
+    "Name": "Nước ngoài"
+  },
+  {
+    "Id": 1034,
+    "Name": "Kor"
+  },
+  {
+    "Id": 1035,
+    "Name": "Chứt"
+  },
+  {
+    "Id": 1036,
+    "Name": "Krê"
+  },
+  {
+    "Id": 1037,
+    "Name": "Mông"
+  },
+  {
+    "Id": 1038,
+    "Name": "Sán dìu"
+  },
+  {
+    "Id": 1039,
+    "Name": "Ve"
+  },
+  {
+    "Id": 1040,
+    "Name": "Khác trong nước"
+  }
+]

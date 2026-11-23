@@ -1,0 +1,17 @@
+using SCM.Application.Contracts.B2B.Dtos;
+using SCM.Domain.Shared.Enums;
+
+namespace SCM.Application.Contracts.B2B;
+
+public interface IPackageAppService
+{
+    Task<PackageDto> GetAsync(Guid id);
+    Task<List<PackageDto>> GetListByCompanyAsync(Guid companyId);
+    Task<PackageDto> CreateAsync(CreateUpdatePackageDto input);
+    Task<PackageDto> UpdateAsync(Guid id, CreateUpdatePackageDto input);
+    Task DeleteAsync(Guid id);
+    Task<PackageDto> ChangeStatusAsync(Guid id, PackageStatus newStatus);
+    Task<PackageTargetGroupDto> AddTargetGroupAsync(CreateUpdatePackageTargetGroupDto input);
+    Task<PackageServiceDto> AddServiceAsync(CreateUpdatePackageServiceDto input);
+    Task<PackageServiceDto> UpdateServicePriceAsync(Guid serviceId, decimal dealPrice, bool isSpecialApproved = false);
+}

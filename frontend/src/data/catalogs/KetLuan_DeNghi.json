@@ -1,0 +1,22 @@
+[
+  {
+    "Id": 5172,
+    "Name": "Bình thường, hẹn khám định kỳ lần sau"
+  },
+  {
+    "Id": 5175,
+    "Name": "Chuyển tuyến, khám chuyên khoa"
+  },
+  {
+    "Id": 5174,
+    "Name": "Đã có bệnh mạn tính, tiếp tục điều trị theo phác đồ/toa cũ"
+  },
+  {
+    "Id": 5176,
+    "Name": "Khác"
+  },
+  {
+    "Id": 5173,
+    "Name": "Có yếu tố nguy cơ, cần theo dõi thêm"
+  }
+]

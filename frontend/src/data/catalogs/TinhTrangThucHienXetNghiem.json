@@ -1,0 +1,18 @@
+[
+  {
+    "Id": 1,
+    "Name": "Đã thực hiện đầy đủ xét nghiệm tại cơ sở"
+  },
+  {
+    "Id": 2,
+    "Name": "Chưa thực hiện xét nghiệm / Chờ kết quả"
+  },
+  {
+    "Id": 3,
+    "Name": "Sử dụng kết quả xét nghiệm còn hiệu lực trong 6 tháng"
+  },
+  {
+    "Id": 4,
+    "Name": "Không thực hiện xét nghiệm (chỉ khám lâm sàng và thể lực)"
+  }
+]

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SCM.Domain\SCM.Domain.csproj" />
+    <ProjectReference Include="..\SCM.Application.Contracts\SCM.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SCM.EntityFrameworkCore\SCM.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

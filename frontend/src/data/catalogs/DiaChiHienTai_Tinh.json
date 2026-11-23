@@ -1,0 +1,172 @@
+[
+  {
+    "Code": "001",
+    "Id": 1,
+    "Name": "Thành phố Hà Nội"
+  },
+  {
+    "Code": "004",
+    "Id": 3,
+    "Name": "Tỉnh Cao Bằng"
+  },
+  {
+    "Code": "008",
+    "Id": 5,
+    "Name": "Tỉnh Tuyên Quang"
+  },
+  {
+    "Code": "015",
+    "Id": 6,
+    "Name": "Tỉnh Lào Cai"
+  },
+  {
+    "Code": "011",
+    "Id": 7,
+    "Name": "Tỉnh Điện Biên"
+  },
+  {
+    "Code": "012",
+    "Id": 8,
+    "Name": "Tỉnh Lai Châu"
+  },
+  {
+    "Code": "014",
+    "Id": 9,
+    "Name": "Tỉnh Sơn La"
+  },
+  {
+    "Code": "019",
+    "Id": 12,
+    "Name": "Tỉnh Thái Nguyên"
+  },
+  {
+    "Code": "020",
+    "Id": 13,
+    "Name": "Tỉnh Lạng Sơn"
+  },
+  {
+    "Code": "022",
+    "Id": 14,
+    "Name": "Tỉnh Quảng Ninh"
+  },
+  {
+    "Code": "025",
+    "Id": 16,
+    "Name": "Tỉnh Phú Thọ"
+  },
+  {
+    "Code": "024",
+    "Id": 18,
+    "Name": "Tỉnh Bắc Ninh"
+  },
+  {
+    "Code": "031",
+    "Id": 20,
+    "Name": "Thành phố Hải Phòng"
+  },
+  {
+    "Code": "033",
+    "Id": 21,
+    "Name": "Tỉnh Hưng Yên"
+  },
+  {
+    "Code": "037",
+    "Id": 25,
+    "Name": "Tỉnh Ninh Bình"
+  },
+  {
+    "Code": "038",
+    "Id": 26,
+    "Name": "Tỉnh Thanh Hóa"
+  },
+  {
+    "Code": "040",
+    "Id": 27,
+    "Name": "Tỉnh Nghệ An"
+  },
+  {
+    "Code": "042",
+    "Id": 28,
+    "Name": "Tỉnh Hà Tĩnh"
+  },
+  {
+    "Code": "044",
+    "Id": 30,
+    "Name": "Tỉnh Quảng Trị"
+  },
+  {
+    "Code": "046",
+    "Id": 31,
+    "Name": "Thành phố Huế"
+  },
+  {
+    "Code": "048",
+    "Id": 32,
+    "Name": "Thành phố Đà Nẵng"
+  },
+  {
+    "Code": "051",
+    "Id": 34,
+    "Name": "Tỉnh Quảng Ngãi"
+  },
+  {
+    "Code": "056",
+    "Id": 37,
+    "Name": "Tỉnh Khánh Hòa"
+  },
+  {
+    "Code": "052",
+    "Id": 41,
+    "Name": "Tỉnh Gia Lai"
+  },
+  {
+    "Code": "066",
+    "Id": 42,
+    "Name": "Tỉnh Đắk Lắk"
+  },
+  {
+    "Code": "068",
+    "Id": 44,
+    "Name": "Tỉnh Lâm Đồng"
+  },
+  {
+    "Code": "080",
+    "Id": 46,
+    "Name": "Tỉnh Tây Ninh"
+  },
+  {
+    "Code": "075",
+    "Id": 48,
+    "Name": "Tỉnh Đồng Nai"
+  },
+  {
+    "Code": "079",
+    "Id": 50,
+    "Name": "Thành Phố Hồ Chí Minh"
+  },
+  {
+    "Code": "086",
+    "Id": 55,
+    "Name": "Tỉnh Vĩnh Long"
+  },
+  {
+    "Code": "082",
+    "Id": 56,
+    "Name": "Tỉnh Đồng Tháp"
+  },
+  {
+    "Code": "091",
+    "Id": 57,
+    "Name": "Tỉnh An Giang"
+  },
+  {
+    "Code": "092",
+    "Id": 59,
+    "Name": "Thành phố Cần Thơ"
+  },
+  {
+    "Code": "096",
+    "Id": 63,
+    "Name": "Tỉnh Cà Mau"
+  }
+]

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SCM.HttpApi\SCM.HttpApi.csproj" />
+    <ProjectReference Include="..\SCM.Application\SCM.Application.csproj" />
+    <ProjectReference Include="..\SCM.EntityFrameworkCore\SCM.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

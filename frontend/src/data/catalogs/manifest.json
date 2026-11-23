@@ -1,0 +1,149 @@
+[
+  {
+    "code": "M3_NguoiLon_18_59",
+    "title": "Mẫu phiếu KSK Người lớn (M3 - 194 trường JSON)",
+    "group": "Mẫu phiếu Nghiệp vụ",
+    "count": 192,
+    "file": "M3_NguoiLon_18_59.json"
+  },
+  {
+    "code": "M3_DoiTuongKham",
+    "title": "Đối tượng khám sức khỏe",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 21,
+    "file": "M3_DoiTuongKham.json"
+  },
+  {
+    "code": "Diadiemkham",
+    "title": "Địa điểm tổ chức khám",
+    "group": "Vận hành & Tài chính",
+    "count": 5,
+    "file": "Diadiemkham.json"
+  },
+  {
+    "code": "GioiTinh",
+    "title": "Giới tính",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 2,
+    "file": "GioiTinh.json"
+  },
+  {
+    "code": "DanToc",
+    "title": "Dân tộc (77 danh mục)",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 77,
+    "file": "DanToc.json"
+  },
+  {
+    "code": "NhomMau",
+    "title": "Hệ nhóm máu ABO",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 4,
+    "file": "NhomMau.json"
+  },
+  {
+    "code": "YeuToNhomMau",
+    "title": "Yếu tố nhóm máu Rhesus (Rh)",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 2,
+    "file": "YeuToNhomMau.json"
+  },
+  {
+    "code": "DiaChiHienTai_XaPhuong",
+    "title": "Xã / Phường / Thị trấn",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 3321,
+    "file": "DiaChiHienTai_XaPhuong.json"
+  },
+  {
+    "code": "DiaChiHienTai_Tinh",
+    "title": "Tỉnh / Thành phố trực thuộc TW",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 34,
+    "file": "DiaChiHienTai_Tinh.json"
+  },
+  {
+    "code": "NgheNghiepId",
+    "title": "Danh mục Nghề nghiệp Quốc gia",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 792,
+    "file": "NgheNghiepId.json"
+  },
+  {
+    "code": "NoiCongTacHocTap",
+    "title": "Nơi công tác / Đơn vị / Cơ sở Y tế",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 5440,
+    "file": "NoiCongTacHocTap.json"
+  },
+  {
+    "code": "ChiTra",
+    "title": "Nguồn chi trả viện phí KSK",
+    "group": "Vận hành & Tài chính",
+    "count": 4,
+    "file": "ChiTra.json"
+  },
+  {
+    "code": "ChiTraChiTiet",
+    "title": "Chi tiết hình thức chi trả",
+    "group": "Vận hành & Tài chính",
+    "count": 3,
+    "file": "ChiTraChiTiet.json"
+  },
+  {
+    "code": "TinhTrangThucHienXetNghiem",
+    "title": "Trạng thái thực hiện xét nghiệm",
+    "group": "Vận hành & Tài chính",
+    "count": 1,
+    "file": "TinhTrangThucHienXetNghiem.json"
+  },
+  {
+    "code": "TS_GiaDinh_MacBenh_DanhSachBenh",
+    "title": "Tiền sử bệnh tật gia đình",
+    "group": "Lâm sàng & Tiền sử",
+    "count": 9,
+    "file": "TS_GiaDinh_MacBenh_DanhSachBenh.json"
+  },
+  {
+    "code": "ICD",
+    "title": "Danh mục Bệnh tật Quốc tế ICD-10",
+    "group": "Danh mục Quốc gia & Mã bệnh",
+    "count": 11368,
+    "file": "ICD.json"
+  },
+  {
+    "code": "Yes_No",
+    "title": "Lựa chọn Có / Không",
+    "group": "Hành chính & Nhân khẩu",
+    "count": 2,
+    "file": "Yes_No.json"
+  },
+  {
+    "code": "KSKDK_PhanLoai_SK",
+    "title": "Phân loại Thể lực & Sức khỏe (TT32)",
+    "group": "Lâm sàng & Tiền sử",
+    "count": 5,
+    "file": "KSKDK_PhanLoai_SK.json"
+  },
+  {
+    "code": "NenTangKSK_TinhTrangRang",
+    "title": "Tình trạng Khám Răng Hàm Mặt",
+    "group": "Lâm sàng & Tiền sử",
+    "count": 10,
+    "file": "NenTangKSK_TinhTrangRang.json"
+  },
+  {
+    "code": "KSKLX_MaTuyXN",
+    "title": "Xét nghiệm Chất gây nghiện / Ma túy",
+    "group": "Lâm sàng & Tiền sử",
+    "count": 2,
+    "file": "KSKLX_MaTuyXN.json"
+  },
+  {
+    "code": "KetLuan_DeNghi",
+    "title": "Kết luận & Hướng xử trí đề nghị",
+    "group": "Lâm sàng & Tiền sử",
+    "count": 5,
+    "file": "KetLuan_DeNghi.json"
+  }
+]
