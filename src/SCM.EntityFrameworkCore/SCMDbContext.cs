@@ -4,6 +4,7 @@ using SCM.Domain.MasterData;
 using SCM.Domain.MasterData.Gateways;
 using SCM.Domain.MasterData.NationalRef;
 using SCM.Domain.Phlebotomy;
+using SCM.Domain.Queueing;
 
 namespace SCM.EntityFrameworkCore;
 
@@ -74,6 +75,13 @@ public class SCMDbContext : DbContext
     public DbSet<SpecimenTube> SpecimenTubes => Set<SpecimenTube>();
     public DbSet<ColdChainManifest> ColdChainManifests => Set<ColdChainManifest>();
 
+    // ====================================================================
+    // 6. Wave 4: Clinic Reception & Smart Queueing (Workflow 03B)
+    // ====================================================================
+    public DbSet<QueueTicket> QueueTickets => Set<QueueTicket>();
+    public DbSet<QueueAssignment> QueueAssignments => Set<QueueAssignment>();
+    public DbSet<ClinicRoomLoad> ClinicRoomLoads => Set<ClinicRoomLoad>();
+
     public SCMDbContext(DbContextOptions<SCMDbContext> options) : base(options)
     {
     }
@@ -87,6 +95,9 @@ public class SCMDbContext : DbContext
 
         // Wave 3 Phlebotomy & Cold Chain configurations
         modelBuilder.ConfigurePhlebotomy();
+
+        // Wave 4 Queueing & Reception configurations
+        modelBuilder.ConfigureQueueing();
 
         // -------------------------------------------------------------
         // 1. Internal Core Master Data Configurations

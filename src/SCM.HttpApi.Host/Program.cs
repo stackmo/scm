@@ -2,7 +2,10 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SCM.Application.Contracts.Phlebotomy;
 using SCM.Application.Contracts.Phlebotomy.Dtos;
+using SCM.Application.Contracts.Queueing;
+using SCM.Application.Contracts.Queueing.Dtos;
 using SCM.Application.Phlebotomy;
+using SCM.Application.Queueing;
 using SCM.Domain.MasterData;
 using SCM.Domain.MasterData.DataSeed;
 using SCM.Domain.Shared.Enums;
@@ -20,6 +23,10 @@ builder.Services.AddDbContext<SCMDbContext>(options =>
 builder.Services.AddScoped<IPhlebotomyBatchAppService, PhlebotomyBatchAppService>();
 builder.Services.AddScoped<IBarcodeGeneratorService, BarcodeGeneratorService>();
 builder.Services.AddScoped<IColdChainAppService, ColdChainAppService>();
+
+// Add Wave 4 Reception & Smart Queueing Services
+builder.Services.AddScoped<ISmartQueueingService, SmartQueueingService>();
+builder.Services.AddScoped<IReceptionAppService, ReceptionAppService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -191,6 +198,61 @@ coldChainGroup.MapGet("/check-temperature", (decimal temperature, IColdChainAppS
 {
     var result = service.CheckTemperature(temperature);
     return Results.Ok(result);
+});
+
+// ==============================================================
+// Wave 4 Reception & Smart Queueing APIs (Workflow 03B)
+// ==============================================================
+var receptionGroup = app.MapGroup("/api/reception");
+
+receptionGroup.MapPost("/checkin", async (CheckinRequestDto input, IReceptionAppService service) =>
+{
+    var ticket = await service.CheckinAsync(input);
+    return Results.Created($"/api/reception/tickets/{ticket.Id}", ticket);
+});
+
+receptionGroup.MapGet("/tickets", async (IReceptionAppService service) =>
+{
+    var list = await service.GetActiveTicketsAsync();
+    return Results.Ok(list);
+});
+
+receptionGroup.MapGet("/tickets/{id:guid}", async (Guid id, IReceptionAppService service) =>
+{
+    var ticket = await service.GetTicketAsync(id);
+    return ticket != null ? Results.Ok(ticket) : Results.NotFound();
+});
+
+var queueingGroup = app.MapGroup("/api/queueing");
+
+queueingGroup.MapGet("/room/{roomCode}/next", async (string roomCode, ISmartQueueingService service) =>
+{
+    var result = await service.CallNextPatientAsync(roomCode);
+    return Results.Ok(result);
+});
+
+queueingGroup.MapPost("/assignment/{id:guid}/complete", async (Guid id, CompleteAssignmentInputDto? input, ISmartQueueingService service) =>
+{
+    var result = await service.CompleteAssignmentAsync(id, input);
+    return Results.Ok(result);
+});
+
+queueingGroup.MapGet("/board", async (ISmartQueueingService service) =>
+{
+    var board = await service.GetQueueBoardAsync();
+    return Results.Ok(board);
+});
+
+queueingGroup.MapGet("/rooms", async (ISmartQueueingService service) =>
+{
+    var rooms = await service.GetRoomLoadsAsync();
+    return Results.Ok(rooms);
+});
+
+queueingGroup.MapPost("/advance/{ticketId:guid}", async (Guid ticketId, ISmartQueueingService service) =>
+{
+    var next = await service.AutoAdvanceNextRoomAsync(ticketId);
+    return Results.Ok(next);
 });
 
 app.Run();

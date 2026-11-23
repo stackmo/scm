@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SCM.Domain.B2B;
 using SCM.Domain.Phlebotomy;
+using SCM.Domain.Queueing;
 
 namespace SCM.EntityFrameworkCore;
 
@@ -269,6 +270,73 @@ public static class SCMDbContextModelCreatingExtensions
                 .WithMany(b => b.Manifests)
                 .HasForeignKey(x => x.BatchId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    public static void ConfigureQueueing(this ModelBuilder modelBuilder)
+    {
+        // -------------------------------------------------------------
+        // 1. QueueTicket (Phiếu thứ tự & phân luồng tiếp đón)
+        // -------------------------------------------------------------
+        modelBuilder.Entity<QueueTicket>(b =>
+        {
+            b.ToTable("AppQueueTickets");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.TicketNumber).IsRequired().HasMaxLength(50);
+            b.Property(x => x.PatientName).IsRequired().HasMaxLength(200);
+            b.Property(x => x.Cccd).HasMaxLength(50);
+            b.Property(x => x.Notes).HasMaxLength(500);
+
+            b.HasIndex(x => x.TicketNumber);
+            b.HasIndex(x => x.CheckinTime);
+            b.HasIndex(x => x.PatientId);
+            b.HasIndex(x => x.Status);
+            b.HasIndex(x => x.StreamType);
+
+            b.HasOne(x => x.Contract)
+                .WithMany()
+                .HasForeignKey(x => x.ContractId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(x => x.Assignments)
+                .WithOne(a => a.Ticket)
+                .HasForeignKey(a => a.TicketId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // -------------------------------------------------------------
+        // 2. QueueAssignment (Phân bổ phòng khám chi tiết)
+        // -------------------------------------------------------------
+        modelBuilder.Entity<QueueAssignment>(b =>
+        {
+            b.ToTable("AppQueueAssignments");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.RoomCode).IsRequired().HasMaxLength(50);
+            b.Property(x => x.RoomName).IsRequired().HasMaxLength(150);
+            b.Property(x => x.DoctorStaffName).HasMaxLength(150);
+            b.Property(x => x.Notes).HasMaxLength(500);
+
+            b.HasIndex(x => new { x.RoomId, x.Status });
+            b.HasIndex(x => new { x.RoomCode, x.Status });
+            b.HasIndex(x => new { x.TicketId, x.OrderIndex });
+        });
+
+        // -------------------------------------------------------------
+        // 3. ClinicRoomLoad (Theo dõi tải phòng khám thời gian thực)
+        // -------------------------------------------------------------
+        modelBuilder.Entity<ClinicRoomLoad>(b =>
+        {
+            b.ToTable("AppClinicRoomLoads");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.RoomCode).IsRequired().HasMaxLength(50);
+            b.Property(x => x.RoomName).IsRequired().HasMaxLength(150);
+            b.Property(x => x.CurrentCallingTicketNumber).HasMaxLength(50);
+            b.Property(x => x.CurrentServingPatientName).HasMaxLength(200);
+
+            b.HasIndex(x => x.RoomId).IsUnique();
+            b.HasIndex(x => x.RoomCode);
+            b.HasIndex(x => x.RoomType);
+            b.HasIndex(x => x.IsActive);
         });
     }
 }

@@ -69,7 +69,17 @@ public enum RoomType
     Endoscopy = 6,
     Pharmacy = 7,
     Cashier = 8,
-    Reception = 9
+    Reception = 9,
+    GeneralClinical = 10,
+    InternalMedicine = 11,
+    Surgery = 12,
+    ObGyn = 13,
+    Ophthalmology = 14,
+    ENT = 15,
+    Dental = 16,
+    Dermatology = 17,
+    ECG = 18,
+    Phlebotomy = 19
 }
 
 public enum ServiceType

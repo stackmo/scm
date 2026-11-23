@@ -41,6 +41,7 @@ import {
   Syringe
 } from 'lucide-react';
 import { PreExamPhlebotomyPage } from './pages/PreExamPhlebotomyPage';
+import { ReceptionQueuePage } from './pages/ReceptionQueuePage';
 
 // --- CATALOG DATASETS (HỢP NHẤT VSC & CỔNG M3) ---
 import xaPhuongData from './data/catalogs/DiaChiHienTai_XaPhuong.json';
@@ -1098,9 +1099,11 @@ export default function App() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. MAIN WORKSPACE: CONDITIONAL VIEW (PHLEBOTOMY VS B2B VS MASTER DATA)
+          3. MAIN WORKSPACE: CONDITIONAL VIEW (RECEPTION VS PHLEBOTOMY VS B2B VS MASTER DATA)
          ───────────────────────────────────────────────────────────── */}
-      {activeNavMenu === 'phlebotomy_group' ? (
+      {activeNavMenu === 'reception_group' ? (
+        <ReceptionQueuePage />
+      ) : activeNavMenu === 'phlebotomy_group' ? (
         <PreExamPhlebotomyPage />
       ) : activeNavMenu === 'corporate_group' ? (
         /* ── B2B KHÁM ĐOÀN & LIÊN THÔNG CỔNG Y TẾ CỘNG ĐỒNG (MẪU M3 - TT 32/2023/TT-BYT) ── */
