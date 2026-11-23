@@ -79,7 +79,7 @@ export interface MasterGroup {
   entityType: 'service' | 'service_group' | 'drug' | 'staff' | 'room' | 'demographics' | 'icd10' | 'chain' | 'm3' | 'generic';
 }
 
-// 5 Unified Master Data Architectural Groups (Hợp nhất VSC & Cổng M3 TT32)
+// 5 Unified Master Data Architectural Groups (Tên gọi tinh gọn, số liệu thống kê chuẩn xác qua Badge)
 const MASTER_BLOCKS: MasterBlock[] = [
   {
     id: 'block_admin',
@@ -87,63 +87,62 @@ const MASTER_BLOCKS: MasterBlock[] = [
     subtitle: 'Đối tượng KSK, doanh nghiệp, dân tộc, địa bàn',
     icon: Users,
     groups: [
-      { id: 'grp_doituong', name: 'Đối Tượng KSK (21 Nhóm TT32)', badge: 21, icon: Users, entityType: 'demographics' },
-      { id: 'grp_congty', name: 'Doanh Nghiệp KSK & Nơi Công Tác', badge: '5.4k', badgeVariant: 'primary', icon: Building2, entityType: 'generic' },
-      { id: 'grp_dantoc', name: 'Dân Tộc Việt Nam (77 Dân tộc)', badge: 77, icon: Users, entityType: 'generic' },
-      { id: 'grp_diaban', name: 'Tỉnh Thành & Xã Phường (VNeID)', badge: '3.3k', icon: Building2, entityType: 'generic' },
-      { id: 'grp_nghenghiep', name: 'Nghề Nghiệp Quốc Gia', badge: 792, icon: FileText, entityType: 'generic' },
+      { id: 'grp_doituong', name: 'Đối Tượng KSK', badge: 21, icon: Users, entityType: 'demographics' },
+      { id: 'grp_congty', name: 'Doanh Nghiệp KSK', badge: '5.4k', badgeVariant: 'primary', icon: Building2, entityType: 'generic' },
+      { id: 'grp_dantoc', name: 'Dân Tộc', badge: 77, icon: Users, entityType: 'generic' },
+      { id: 'grp_diaban', name: 'Tỉnh Thành & Xã Phường', badge: '3.3k', icon: Building2, entityType: 'generic' },
+      { id: 'grp_nghenghiep', name: 'Nghề Nghiệp', badge: 792, icon: FileText, entityType: 'generic' },
       { id: 'grp_gioitinh', name: 'Giới Tính & Xưng Hô', badge: 2, icon: Users, entityType: 'generic' }
     ]
   },
   {
     id: 'block_clinical',
     title: 'Chuyên môn Lâm sàng & CLS',
-    subtitle: 'ICD-10 hợp nhất, 13 chuyên khoa, tốc ký, tiền sử',
+    subtitle: 'ICD-10, chuyên khoa khám, tốc ký, tiền sử',
     icon: Heart,
     groups: [
-      { id: 'grp_icd10', name: 'ICD-10 Hợp Nhất (11.4k WHO + 5.8k VSC)', badge: '11.4k', badgeVariant: 'warning', icon: Heart, entityType: 'icd10' },
-      { id: 'grp_chuyenkhoa', name: '13 Chuyên Khoa Khám (VSC + M3)', badge: 13, badgeVariant: 'primary', icon: FileText, entityType: 'generic' },
-      { id: 'grp_tocky', name: 'Tốc Ký & 2.659 Lời Khuyên Bác Sĩ', badge: '2.6k', icon: Activity, entityType: 'generic' },
-      { id: 'grp_trangthaixn', name: 'Trạng Thái XN (Mới 12/11/2026)', badge: 4, badgeVariant: 'danger', icon: ShieldCheck, entityType: 'generic' },
-      { id: 'grp_ranghammat', name: 'Tình Trạng Răng Hàm Mặt KSK', badge: 10, icon: FileText, entityType: 'generic' },
-      { id: 'grp_phanloai', name: 'Phân Loại Thể Lực (Loại I - V)', badge: 5, icon: ShieldCheck, entityType: 'generic' },
-      { id: 'grp_tiensu', name: 'Tiền Sử Bệnh Tật & Dị Ứng', badge: 9, icon: Heart, entityType: 'generic' }
+      { id: 'grp_icd10', name: 'ICD-10 Quốc Tế', badge: '11.4k', badgeVariant: 'warning', icon: Heart, entityType: 'icd10' },
+      { id: 'grp_chuyenkhoa', name: 'Chuyên Khoa Khám', badge: 13, badgeVariant: 'primary', icon: FileText, entityType: 'generic' },
+      { id: 'grp_tocky', name: 'Tốc Ký & Lời Khuyên', badge: '2.6k', icon: Activity, entityType: 'generic' },
+      { id: 'grp_trangthaixn', name: 'Trạng Thái Xét Nghiệm', badge: 4, badgeVariant: 'danger', icon: ShieldCheck, entityType: 'generic' },
+      { id: 'grp_ranghammat', name: 'Răng Hàm Mặt KSK', badge: 10, icon: FileText, entityType: 'generic' },
+      { id: 'grp_phanloai', name: 'Phân Loại Thể Lực', badge: 5, icon: ShieldCheck, entityType: 'generic' },
+      { id: 'grp_tiensu', name: 'Tiền Sử & Dị Ứng', badge: 9, icon: Heart, entityType: 'generic' }
     ]
   },
   {
     id: 'block_finance',
     title: 'Bảng giá & Dịch vụ Kỹ thuật',
-    subtitle: '640 Dịch vụ, 867 thuốc, nguồn chi trả, TT78',
+    subtitle: 'Dịch vụ kỹ thuật, thuốc, nguồn chi trả',
     icon: CreditCard,
     groups: [
-      { id: 'grp_nhomdichvu', name: 'Nhóm Dịch Vụ Kỹ Thuật (12 Nhóm BYT)', badge: 12, badgeVariant: 'warning', icon: FolderTree, entityType: 'service_group' },
-      { id: 'grp_dichvu', name: '640 Dịch Vụ Kỹ Thuật & Cận Lâm Sàng', badge: 640, badgeVariant: 'primary', icon: Layers, entityType: 'service' },
-      { id: 'grp_thuoc', name: '867 Danh Mục Thuốc & Vật Tư Y Tế', badge: 867, badgeVariant: 'primary', icon: Pill, entityType: 'drug' },
-      { id: 'grp_nguonchitro', name: 'Nguồn Chi Trả KSK (4040, 5083)', badge: 7, icon: CreditCard, entityType: 'generic' },
-      { id: 'grp_hdt78', name: 'Hóa Đơn Điện Tử (Thông Tư 78)', badge: 1, icon: FileSpreadsheet, entityType: 'generic' }
+      { id: 'grp_dichvu', name: 'Dịch Vụ Kỹ Thuật & CLS', badge: 640, badgeVariant: 'primary', icon: Layers, entityType: 'service' },
+      { id: 'grp_thuoc', name: 'Thuốc & Vật Tư Y Tế', badge: 867, badgeVariant: 'primary', icon: Pill, entityType: 'drug' },
+      { id: 'grp_nguonchitro', name: 'Nguồn Chi Trả KSK', badge: 7, icon: CreditCard, entityType: 'generic' },
+      { id: 'grp_hdt78', name: 'Hóa Đơn Điện Tử', badge: 1, icon: FileSpreadsheet, entityType: 'generic' }
     ]
   },
   {
     id: 'block_hr',
     title: 'Nhân sự & Bác sĩ (CCHN)',
-    subtitle: '137 Bác sĩ, 47 buồng khám, CCHN dùng chung',
+    subtitle: 'Bác sĩ, buồng khám, địa điểm',
     icon: Stethoscope,
     groups: [
-      { id: 'grp_bacsi', name: '137 Bác Sĩ & CCHN Dùng Chung', badge: 137, badgeVariant: 'primary', icon: Stethoscope, entityType: 'staff' },
-      { id: 'grp_buongkham', name: '47 Buồng Khám & Khoa Phòng', badge: 47, badgeVariant: 'primary', icon: Building2, entityType: 'room' },
-      { id: 'grp_diadiem', name: 'Địa Điểm Khám (Tại Cơ Sở / Lưu Động)', badge: 5, icon: Building2, entityType: 'generic' }
+      { id: 'grp_bacsi', name: 'Bác Sĩ & CCHN', badge: 137, badgeVariant: 'primary', icon: Stethoscope, entityType: 'staff' },
+      { id: 'grp_buongkham', name: 'Buồng Khám & Khoa Phòng', badge: 47, badgeVariant: 'primary', icon: Building2, entityType: 'room' },
+      { id: 'grp_diadiem', name: 'Địa Điểm Khám KSK', badge: 5, icon: Building2, entityType: 'generic' }
     ]
   },
   {
     id: 'block_config',
     title: 'Cấu hình & Cổng Liên thông',
-    subtitle: 'Mẫu M3 KSK, chuỗi phòng khám, cổng đơn thuốc QG',
+    subtitle: 'Mẫu M3 KSK, chuỗi cơ sở, cổng đơn thuốc QG',
     icon: Settings,
     groups: [
-      { id: 'grp_maum3', name: 'Mẫu M3 KSK (192 Trường JSON TT32)', badge: 192, icon: FileText, entityType: 'm3' },
-      { id: 'grp_ketluan', name: 'Kết Luận & Hướng Xử Trí KSK', badge: 5, icon: FileText, entityType: 'generic' },
-      { id: 'grp_chuoipk', name: 'Chuỗi Phòng Khám & Chi Nhánh', badge: 4, icon: Building2, entityType: 'chain' },
-      { id: 'grp_congqg', name: 'Cổng Đơn Thuốc Quốc Gia (TT27)', badge: 1, icon: Network, entityType: 'generic' }
+      { id: 'grp_maum3', name: 'Mẫu M3 KSK (TT32)', badge: 192, icon: FileText, entityType: 'm3' },
+      { id: 'grp_ketluan', name: 'Kết Luận & Xử Trí KSK', badge: 5, icon: FileText, entityType: 'generic' },
+      { id: 'grp_chuoipk', name: 'Chuỗi Phòng Khám', badge: 4, icon: Building2, entityType: 'chain' },
+      { id: 'grp_congqg', name: 'Cổng Đơn Thuốc Quốc Gia', badge: 1, icon: Network, entityType: 'generic' }
     ]
   }
 ];
@@ -225,6 +224,13 @@ export default function App() {
   // VSC Backend Datasets
   const [vscServices, setVscServices] = useState<any[]>([]);
   const [serviceGroups, setServiceGroups] = useState<any[]>([]);
+  const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState<boolean>(false);
+  const [newGroupData, setNewGroupData] = useState({
+    code: '',
+    name: '',
+    serviceType: 1,
+    sortOrder: 1
+  });
   const [vscDrugs, setVscDrugs] = useState<any[]>([]);
   const [vscRooms, setVscRooms] = useState<any[]>([]);
   const [vscStaffs, setVscStaffs] = useState<any[]>([]);
@@ -546,6 +552,7 @@ export default function App() {
         setShowSystemMenu(false);
         setDrawerOpen(false);
         setDeleteConfirmItem(null);
+        setIsAddGroupModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -554,14 +561,14 @@ export default function App() {
 
   // Modal Body Scroll Lock (L1_MODAL_SCROLL_LOCK)
   useEffect(() => {
-    if (drawerOpen || deleteConfirmItem) {
+    if (drawerOpen || deleteConfirmItem || isAddGroupModalOpen) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = prevOverflow;
       };
     }
-  }, [drawerOpen, deleteConfirmItem]);
+  }, [drawerOpen, deleteConfirmItem, isAddGroupModalOpen]);
 
   // Current active block and group
   const currentBlock = useMemo(() => {
@@ -943,6 +950,66 @@ export default function App() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Quick Add Service Group Modal Handlers
+  const handleOpenAddGroupModal = () => {
+    setNewGroupData({
+      code: `GRP-${Date.now().toString().slice(-4)}`,
+      name: '',
+      serviceType: 1,
+      sortOrder: serviceGroups.length + 1
+    });
+    setIsAddGroupModalOpen(true);
+  };
+
+  const handleSaveNewGroup = async () => {
+    if (!newGroupData.name.trim()) {
+      showToast('Vui lòng nhập tên nhóm dịch vụ kỹ thuật!', 'error');
+      return;
+    }
+    const code = newGroupData.code.trim() || `GRP-${Date.now().toString().slice(-4)}`;
+    try {
+      const res = await fetch('/api/master-data/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entityType: 'service_group',
+          item: {
+            code,
+            name: newGroupData.name.trim(),
+            serviceType: Number(newGroupData.serviceType) || 1,
+            sortOrder: Number(newGroupData.sortOrder) || 1,
+            isActive: true
+          },
+          isNew: true
+        })
+      });
+      const data = await res.json();
+      const newGroupId = data.id || `GRP-${Date.now()}`;
+      const createdGrp = {
+        id: newGroupId,
+        groupCode: code,
+        code,
+        groupName: newGroupData.name.trim(),
+        name: newGroupData.name.trim(),
+        serviceType: Number(newGroupData.serviceType) || 1,
+        sortOrder: Number(newGroupData.sortOrder) || 1,
+        serviceCount: 0,
+        isActive: true
+      };
+      setServiceGroups(prev => [...prev, createdGrp]);
+      setSelectedItemData((prev: any) => ({
+        ...prev,
+        serviceGroupId: newGroupId,
+        category: createdGrp.groupName
+      }));
+      setIsAddGroupModalOpen(false);
+      showToast(`Đã thêm mới nhóm [${createdGrp.groupName}] thành công!`);
+    } catch (err) {
+      console.warn('Save group error:', err);
+      showToast('Có lỗi khi lưu nhóm dịch vụ!', 'error');
+    }
   };
 
   // Open Drawer with Specific Entity Data
@@ -1508,7 +1575,7 @@ export default function App() {
               if (row) {
                 handleOpenDetail(row);
               } else {
-                alert(`Đang xem trước cấu hình: ${currentGroup.name}`);
+                showToast(`Đang xem cấu hình: ${currentGroup.name}`);
               }
             }}
             className="flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-[#f8f9fa] border border-[#ced4da] rounded text-[#495057] font-medium transition cursor-pointer"
@@ -1530,7 +1597,7 @@ export default function App() {
           <button
             onClick={() => {
               localStorage.setItem(`smartclinic_saved_${currentGroup.id}`, JSON.stringify(filteredGridData.slice(0, 100)));
-              alert(`✓ Đã lưu cấu hình danh mục [${currentGroup.name}] thành công!`);
+              showToast(`✓ Đã lưu cấu hình danh mục [${currentGroup.name}] thành công!`);
             }}
             className="flex items-center space-x-1 px-3 py-1 bg-[#ee9b00] hover:bg-[#d98a00] text-white rounded font-semibold transition cursor-pointer shadow-2xs"
             title="Lưu cấu hình danh mục vào hệ thống"
@@ -1542,7 +1609,7 @@ export default function App() {
           <button
             onClick={() => {
               localStorage.setItem(`smartclinic_saved_${currentGroup.id}`, JSON.stringify(filteredGridData.slice(0, 100)));
-              alert(`✓ Đã lưu cấu hình và tiếp tục phiên làm việc.`);
+              showToast(`✓ Đã lưu cấu hình và tiếp tục phiên làm việc.`);
             }}
             className="px-2.5 py-1 bg-white hover:bg-[#f8f9fa] border border-[#ced4da] rounded text-[#495057] font-medium transition cursor-pointer"
           >
@@ -1551,11 +1618,15 @@ export default function App() {
 
           <button
             onClick={() => {
-              const count = selectedRows.length > 0 ? selectedRows.length : 1;
-              if (window.confirm(`Xác nhận xóa ${count} bản ghi đã chọn khỏi danh mục [${currentGroup.name}]?`)) {
-                alert(`Đã xóa thành công ${count} bản ghi!`);
-                setSelectedRows([]);
+              if (selectedRows.length === 0) {
+                showToast('Vui lòng tích chọn bản ghi trên bảng để xóa.', 'error');
+                return;
               }
+              const rowToDelete = filteredGridData.find(r => r.id === selectedRows[0]) || {
+                id: selectedRows[0],
+                name: `${selectedRows.length} bản ghi đã chọn`
+              };
+              setDeleteConfirmItem(rowToDelete);
             }}
             className="flex items-center space-x-1 px-2.5 py-1 bg-[#dc3545] hover:bg-[#c82333] text-white rounded font-semibold transition cursor-pointer shadow-2xs"
             title="Xóa bản ghi đang chọn hoặc đã tích"
@@ -2070,11 +2141,13 @@ export default function App() {
 
                   {group.badge !== undefined && (
                     <span
-                      className={`ml-2 rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                      className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold font-mono ${
                         group.badgeVariant === 'warning'
-                          ? 'bg-amber-100 text-amber-800'
+                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
                           : group.badgeVariant === 'primary'
-                          ? 'bg-blue-100 text-[#1f63c9]'
+                          ? 'bg-blue-100 text-[#1f63c9] border border-blue-200'
+                          : group.badgeVariant === 'danger'
+                          ? 'bg-rose-100 text-rose-700 border border-rose-200'
                           : 'bg-slate-200 text-slate-700'
                       }`}
                     >
@@ -2946,8 +3019,9 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
+                    {/* DÒNG 2: 3 CỘT (Cột 1: 1 ô Đơn Vị Tính; Cột sau: 2 ô Nhóm Kỹ Thuật + Nút Tạo Mới) */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-1 space-y-1">
                         <label className="font-semibold text-[#495057]">Đơn Vị Tính:</label>
                         <input
                           type="text"
@@ -2956,35 +3030,56 @@ export default function App() {
                           className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:outline-none focus:border-[#1f63c9]"
                         />
                       </div>
-                      {/* HÌNH CHỮ NHẬT 1: DROPDOWN CHỌN NHÓM DỊCH VỤ */}
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">
-                          Nhóm Kỹ Thuật / Chuyên Khoa <span className="text-rose-600 font-bold">*</span>:
-                        </label>
-                        <select
-                          value={selectedItemData.serviceGroupId || serviceGroups.find(g => g.groupName === selectedItemData.category)?.id || ''}
-                          onChange={(e) => {
-                            const grp = serviceGroups.find(g => g.id === e.target.value);
-                            setSelectedItemData({
-                              ...selectedItemData,
-                              serviceGroupId: e.target.value,
-                              category: grp ? grp.groupName : selectedItemData.category
-                            });
-                          }}
-                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium bg-white focus:outline-none focus:border-[#1f63c9] cursor-pointer"
-                        >
-                          <option value="">-- Chọn nhóm chuyên khoa --</option>
-                          {serviceGroups.map(g => (
-                            <option key={g.id} value={g.id}>
-                              {g.groupName} ({g.serviceCount} dịch vụ)
-                            </option>
-                          ))}
-                        </select>
+                      {/* DROPDOWN CHỌN NHÓM DỊCH VỤ + NÚT TẠO MỚI POPUP */}
+                      <div className="col-span-2 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="font-semibold text-[#495057]">
+                            Nhóm Kỹ Thuật / Chuyên Khoa <span className="text-rose-600 font-bold">*</span>:
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handleOpenAddGroupModal}
+                            className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#1f63c9] hover:text-[#184ea0] hover:underline cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Thêm nhóm mới</span>
+                          </button>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <select
+                            value={selectedItemData.serviceGroupId || serviceGroups.find(g => g.groupName === selectedItemData.category)?.id || ''}
+                            onChange={(e) => {
+                              const grp = serviceGroups.find(g => g.id === e.target.value);
+                              setSelectedItemData({
+                                ...selectedItemData,
+                                serviceGroupId: e.target.value,
+                                category: grp ? grp.groupName : selectedItemData.category
+                              });
+                            }}
+                            className="flex-1 px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium bg-white focus:outline-none focus:border-[#1f63c9] cursor-pointer"
+                          >
+                            <option value="">-- Chọn nhóm chuyên khoa --</option>
+                            {serviceGroups.map(g => (
+                              <option key={g.id} value={g.id}>
+                                {g.groupName} ({g.serviceCount} dịch vụ)
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={handleOpenAddGroupModal}
+                            className="px-2.5 py-1.5 bg-[#f8f9fa] hover:bg-[#e9ecef] border border-[#ced4da] rounded text-[#1f63c9] font-bold flex items-center space-x-1 cursor-pointer transition shadow-xs text-xs shrink-0"
+                            title="Tạo nhóm dịch vụ mới"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Tạo mới</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* HÌNH CHỮ NHẬT 2: KHUNG GIÁ ĐỐI TƯỢNG VỚI DIGIT GROUPING & MIỄN GIẢM */}
+                  {/* HÌNH CHỮ NHẬT 2: KHUNG GIÁ ĐỐI TƯỢNG VỚI DIGIT GROUPING & MIỄN GIẢM (3 CỘT ĐỀU NHAU) */}
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2 border-b border-[#dee2e6] pb-1.5 text-xs font-bold text-emerald-700">
                       <CreditCard className="w-4 h-4" />
@@ -2995,8 +3090,9 @@ export default function App() {
                       Khung giá phân cấp áp dụng đồng thời cho Viện phí ngoại trú, Cổng giám định BHYT 4210, Bảo hiểm thương mại (BHTM) và Dịch vụ theo yêu cầu / VIP.
                     </div>
 
+                    {/* Hàng giá 1: 3 cột đều nhau */}
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1">
+                      <div className="col-span-1 space-y-1">
                         <label className="font-semibold text-[#495057]">Giá Viện Phí Thường (VNĐ):</label>
                         <input
                           type="text"
@@ -3006,7 +3102,7 @@ export default function App() {
                           placeholder="0"
                         />
                       </div>
-                      <div className="space-y-1">
+                      <div className="col-span-1 space-y-1">
                         <label className="font-semibold text-[#495057]">Giá BHYT 4210 (VNĐ):</label>
                         <input
                           type="text"
@@ -3016,7 +3112,7 @@ export default function App() {
                           placeholder="0"
                         />
                       </div>
-                      <div className="space-y-1">
+                      <div className="col-span-1 space-y-1">
                         <label className="font-semibold text-[#495057]">Giá Bảo Hiểm Thương Mại (BHTM):</label>
                         <input
                           type="text"
@@ -3028,8 +3124,9 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
+                    {/* Hàng giá 2: 3 cột (2 cột giá + 1 cột trống để căn thẳng hàng tuyệt đối) */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-1 space-y-1">
                         <label className="font-semibold text-[#495057]">Giá Dịch Vụ VIP / KSK Doanh Nghiệp (VNĐ):</label>
                         <input
                           type="text"
@@ -3039,7 +3136,7 @@ export default function App() {
                           placeholder="0"
                         />
                       </div>
-                      <div className="space-y-1">
+                      <div className="col-span-1 space-y-1">
                         <label className="font-semibold text-[#495057]">Giá Ưu Đãi Nội Bộ Cán Bộ NV (VNĐ):</label>
                         <input
                           type="text"
@@ -3048,6 +3145,9 @@ export default function App() {
                           className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-teal-700 text-right font-mono focus:outline-none focus:border-teal-600"
                           placeholder="0"
                         />
+                      </div>
+                      <div className="col-span-1">
+                        {/* Cột thứ 3 để trống để các ô trên và dưới thẳng hàng nhau tuyệt đối theo 3 cột */}
                       </div>
                     </div>
 
@@ -3741,6 +3841,107 @@ export default function App() {
           showToast(`✓ Đã chọn ${selected.length} dịch vụ kỹ thuật theo nhóm chuyên khoa thành công!`);
         }}
       />
+
+      {/* Popup Thêm Mới Nhóm Dịch Vụ Kỹ Thuật (L1_MODAL_FOCUS, L1_MODAL_ESCAPE, L1_MODAL_BACKDROP) */}
+      {isAddGroupModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+          onClick={() => setIsAddGroupModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-[#1f63c9] text-white">
+              <div className="flex items-center space-x-2">
+                <FolderTree className="w-5 h-5 text-white" />
+                <h3 className="font-bold text-sm tracking-wide">+ THÊM MỚI NHÓM DỊCH VỤ KỸ THUẬT</h3>
+              </div>
+              <button 
+                onClick={() => setIsAddGroupModalOpen(false)}
+                className="text-white/80 hover:text-white p-1 rounded hover:bg-white/10 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 space-y-3.5 text-xs text-slate-700">
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-700">
+                  Mã Nhóm <span className="text-rose-600 font-bold">*</span>:
+                </label>
+                <input
+                  type="text"
+                  value={newGroupData.code}
+                  onChange={(e) => setNewGroupData({ ...newGroupData, code: e.target.value })}
+                  placeholder="VD: GRP-MAT, GRP-TMH..."
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded font-mono font-bold text-[#1f63c9] focus:outline-none focus:border-[#1f63c9]"
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-700">
+                  Tên Nhóm Dịch Vụ Kỹ Thuật <span className="text-rose-600 font-bold">*</span>:
+                </label>
+                <input
+                  type="text"
+                  value={newGroupData.name}
+                  onChange={(e) => setNewGroupData({ ...newGroupData, name: e.target.value })}
+                  placeholder="VD: Chuyên Khoa Mắt, Khám Nhi..."
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded font-medium text-slate-800 focus:outline-none focus:border-[#1f63c9]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Phân Loại:</label>
+                  <select
+                    value={newGroupData.serviceType}
+                    onChange={(e) => setNewGroupData({ ...newGroupData, serviceType: Number(e.target.value) })}
+                    className="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white font-medium text-slate-800 focus:outline-none focus:border-[#1f63c9] cursor-pointer"
+                  >
+                    <option value={1}>1 - Khám Chuyên Khoa</option>
+                    <option value={2}>2 - Xét Nghiệm</option>
+                    <option value={3}>3 - Chẩn Đoán Hình Ảnh</option>
+                    <option value={4}>4 - Thủ Thuật Ngoại Khoa</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Thứ Tự Sắp Xếp:</label>
+                  <input
+                    type="number"
+                    value={newGroupData.sortOrder}
+                    onChange={(e) => setNewGroupData({ ...newGroupData, sortOrder: Number(e.target.value) })}
+                    className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono text-center text-slate-800 focus:outline-none focus:border-[#1f63c9]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-2 px-4 py-3 bg-slate-50 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setIsAddGroupModalOpen(false)}
+                className="px-3.5 py-1.5 border border-slate-300 text-slate-700 rounded hover:bg-slate-100 font-medium transition cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveNewGroup}
+                className="px-4 py-1.5 bg-[#1f63c9] hover:bg-[#184ea0] text-white font-bold rounded shadow-sm transition flex items-center space-x-1.5 cursor-pointer"
+              >
+                <Save className="w-4 h-4" />
+                <span>Lưu Nhóm</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Global Toast Notification */}
       {toastMessage && (

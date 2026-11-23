@@ -24,6 +24,7 @@ public class PackageService
     // VSC Extended fields (Hình 1 - 4)
     public PackageServiceRegisterType RegisterType { get; set; } = PackageServiceRegisterType.Chon;
     public int OrderIndex { get; set; } = 1;
+    public int GroupChoiceCount { get; set; } = 1; // Số lượng X được chọn trong nhóm Y dịch vụ Tùy_Chọn (Chọn X trong Y)
     public bool IsSpecimenOutsource { get; set; } = false;
 
     public PackageService() { }
@@ -42,7 +43,8 @@ public class PackageService
         bool isSpecialApproved = false,
         PackageServiceRegisterType registerType = PackageServiceRegisterType.Chon,
         int orderIndex = 1,
-        bool isSpecimenOutsource = false)
+        bool isSpecimenOutsource = false,
+        int groupChoiceCount = 1)
     {
         if (packageId == Guid.Empty)
             throw new ArgumentException("PackageId không được để trống.", nameof(packageId));
@@ -73,6 +75,7 @@ public class PackageService
         IsRequired = isRequired && (registerType == PackageServiceRegisterType.Chon);
         IsSpecialApproved = isSpecialApproved;
         OrderIndex = orderIndex > 0 ? orderIndex : 1;
+        GroupChoiceCount = groupChoiceCount > 0 ? groupChoiceCount : 1;
         IsSpecimenOutsource = isSpecimenOutsource;
     }
 

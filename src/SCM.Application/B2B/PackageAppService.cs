@@ -213,7 +213,8 @@ public class PackageAppService : IPackageAppService
             isSpecialApproved: input.IsSpecialApproved,
             registerType: input.RegisterType,
             orderIndex: input.OrderIndex > 0 ? input.OrderIndex : maxOrder + 1,
-            isSpecimenOutsource: input.IsSpecimenOutsource
+            isSpecimenOutsource: input.IsSpecimenOutsource,
+            groupChoiceCount: input.GroupChoiceCount > 0 ? input.GroupChoiceCount : 1
         );
 
         _context.PackageServices.Add(service);
@@ -266,7 +267,8 @@ public class PackageAppService : IPackageAppService
                 isSpecialApproved: srvInput.IsSpecialApproved,
                 registerType: regType,
                 orderIndex: currentOrder,
-                isSpecimenOutsource: isOutsource
+                isSpecimenOutsource: isOutsource,
+                groupChoiceCount: srvInput.GroupChoiceCount > 0 ? srvInput.GroupChoiceCount : 1
             );
 
             preService = service;
@@ -298,6 +300,7 @@ public class PackageAppService : IPackageAppService
                 srv.RegisterType = item.RegisterType;
                 srv.IsRequired = item.RegisterType == PackageServiceRegisterType.Chon;
                 srv.OrderIndex = item.OrderIndex > 0 ? item.OrderIndex : 1;
+                srv.GroupChoiceCount = item.GroupChoiceCount > 0 ? item.GroupChoiceCount : 1;
                 srv.IsSpecimenOutsource = item.IsSpecimenOutsource;
                 if (item.DealPrice >= 0)
                 {
@@ -411,6 +414,7 @@ public class PackageAppService : IPackageAppService
             IsSpecialApproved = entity.IsSpecialApproved,
             RegisterType = entity.RegisterType,
             OrderIndex = entity.OrderIndex,
+            GroupChoiceCount = entity.GroupChoiceCount > 0 ? entity.GroupChoiceCount : 1,
             IsSpecimenOutsource = entity.IsSpecimenOutsource
         };
     }

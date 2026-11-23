@@ -73,6 +73,7 @@ public class PackageServiceDto
     // VSC Extended fields (Hình 1 - 4)
     public PackageServiceRegisterType RegisterType { get; set; } = PackageServiceRegisterType.Chon;
     public int OrderIndex { get; set; } = 1;
+    public int GroupChoiceCount { get; set; } = 1; // Số lượng X được chọn trong nhóm Y dịch vụ Tùy_Chọn
     public bool IsSpecimenOutsource { get; set; } = false;
 }
 
@@ -93,6 +94,7 @@ public class CreateUpdatePackageServiceDto
     // VSC Extended fields (Hình 1 - 4)
     public PackageServiceRegisterType RegisterType { get; set; } = PackageServiceRegisterType.Chon;
     public int OrderIndex { get; set; } = 1;
+    public int GroupChoiceCount { get; set; } = 1; // Số lượng X được chọn trong nhóm Y dịch vụ Tùy_Chọn
     public bool IsSpecimenOutsource { get; set; } = false;
 }
 
@@ -116,6 +118,7 @@ public class UpdatePackageServiceItemDto
     public Guid Id { get; set; }
     public PackageServiceRegisterType RegisterType { get; set; }
     public int OrderIndex { get; set; }
+    public int GroupChoiceCount { get; set; } = 1;
     public bool IsSpecimenOutsource { get; set; }
     public decimal DealPrice { get; set; }
 }

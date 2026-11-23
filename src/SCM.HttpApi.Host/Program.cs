@@ -379,21 +379,24 @@ app.MapPost("/api/master-data/save", async (JsonElement body, SCMDbContext db) =
         bool isActive = !itemElem.TryGetProperty("isActive", out var iaProp) || iaProp.GetBoolean();
 
         var existing = await db.ServiceGroups.FirstOrDefaultAsync(g => g.GroupCode == code);
+        Guid groupId;
         if (existing != null && !isNew)
         {
             existing.GroupName = name;
             existing.SortOrder = sortOrder;
             existing.ServiceType = (ServiceType)serviceType;
             existing.IsActive = isActive;
+            groupId = existing.Id;
         }
         else
         {
             var newGroup = new ServiceGroup(code, name, (ServiceType)serviceType, sortOrder);
             newGroup.IsActive = isActive;
             db.ServiceGroups.Add(newGroup);
+            groupId = newGroup.Id;
         }
         await db.SaveChangesAsync();
-        return Results.Ok(new { success = true, message = $"Đã lưu nhóm dịch vụ [{code}] vào Database SQL Server thành công!" });
+        return Results.Ok(new { success = true, id = groupId, code = code, name = name, message = $"Đã lưu nhóm dịch vụ [{code}] vào Database SQL Server thành công!" });
     }
     else if (entityType == "drug")
     {

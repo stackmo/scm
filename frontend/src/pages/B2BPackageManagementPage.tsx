@@ -26,7 +26,8 @@ import {
   ArrowUpDown,
   RefreshCw,
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  Printer
 } from 'lucide-react';
 import { MASTER_SERVICES_CATALOG, ServiceItem } from '../data/masterServicesCatalog';
 
@@ -49,6 +50,7 @@ export interface PackageServiceItem {
   serviceCode: string;
   serviceName: string;
   orderIndex: number; // STT nhóm (các dòng Tuy_Chon cùng orderIndex tạo nhóm X trong Y)
+  groupChoiceCount?: number; // Số lượng X được chọn trong nhóm Y dịch vụ Tùy_Chọn
   registerType: ServiceRegisterType;
   isSpecimenOutsource: boolean; // Lấy Máu Ngoài (WF 03A)
   originalPrice: number; // Giá niêm yết
