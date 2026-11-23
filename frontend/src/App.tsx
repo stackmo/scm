@@ -1699,11 +1699,30 @@ export default function App() {
                     </>
                   )}
 
-                  {currentGroup.entityType === 'generic' && (
+                  {/* Cột chuyên biệt cho Tỉnh Thành & Xã Phường (VNeID) */}
+                  {currentGroup.id === 'grp_diaban' && (
+                    <>
+                      <th className="w-28 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã Xã/Phường</th>
+                      <th className="px-4 py-2 font-bold border-r border-[#dee2e6]">Tên Xã / Phường / Thị Trấn</th>
+                      <th className="w-24 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã Tỉnh</th>
+                      <th className="w-48 px-3 py-2 font-bold border-r border-[#dee2e6]">Tỉnh / Thành Phố (TW)</th>
+                    </>
+                  )}
+
+                  {/* Cột chuyên biệt cho Doanh nghiệp KSK */}
+                  {currentGroup.id === 'grp_congty' && (
+                    <>
+                      <th className="w-28 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã Đơn Vị</th>
+                      <th className="px-4 py-2 font-bold border-r border-[#dee2e6]">Tên Doanh Nghiệp / Nơi Công Tác</th>
+                    </>
+                  )}
+
+                  {/* Cột Generic chung cho các nhóm còn lại */}
+                  {currentGroup.id !== 'grp_diaban' && currentGroup.id !== 'grp_congty' && currentGroup.entityType === 'generic' && (
                     <th className="px-4 py-2 font-bold border-r border-[#dee2e6]">Tên Danh Mục / Giá Trị</th>
                   )}
 
-                  <th className="w-28 px-3 py-2 text-center font-bold">Thao tác</th>
+                  <th className="w-36 px-3 py-2 text-center font-bold">Thao tác</th>
                 </tr>
 
                 {/* Inline Filters */}
@@ -1718,12 +1737,12 @@ export default function App() {
                       className="w-full px-1.5 py-0.5 bg-white border border-[#ced4da] rounded text-[11px] text-[#212529] focus:outline-none focus:border-[#1f63c9]"
                     />
                   </td>
-                  <td className="px-2 py-1 border-r border-[#dee2e6]" colSpan={currentGroup.entityType === 'service' || currentGroup.entityType === 'drug' ? 5 : 4}>
+                  <td className="px-2 py-1 border-r border-[#dee2e6]" colSpan={6}>
                     <input
                       type="text"
                       value={filterName}
                       onChange={(e) => setFilterName(e.target.value)}
-                      placeholder="Lọc theo tên / nội dung..."
+                      placeholder="Lọc theo tên / nội dung / mã ký hiệu..."
                       className="w-full px-1.5 py-0.5 bg-white border border-[#ced4da] rounded text-[11px] text-[#212529] focus:outline-none focus:border-[#1f63c9]"
                     />
                   </td>
@@ -1731,16 +1750,16 @@ export default function App() {
                 </tr>
               </thead>
 
-              {/* Table Rows */}
+              {/* Table Rows - Hỗ trợ Double Click mở Popup và Phân trang */}
               <tbody className="divide-y divide-[#dee2e6]">
-                {filteredGridData.length === 0 ? (
+                {paginatedGridData.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center py-12 text-[#6c757d]">
                       Không tìm thấy bản ghi nào phù hợp
                     </td>
                   </tr>
                 ) : (
-                  filteredGridData.map((row: any) => {
+                  paginatedGridData.map((row: any) => {
                     const isSelected = row.id === selectedRowId;
                     const isChecked = selectedRows.includes(row.id);
 
@@ -1748,11 +1767,13 @@ export default function App() {
                       <tr
                         key={row.id}
                         onClick={() => setSelectedRowId(row.id)}
+                        onDoubleClick={() => handleOpenDetail(row)}
                         className={`transition cursor-pointer ${
                           isSelected
                             ? 'bg-[#e8f0fe] font-medium'
                             : 'hover:bg-[#f8f9fa]'
                         }`}
+                        title="Nhấp đúp chuột (Double-click) để mở popup chỉnh sửa"
                       >
                         <td
                           className="px-3 py-2 text-center border-r border-[#dee2e6]"
@@ -1927,8 +1948,40 @@ export default function App() {
                           </>
                         )}
 
+                        {/* Diaban VNeID Columns */}
+                        {currentGroup.id === 'grp_diaban' && (
+                          <>
+                            <td className="px-3 py-2 font-mono font-bold text-[#1f63c9] border-r border-[#dee2e6]">
+                              {row.code}
+                            </td>
+                            <td className="px-4 py-2 text-[#212529] font-semibold border-r border-[#dee2e6]">
+                              {row.name}
+                            </td>
+                            <td className="px-3 py-2 font-mono text-[#6c757d] border-r border-[#dee2e6]">
+                              {row.cityCode}
+                            </td>
+                            <td className="px-4 py-2 text-[#495057] font-medium border-r border-[#dee2e6]">
+                              <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold border border-blue-200">
+                                {row.cityName}
+                              </span>
+                            </td>
+                          </>
+                        )}
+
+                        {/* Cong ty KSK Columns */}
+                        {currentGroup.id === 'grp_congty' && (
+                          <>
+                            <td className="px-3 py-2 font-mono font-bold text-slate-700 border-r border-[#dee2e6]">
+                              {row.code}
+                            </td>
+                            <td className="px-4 py-2 text-[#212529] font-semibold border-r border-[#dee2e6]">
+                              {row.name}
+                            </td>
+                          </>
+                        )}
+
                         {/* Generic Columns */}
-                        {currentGroup.entityType === 'generic' && (
+                        {currentGroup.id !== 'grp_diaban' && currentGroup.id !== 'grp_congty' && currentGroup.entityType === 'generic' && (
                           <td className="px-4 py-2 font-semibold text-[#212529] border-r border-[#dee2e6]">
                             {row.name}
                           </td>
@@ -1939,18 +1992,43 @@ export default function App() {
                           className="px-3 py-2 text-center whitespace-nowrap"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="flex items-center justify-center space-x-2">
+                          <div className="flex items-center justify-center space-x-1.5">
                             <button
                               onClick={() => handleOpenDetail(row)}
                               className="flex items-center space-x-1 px-2 py-0.5 text-xs text-[#1f63c9] hover:bg-blue-50 border border-blue-200 rounded transition cursor-pointer font-medium"
+                              title="Chỉnh sửa bản ghi (hoặc nhấp đúp trên dòng)"
                             >
                               <Edit2 className="w-3 h-3" />
                               <span>Sửa</span>
                             </button>
 
                             <button
-                              onClick={() => alert(`Xóa mục: ${row.name}`)}
+                              onClick={() => {
+                                const cloned = {
+                                  ...row,
+                                  id: `CLONE_${Date.now()}`,
+                                  code: row.code ? `${row.code}_COPY` : `CP-${Date.now()}`,
+                                  name: `[Bản sao] ${row.name || ''}`,
+                                  isNew: true
+                                };
+                                setSelectedItemData(cloned);
+                                setDrawerOpen(true);
+                              }}
+                              className="flex items-center space-x-1 px-2 py-0.5 text-xs text-[#008299] hover:bg-teal-50 border border-teal-200 rounded transition cursor-pointer font-medium"
+                              title="Nhân bản (Duplicate) bản ghi này"
+                            >
+                              <Copy className="w-3 h-3" />
+                              <span>Nhân bản</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Xác nhận xóa bản ghi [${row.name || row.code}]?`)) {
+                                  alert(`Đã xóa bản ghi: ${row.name || row.code}`);
+                                }
+                              }}
                               className="flex items-center space-x-1 px-2 py-0.5 text-xs text-[#dc3545] hover:bg-rose-50 border border-rose-200 rounded transition cursor-pointer font-medium"
+                              title="Xóa bản ghi"
                             >
                               <Trash2 className="w-3 h-3" />
                               <span>Xóa</span>
@@ -1965,13 +2043,56 @@ export default function App() {
             </table>
           </div>
 
-          {/* Grid Footer */}
-          <div className="flex items-center justify-between px-4 py-1.5 bg-white border-t border-[#dee2e6] text-[11px] text-[#6c757d] shrink-0">
-            <div>
-              Đang chọn dòng: <strong className="text-[#212529]">{selectedRowId}</strong> • Đã tích: <strong className="text-[#1f63c9]">{selectedRows.length}</strong> mục
+          {/* Grid Footer with Full Pagination Controls */}
+          <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-white border-t border-[#dee2e6] text-[11px] text-[#6c757d] shrink-0 gap-2">
+            <div className="flex items-center space-x-3">
+              <span>
+                Đang chọn dòng: <strong className="text-[#212529]">{selectedRowId}</strong> • Đã tích: <strong className="text-[#1f63c9]">{selectedRows.length}</strong> mục
+              </span>
+              <span className="text-[#dee2e6]">|</span>
+              <span>
+                Hiển thị <strong>{filteredGridData.length > 0 ? pageIndex * pageSize + 1 : 0}</strong> - <strong>{Math.min((pageIndex + 1) * pageSize, filteredGridData.length)}</strong> trên tổng số <strong>{filteredGridData.length}</strong> bản ghi ({currentGroup.name})
+              </span>
             </div>
-            <div>
-              Hiển thị <strong className="text-[#212529]">{filteredGridData.length}</strong> / {currentGridData.length} bản ghi ({currentGroup.name})
+
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 mr-2">
+                <span>Hiển thị:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPageIndex(0);
+                  }}
+                  className="px-2 py-0.5 border border-[#ced4da] rounded text-[11px] bg-white text-[#212529] cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span>dòng/trang</span>
+              </div>
+
+              <button
+                onClick={() => setPageIndex(prev => Math.max(0, prev - 1))}
+                disabled={pageIndex === 0}
+                className="px-2 py-1 border border-[#ced4da] rounded bg-white hover:bg-[#f8f9fa] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-[#495057] font-semibold"
+              >
+                &lt; Trước
+              </button>
+
+              <span className="px-2 font-semibold text-[#212529]">
+                Trang {pageIndex + 1} / {totalPages}
+              </span>
+
+              <button
+                onClick={() => setPageIndex(prev => Math.min(totalPages - 1, prev + 1))}
+                disabled={pageIndex >= totalPages - 1}
+                className="px-2 py-1 border border-[#ced4da] rounded bg-white hover:bg-[#f8f9fa] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-[#495057] font-semibold"
+              >
+                Sau &gt;
+              </button>
             </div>
           </div>
         </main>
@@ -2463,6 +2584,78 @@ export default function App() {
                       />
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* === 7. GENERIC / ĐỊA BÀN / DOANH NGHIỆP DETAIL === */}
+              {(currentGroup.entityType === 'generic' || currentGroup.id === 'grp_diaban' || currentGroup.id === 'grp_congty') && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-1 space-y-1">
+                      <label className="font-semibold text-[#495057]">Mã Ký Hiệu:</label>
+                      <input
+                        type="text"
+                        value={selectedItemData.code || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono text-[#212529]"
+                      />
+                    </div>
+                    <div className="col-span-2 space-y-1">
+                      <label className="font-semibold text-[#495057]">Tên Bản Ghi / Danh Mục:</label>
+                      <input
+                        type="text"
+                        value={selectedItemData.name || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {currentGroup.id === 'grp_diaban' && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Mã Tỉnh / Thành Phố:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.cityCode || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, cityCode: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono text-[#212529]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Tên Tỉnh / Thành Phố Trực Thuộc:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.cityName || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, cityName: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {currentGroup.id === 'grp_congty' && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Mã Số Thuế:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.taxCode || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, taxCode: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono text-[#212529]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-[#495057]">Địa Chỉ Trụ Sở:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.address || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, address: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
