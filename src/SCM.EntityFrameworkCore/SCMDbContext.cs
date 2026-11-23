@@ -3,6 +3,7 @@ using SCM.Domain.B2B;
 using SCM.Domain.MasterData;
 using SCM.Domain.MasterData.Gateways;
 using SCM.Domain.MasterData.NationalRef;
+using SCM.Domain.Phlebotomy;
 
 namespace SCM.EntityFrameworkCore;
 
@@ -65,6 +66,14 @@ public class SCMDbContext : DbContext
     public DbSet<PackageService> PackageServices => Set<PackageService>();
     public DbSet<CompanyEmployee> CompanyEmployees => Set<CompanyEmployee>();
 
+    // ====================================================================
+    // 5. Wave 3: Pre-Exam Phlebotomy & Specimen Management
+    // ====================================================================
+    public DbSet<PhlebotomyBatch> PhlebotomyBatches => Set<PhlebotomyBatch>();
+    public DbSet<BatchEmployeeMapping> BatchEmployeeMappings => Set<BatchEmployeeMapping>();
+    public DbSet<SpecimenTube> SpecimenTubes => Set<SpecimenTube>();
+    public DbSet<ColdChainManifest> ColdChainManifests => Set<ColdChainManifest>();
+
     public SCMDbContext(DbContextOptions<SCMDbContext> options) : base(options)
     {
     }
@@ -75,6 +84,9 @@ public class SCMDbContext : DbContext
 
         // Wave 2 B2B & Package configurations
         modelBuilder.ConfigureB2BAndPackages();
+
+        // Wave 3 Phlebotomy & Cold Chain configurations
+        modelBuilder.ConfigurePhlebotomy();
 
         // -------------------------------------------------------------
         // 1. Internal Core Master Data Configurations

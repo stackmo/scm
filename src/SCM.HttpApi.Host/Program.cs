@@ -1,8 +1,25 @@
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using SCM.Application.Contracts.Phlebotomy;
+using SCM.Application.Contracts.Phlebotomy.Dtos;
+using SCM.Application.Phlebotomy;
 using SCM.Domain.MasterData;
 using SCM.Domain.MasterData.DataSeed;
+using SCM.Domain.Shared.Enums;
+using SCM.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Database Context
+builder.Services.AddDbContext<SCMDbContext>(options =>
+{
+    options.UseInMemoryDatabase("SCM_Db");
+});
+
+// Add Phlebotomy & Cold Chain Services
+builder.Services.AddScoped<IPhlebotomyBatchAppService, PhlebotomyBatchAppService>();
+builder.Services.AddScoped<IBarcodeGeneratorService, BarcodeGeneratorService>();
+builder.Services.AddScoped<IColdChainAppService, ColdChainAppService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -87,5 +104,93 @@ app.MapGet("/api/master-data/drugs", () => drugs);
 app.MapGet("/api/master-data/staffs", () => staffs);
 app.MapGet("/api/master-data/icd10", () => icd10s);
 app.MapGet("/api/master-data/facilities", () => facilities);
+
+// ==============================================================
+// Wave 3 Phlebotomy & Specimen Management APIs
+// ==============================================================
+var phlebotomyGroup = app.MapGroup("/api/phlebotomy");
+
+phlebotomyGroup.MapGet("/batches", async (Guid? companyId, Guid? contractId, IPhlebotomyBatchAppService service) =>
+{
+    var list = await service.GetBatchListAsync(companyId, contractId);
+    return Results.Ok(list);
+});
+
+phlebotomyGroup.MapPost("/batches", async (CreatePhlebotomyBatchDto input, IPhlebotomyBatchAppService service) =>
+{
+    var created = await service.CreateBatchAsync(input);
+    return Results.Created($"/api/phlebotomy/batches/{created.Id}", created);
+});
+
+phlebotomyGroup.MapGet("/batches/{id:guid}", async (Guid id, IPhlebotomyBatchAppService service) =>
+{
+    var batch = await service.GetBatchAsync(id);
+    return Results.Ok(batch);
+});
+
+phlebotomyGroup.MapPut("/batches/{id:guid}/status", async (Guid id, BatchStatus status, IPhlebotomyBatchAppService service) =>
+{
+    var updated = await service.UpdateBatchStatusAsync(id, status);
+    return Results.Ok(updated);
+});
+
+phlebotomyGroup.MapPost("/batches/{id:guid}/assign-employees", async (Guid id, AssignEmployeesToBatchDto input, IPhlebotomyBatchAppService service) =>
+{
+    var count = await service.AssignEmployeesAsync(id, input);
+    return Results.Ok(new { AssignedCount = count });
+});
+
+phlebotomyGroup.MapPost("/batches/{id:guid}/generate-barcodes", async (Guid id, IBarcodeGeneratorService barcodeService) =>
+{
+    var barcodes = await barcodeService.GenerateBatchBarcodesAsync(id);
+    return Results.Ok(barcodes);
+});
+
+phlebotomyGroup.MapGet("/batches/{id:guid}/employees", async (Guid id, IPhlebotomyBatchAppService service) =>
+{
+    var employees = await service.GetBatchEmployeesAsync(id);
+    return Results.Ok(employees);
+});
+
+phlebotomyGroup.MapPost("/batches/{id:guid}/checkin-employee/{employeeId:guid}", async (Guid id, Guid employeeId, CheckinEmployeeDto input, IPhlebotomyBatchAppService service) =>
+{
+    var result = await service.CheckinEmployeeAsync(id, employeeId, input);
+    return Results.Ok(result);
+});
+
+// ==============================================================
+// Wave 3 Cold Chain Logistics APIs
+// ==============================================================
+var coldChainGroup = app.MapGroup("/api/phlebotomy/cold-chain");
+
+coldChainGroup.MapPost("/manifests", async (CreateColdChainManifestDto input, IColdChainAppService service) =>
+{
+    var manifest = await service.CreateManifestAsync(input);
+    return Results.Created($"/api/phlebotomy/cold-chain/manifests/{manifest.Id}", manifest);
+});
+
+coldChainGroup.MapPost("/manifests/{id:guid}/receive", async (Guid id, ReceiveColdChainManifestDto input, IColdChainAppService service) =>
+{
+    var manifest = await service.ReceiveManifestAsync(id, input);
+    return Results.Ok(manifest);
+});
+
+coldChainGroup.MapGet("/manifests/{id:guid}", async (Guid id, IColdChainAppService service) =>
+{
+    var manifest = await service.GetManifestAsync(id);
+    return Results.Ok(manifest);
+});
+
+coldChainGroup.MapGet("/batches/{batchId:guid}/manifests", async (Guid batchId, IColdChainAppService service) =>
+{
+    var manifests = await service.GetManifestsByBatchAsync(batchId);
+    return Results.Ok(manifests);
+});
+
+coldChainGroup.MapGet("/check-temperature", (decimal temperature, IColdChainAppService service) =>
+{
+    var result = service.CheckTemperature(temperature);
+    return Results.Ok(result);
+});
 
 app.Run();
