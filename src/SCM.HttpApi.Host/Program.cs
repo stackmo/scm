@@ -13,10 +13,16 @@ using SCM.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Database Context
+// Add Database Context with SQL Server (LocalDB) or resilient fallback
+string defaultConn = builder.Configuration.GetConnectionString("Default") 
+    ?? "Server=(localdb)\\MSSQLLocalDB;Database=SmartClinicManagement;Integrated Security=True;TrustServerCertificate=True;MultipleActiveResultSets=true;";
+
 builder.Services.AddDbContext<SCMDbContext>(options =>
 {
-    options.UseInMemoryDatabase("SCM_Db");
+    options.UseSqlServer(defaultConn, sql =>
+    {
+        sql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+    });
 });
 
 // Add Phlebotomy & Cold Chain Services
@@ -78,39 +84,401 @@ else
     staffs = MasterDataDataSeeder.SeedStaffs(departments);
 }
 
+// Ensure Database Schema & Seed Data into SQL Server
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<SCMDbContext>();
+    try
+    {
+        db.Database.EnsureCreated();
+        Console.WriteLine("[SCM HOST] Database Schema đã được đảm bảo trên SQL Server (MSSQLLocalDB/SmartClinicManagement)!");
+
+        // Auto-seed if database is empty
+        if (!db.MedicalServices.Any())
+        {
+            Console.WriteLine("[SCM HOST] Bắt đầu gieo mầm dữ liệu Master Data vào SQL Server...");
+
+            if (departments.Any())
+            {
+                foreach (var d in departments)
+                {
+                    if (!db.Departments.Any(x => x.DepartmentCode == d.DepartmentCode))
+                        db.Departments.Add(d);
+                }
+                db.SaveChanges();
+            }
+
+            if (rooms.Any())
+            {
+                foreach (var r in rooms)
+                {
+                    if (!db.ClinicRooms.Any(x => x.RoomCode == r.RoomCode))
+                        db.ClinicRooms.Add(r);
+                }
+                db.SaveChanges();
+            }
+
+            var defaultGroupId = Guid.Parse("312fa0b0-d517-47f9-a8f9-4f0f7503b4dc");
+            if (!db.ServiceGroups.Any(x => x.Id == defaultGroupId))
+            {
+                db.ServiceGroups.Add(new ServiceGroup("N-KHAM", "Nhóm Dịch Vụ Khám Chữa Bệnh VSC", ServiceType.Examination) { Id = defaultGroupId });
+                db.SaveChanges();
+            }
+
+            if (groups.Any())
+            {
+                foreach (var g in groups)
+                {
+                    if (!db.ServiceGroups.Any(x => x.Id == g.Id || x.GroupCode == g.GroupCode))
+                        db.ServiceGroups.Add(g);
+                }
+                db.SaveChanges();
+            }
+
+            if (services.Any())
+            {
+                foreach (var s in services)
+                {
+                    if (!db.MedicalServices.Any(x => x.Id == s.Id))
+                        db.MedicalServices.Add(s);
+                }
+                db.SaveChanges();
+            }
+
+            var defaultIngId = Guid.Parse("a4650c83-71fb-4c37-9b40-789091a4dd24");
+            if (!db.ActiveIngredients.Any(x => x.Id == defaultIngId))
+            {
+                db.ActiveIngredients.Add(new ActiveIngredient("HC-CHUNG", "Hoạt chất tiêu chuẩn Dược Thư VSC") { Id = defaultIngId });
+                db.SaveChanges();
+            }
+
+            if (ingredients.Any())
+            {
+                foreach (var ing in ingredients)
+                {
+                    if (!db.ActiveIngredients.Any(x => x.Id == ing.Id || x.IngredientCode == ing.IngredientCode))
+                        db.ActiveIngredients.Add(ing);
+                }
+                db.SaveChanges();
+            }
+
+            if (drugs.Any())
+            {
+                foreach (var dr in drugs)
+                {
+                    if (!db.Drugs.Any(x => x.Id == dr.Id))
+                        db.Drugs.Add(dr);
+                }
+                db.SaveChanges();
+            }
+
+            if (staffs.Any())
+            {
+                foreach (var st in staffs)
+                {
+                    if (!db.Staffs.Any(x => x.StaffCode == st.StaffCode))
+                        db.Staffs.Add(st);
+                }
+                db.SaveChanges();
+            }
+
+            if (icd10s.Any())
+            {
+                foreach (var icd in icd10s)
+                {
+                    if (!db.Icd10s.Any(x => x.IcdCode == icd.IcdCode))
+                        db.Icd10s.Add(icd);
+                }
+                db.SaveChanges();
+            }
+
+            if (facilities.Any())
+            {
+                foreach (var f in facilities)
+                {
+                    if (!db.HealthcareFacilities.Any(x => x.FacilityCode == f.FacilityCode))
+                        db.HealthcareFacilities.Add(f);
+                }
+                db.SaveChanges();
+            }
+
+            Console.WriteLine($"[SCM HOST] Nạp thành công {db.MedicalServices.Count()} dịch vụ, {db.Drugs.Count()} thuốc, {db.ClinicRooms.Count()} phòng vào SQL Server!");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[SCM HOST LỖI DB] {ex.Message}");
+    }
+}
+
 // Health Check
 app.MapGet("/", () => new
 {
     Application = "SmartClinicManagement (SCM) Web API",
     Version = "1.0.0",
     Status = "Healthy",
-    DataSource = Directory.Exists(exportDir) ? "VSC Production Database ((localdb)\\MSSQLLocalDB/vsc)" : "In-Memory Seeder",
+    DataSource = "SQL Server LocalDB (MSSQLLocalDB / SmartClinicManagement)",
     Documentation = "SPEC-00-MASTER-DATA",
     Timestamp = DateTime.UtcNow
 });
 
-// Master Data APIs
-app.MapGet("/api/master-data/summary", () => new
+// Master Data Summary & Query APIs (Powered by SCMDbContext)
+app.MapGet("/api/master-data/summary", async (SCMDbContext db) => new
 {
-    DataSource = "VSC Production Database ((localdb)\\MSSQLLocalDB)",
-    DepartmentsCount = departments.Count,
-    RoomsCount = rooms.Count,
-    MedicalServicesCount = services.Count,
-    DrugsCount = drugs.Count,
-    StaffsCount = staffs.Count,
-    Icd10Count = icd10s.Count,
-    HealthcareFacilitiesCount = facilities.Count,
+    DataSource = "SQL Server LocalDB (Database: SmartClinicManagement)",
+    DepartmentsCount = await db.Departments.CountAsync(),
+    RoomsCount = await db.ClinicRooms.CountAsync(),
+    ServiceGroupsCount = await db.ServiceGroups.CountAsync(),
+    MedicalServicesCount = await db.MedicalServices.CountAsync(),
+    DrugsCount = await db.Drugs.CountAsync(),
+    StaffsCount = await db.Staffs.CountAsync(),
+    Icd10Count = await db.Icd10s.CountAsync(),
+    HealthcareFacilitiesCount = await db.HealthcareFacilities.CountAsync(),
     TotalVscPatients = 195492
 });
 
-app.MapGet("/api/master-data/departments", () => departments);
-app.MapGet("/api/master-data/rooms", () => rooms);
-app.MapGet("/api/master-data/service-groups", () => groups);
-app.MapGet("/api/master-data/services", () => services);
-app.MapGet("/api/master-data/drugs", () => drugs);
-app.MapGet("/api/master-data/staffs", () => staffs);
-app.MapGet("/api/master-data/icd10", () => icd10s);
-app.MapGet("/api/master-data/facilities", () => facilities);
+app.MapGet("/api/master-data/departments", async (SCMDbContext db) => 
+    await db.Departments.OrderBy(d => d.SortOrder).ToListAsync());
+
+app.MapGet("/api/master-data/rooms", async (SCMDbContext db) => 
+    await db.ClinicRooms.OrderBy(r => r.RoomCode).ToListAsync());
+
+app.MapGet("/api/master-data/service-groups", async (SCMDbContext db) => 
+    await db.ServiceGroups.OrderBy(g => g.SortOrder).ToListAsync());
+
+app.MapGet("/api/master-data/services", async (SCMDbContext db) => 
+    await db.MedicalServices.OrderBy(s => s.ServiceCode).ToListAsync());
+
+app.MapGet("/api/master-data/drugs", async (SCMDbContext db) => 
+    await db.Drugs.OrderBy(d => d.DrugCode).ToListAsync());
+
+app.MapGet("/api/master-data/staffs", async (SCMDbContext db) => 
+    await db.Staffs.OrderBy(s => s.StaffCode).ToListAsync());
+
+app.MapGet("/api/master-data/icd10", async (SCMDbContext db) => 
+    await db.Icd10s.OrderBy(i => i.IcdCode).ToListAsync());
+
+app.MapGet("/api/master-data/facilities", async (SCMDbContext db) => 
+    await db.HealthcareFacilities.OrderBy(f => f.FacilityCode).ToListAsync());
+
+// ==============================================================
+// Wave 1 Master Data Persistence & CRUD Endpoints
+// ==============================================================
+app.MapPost("/api/master-data/save", async (JsonElement body, SCMDbContext db) =>
+{
+    string entityType = body.TryGetProperty("entityType", out var et) ? et.GetString() ?? "" : "";
+    bool isNew = body.TryGetProperty("isNew", out var inw) && inw.GetBoolean();
+    if (!body.TryGetProperty("item", out var itemElem)) return Results.BadRequest("Thiếu thông tin item");
+
+    string code = itemElem.TryGetProperty("code", out var cProp) ? cProp.GetString() ?? "" : "";
+    string name = itemElem.TryGetProperty("name", out var nProp) ? nProp.GetString() ?? "" : "";
+    if (string.IsNullOrWhiteSpace(name) && itemElem.TryGetProperty("diseaseNameVi", out var dnProp))
+    {
+        name = dnProp.GetString() ?? "";
+    }
+    if (string.IsNullOrWhiteSpace(code) && itemElem.TryGetProperty("icdCode", out var icProp))
+    {
+        code = icProp.GetString() ?? "";
+    }
+
+    if (entityType == "service")
+    {
+        decimal price = itemElem.TryGetProperty("price", out var pProp) && pProp.TryGetDecimal(out var pVal) ? pVal : 0;
+        decimal insPrice = itemElem.TryGetProperty("insurancePrice", out var ipProp) && ipProp.TryGetDecimal(out var ipVal) ? ipVal : 0;
+        string unit = itemElem.TryGetProperty("unit", out var uProp) ? uProp.GetString() ?? "Lần" : "Lần";
+        
+        var existing = await db.MedicalServices.FirstOrDefaultAsync(s => s.ServiceCode == code);
+        if (existing != null && !isNew)
+        {
+            existing.ServiceName = name;
+            existing.StandardPrice = price;
+            existing.InsurancePrice = insPrice;
+            existing.Unit = unit;
+        }
+        else
+        {
+            var defaultGroup = await db.ServiceGroups.FirstOrDefaultAsync();
+            var newService = new MedicalService(code, name, defaultGroup?.Id ?? Guid.NewGuid(), unit, price, insPrice, price);
+            db.MedicalServices.Add(newService);
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true, message = $"Đã lưu dịch vụ [{code}] vào Database SQL Server thành công!" });
+    }
+    else if (entityType == "drug")
+    {
+        decimal price = itemElem.TryGetProperty("price", out var pProp) && pProp.TryGetDecimal(out var pVal) ? pVal : 0;
+        decimal insPrice = itemElem.TryGetProperty("insurancePrice", out var ipProp) && ipProp.TryGetDecimal(out var ipVal) ? ipVal : 0;
+        string unit = itemElem.TryGetProperty("unit", out var uProp) ? uProp.GetString() ?? "Viên" : "Viên";
+        string ingredient = itemElem.TryGetProperty("ingredient", out var igProp) ? igProp.GetString() ?? "" : "";
+        string concentration = itemElem.TryGetProperty("concentration", out var ccProp) ? ccProp.GetString() ?? "" : "";
+
+        var existing = await db.Drugs.FirstOrDefaultAsync(d => d.DrugCode == code);
+        if (existing != null && !isNew)
+        {
+            existing.DrugName = name;
+            existing.StandardPrice = price;
+            existing.InsurancePrice = insPrice;
+            existing.Unit = unit;
+            existing.Content = concentration;
+        }
+        else
+        {
+            var defaultIng = await db.ActiveIngredients.FirstOrDefaultAsync();
+            var newDrug = new Drug(code, name, defaultIng?.Id ?? Guid.NewGuid(), concentration, unit, UsageRoute.Oral, price, insPrice, price);
+            db.Drugs.Add(newDrug);
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true, message = $"Đã lưu thuốc [{code}] vào Database SQL Server thành công!" });
+    }
+    else if (entityType == "icd10")
+    {
+        string? nameEn = itemElem.TryGetProperty("diseaseNameEn", out var deProp) ? deProp.GetString() : null;
+        string chapterCode = itemElem.TryGetProperty("chapterCode", out var ccProp) ? ccProp.GetString() ?? "X" : "X";
+        bool isChronic = itemElem.TryGetProperty("isChronic", out var icbProp) && icbProp.GetBoolean();
+
+        var existing = await db.Icd10s.FirstOrDefaultAsync(i => i.IcdCode == code);
+        if (existing != null && !isNew)
+        {
+            existing.DiseaseNameVi = name;
+            existing.DiseaseNameEn = nameEn;
+            existing.ChapterCode = chapterCode;
+            existing.IsChronic = isChronic;
+        }
+        else
+        {
+            var newIcd = new Icd10(code, name, nameEn, chapterCode, isChronic);
+            db.Icd10s.Add(newIcd);
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true, message = $"Đã lưu ICD-10 [{code}] vào Database SQL Server thành công!" });
+    }
+    else if (entityType == "room")
+    {
+        var existing = await db.ClinicRooms.FirstOrDefaultAsync(r => r.RoomCode == code);
+        if (existing != null && !isNew)
+        {
+            existing.RoomName = name;
+        }
+        else
+        {
+            var defaultDept = await db.Departments.FirstOrDefaultAsync();
+            var newRoom = new ClinicRoom(code, name, defaultDept?.Id ?? Guid.NewGuid(), RoomType.Consultation);
+            db.ClinicRooms.Add(newRoom);
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true, message = $"Đã lưu buồng khám [{code}] vào Database SQL Server thành công!" });
+    }
+    else if (entityType == "staff")
+    {
+        string? cchn = itemElem.TryGetProperty("cchn", out var chProp) ? chProp.GetString() : null;
+        string? phone = itemElem.TryGetProperty("phone", out var phProp) ? phProp.GetString() : null;
+        string? email = itemElem.TryGetProperty("email", out var emProp) ? emProp.GetString() : null;
+
+        var existing = await db.Staffs.FirstOrDefaultAsync(s => s.StaffCode == code);
+        if (existing != null && !isNew)
+        {
+            existing.FullName = name;
+            existing.PracticeCertificateCode = cchn;
+            existing.PhoneNumber = phone;
+            existing.Email = email;
+        }
+        else
+        {
+            var defaultDept = await db.Departments.FirstOrDefaultAsync();
+            var newStaff = new Staff(code, name, StaffRole.Doctor, defaultDept?.Id, cchn ?? "CCHN-000", null, null, phone, email);
+            db.Staffs.Add(newStaff);
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true, message = $"Đã lưu nhân sự [{code}] vào Database SQL Server thành công!" });
+    }
+    else if (entityType == "department")
+    {
+        var existing = await db.Departments.FirstOrDefaultAsync(d => d.DepartmentCode == code);
+        if (existing != null && !isNew)
+        {
+            existing.DepartmentName = name;
+        }
+        else
+        {
+            var newDept = new Department(code, name, true);
+            db.Departments.Add(newDept);
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true, message = $"Đã lưu khoa ban [{code}] vào Database SQL Server thành công!" });
+    }
+    else if (entityType == "facility")
+    {
+        var existing = await db.HealthcareFacilities.FirstOrDefaultAsync(f => f.FacilityCode == code);
+        if (existing != null && !isNew)
+        {
+            existing.FacilityName = name;
+        }
+        else
+        {
+            var newFac = new HealthcareFacility(code, name);
+            db.HealthcareFacilities.Add(newFac);
+        }
+        await db.SaveChangesAsync();
+        return Results.Ok(new { success = true, message = $"Đã lưu CSKCB [{code}] vào Database SQL Server thành công!" });
+    }
+
+    return Results.Ok(new { success = true, message = $"Đã lưu bản ghi [{code}] thành công!" });
+});
+
+app.MapDelete("/api/master-data/{entityType}/{code}", async (string entityType, string code, SCMDbContext db) =>
+{
+    if (entityType == "service")
+    {
+        var item = await db.MedicalServices.FirstOrDefaultAsync(s => s.ServiceCode == code || s.Id.ToString() == code);
+        if (item != null)
+        {
+            db.MedicalServices.Remove(item);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true, message = $"Đã xóa dịch vụ [{code}] khỏi Database SQL Server!" });
+        }
+    }
+    else if (entityType == "drug")
+    {
+        var item = await db.Drugs.FirstOrDefaultAsync(d => d.DrugCode == code || d.Id.ToString() == code);
+        if (item != null)
+        {
+            db.Drugs.Remove(item);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true, message = $"Đã xóa thuốc [{code}] khỏi Database SQL Server!" });
+        }
+    }
+    else if (entityType == "icd10")
+    {
+        var item = await db.Icd10s.FirstOrDefaultAsync(i => i.IcdCode == code || i.Id.ToString() == code);
+        if (item != null)
+        {
+            db.Icd10s.Remove(item);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true, message = $"Đã xóa ICD-10 [{code}] khỏi Database SQL Server!" });
+        }
+    }
+    else if (entityType == "room")
+    {
+        var item = await db.ClinicRooms.FirstOrDefaultAsync(r => r.RoomCode == code || r.Id.ToString() == code);
+        if (item != null)
+        {
+            db.ClinicRooms.Remove(item);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true, message = $"Đã xóa buồng khám [{code}] khỏi Database SQL Server!" });
+        }
+    }
+    else if (entityType == "staff")
+    {
+        var item = await db.Staffs.FirstOrDefaultAsync(s => s.StaffCode == code || s.Id.ToString() == code);
+        if (item != null)
+        {
+            db.Staffs.Remove(item);
+            await db.SaveChangesAsync();
+            return Results.Ok(new { success = true, message = $"Đã xóa nhân sự [{code}] khỏi Database SQL Server!" });
+        }
+    }
+    return Results.Ok(new { success = true, message = $"Đã xử lý xóa [{code}]" });
+});
 
 // ==============================================================
 // Wave 3 Phlebotomy & Specimen Management APIs

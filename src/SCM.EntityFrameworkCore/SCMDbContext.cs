@@ -149,7 +149,7 @@ public class SCMDbContext : DbContext
             b.Property(x => x.MinistryEquivalentCode).HasMaxLength(50);
             b.Property(x => x.MinistryEquivalentName).HasMaxLength(255);
             b.Property(x => x.DecisionNumber).HasMaxLength(50);
-            b.HasIndex(x => x.ServiceCode).IsUnique();
+            b.HasIndex(x => x.ServiceCode);
 
             b.HasOne(x => x.ServiceGroup)
              .WithMany(g => g.Services)
@@ -178,11 +178,11 @@ public class SCMDbContext : DbContext
             b.Property(x => x.StandardPrice).HasPrecision(18, 2);
             b.Property(x => x.InsurancePrice).HasPrecision(18, 2);
             b.Property(x => x.CostPrice).HasPrecision(18, 2);
-            b.Property(x => x.RegistrationNumber).HasMaxLength(50);
-            b.Property(x => x.NationalDrugCode).HasMaxLength(50);
+            b.Property(x => x.RegistrationNumber).HasMaxLength(150);
+            b.Property(x => x.NationalDrugCode).HasMaxLength(100);
             b.Property(x => x.Manufacturer).HasMaxLength(150);
             b.Property(x => x.CountryOfOrigin).HasMaxLength(100);
-            b.HasIndex(x => x.DrugCode).IsUnique();
+            b.HasIndex(x => x.DrugCode);
 
             b.HasOne(x => x.ActiveIngredient)
              .WithMany(i => i.Drugs)

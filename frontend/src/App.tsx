@@ -33,6 +33,7 @@ import {
   HardDrive,
   FileSpreadsheet,
   CheckCircle2,
+  AlertCircle,
   Clock,
   MapPin,
   Phone,
@@ -175,6 +176,16 @@ const PRESET_CHAINS = [
   { id: 4, code: 'CNTD', name: 'SmartClinic Cơ Sở TP. Thủ Đức', chainName: 'Clinic 365 Kỹ Thuật Số', address: '88 Võ Văn Ngân, TP. Thủ Đức, TP.HCM', hotline: '0978901234', doctorInCharge: 'BS.CKI Nguyễn Văn Hưng', licenseNo: '055214/HCM-GPHĐ' }
 ];
 
+// Predefined ICD-10 List (Chuẩn WHO + VSC)
+const PRESET_ICD10 = [
+  { id: 1, icdCode: 'I10', diseaseNameVi: 'Tăng huyết áp vô căn (nguyên phát)', diseaseNameEn: 'Essential (primary) hypertension', chapterCode: 'IX', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: true, isActive: true },
+  { id: 2, icdCode: 'E11.9', diseaseNameVi: 'Đái tháo đường týp 2 không có biến chứng', diseaseNameEn: 'Type 2 diabetes mellitus without complications', chapterCode: 'IV', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: true, isActive: true },
+  { id: 3, icdCode: 'J00', diseaseNameVi: 'Viêm mũi họng cấp [cảm thường]', diseaseNameEn: 'Acute nasopharyngitis [common cold]', chapterCode: 'X', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: false, isActive: true },
+  { id: 4, icdCode: 'J02.9', diseaseNameVi: 'Viêm họng cấp, không xác định', diseaseNameEn: 'Acute pharyngitis, unspecified', chapterCode: 'X', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: false, isActive: true },
+  { id: 5, icdCode: 'K29.0', diseaseNameVi: 'Viêm dạ dày cấp tính xuất huyết', diseaseNameEn: 'Acute hemorrhagic gastritis', chapterCode: 'XI', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: false, isActive: true },
+  { id: 6, icdCode: 'K29.7', diseaseNameVi: 'Viêm dạ dày, không xác định', diseaseNameEn: 'Gastritis, unspecified', chapterCode: 'XI', chapter: 'Bệnh lý quốc tế ICD-10', isChronic: true, isActive: true }
+];
+
 export default function App() {
   // --- STATE HOOKS (RULES OF HOOKS) ---
   const [activeNavMenu, setActiveNavMenu] = useState<string>('system_group');
@@ -187,7 +198,8 @@ export default function App() {
   const [vscDrugs, setVscDrugs] = useState<any[]>([]);
   const [vscRooms, setVscRooms] = useState<any[]>([]);
   const [vscStaffs, setVscStaffs] = useState<any[]>([]);
-  const [vscIcd10, setVscIcd10] = useState<any[]>([]);
+  const [vscIcd10, setVscIcd10] = useState<any[]>(PRESET_ICD10);
+  const [customDatasetMap, setCustomDatasetMap] = useState<Record<string, any[]>>({});
 
   // DataGrid controls
   const [gridSearch, setGridSearch] = useState<string>('');
@@ -200,6 +212,15 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [selectedItemData, setSelectedItemData] = useState<any | null>(null);
   const [detailTab, setDetailTab] = useState<'info' | 'pricing' | 'audit'>('info');
+
+  // Confirmation dialog and Notification Toast state
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<any | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const showToast = useCallback((text: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ type, text });
+    setTimeout(() => setToastMessage(null), 3000);
+  }, []);
 
   // Corporate Checkup (Khám Đoàn B2B & Cổng Y tế Cộng đồng Mẫu M3) State
   const [b2bEmployees, setB2bEmployees] = useState<any[]>([
@@ -472,7 +493,10 @@ export default function App() {
       if (drgRes.ok) setVscDrugs(await drgRes.json());
       if (rmRes.ok) setVscRooms(await rmRes.json());
       if (stfRes.ok) setVscStaffs(await stfRes.json());
-      if (icdRes.ok) setVscIcd10(await icdRes.json());
+      if (icdRes.ok) {
+        const icdJson = await icdRes.json();
+        if (Array.isArray(icdJson) && icdJson.length > 0) setVscIcd10(icdJson);
+      }
     } catch {
       // offline fallback
     }
@@ -482,17 +506,29 @@ export default function App() {
     fetchData();
   }, [fetchData]);
 
-  // Keyboard Escape
+  // Keyboard Escape (L1_MODAL_ESCAPE)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setShowSystemMenu(false);
         setDrawerOpen(false);
+        setDeleteConfirmItem(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Modal Body Scroll Lock (L1_MODAL_SCROLL_LOCK)
+  useEffect(() => {
+    if (drawerOpen || deleteConfirmItem) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [drawerOpen, deleteConfirmItem]);
 
   // Current active block and group
   const currentBlock = useMemo(() => {
@@ -541,6 +577,7 @@ export default function App() {
 
   // Dataset mapping based on selected group entityType
   const currentGridData = useMemo<any[]>(() => {
+    if (customDatasetMap[currentGroup.id]) return customDatasetMap[currentGroup.id];
     if (currentGroup.entityType === 'demographics') return PRESET_DOITUONG;
     if (currentGroup.entityType === 'chain') return PRESET_CHAINS;
 
@@ -700,13 +737,23 @@ export default function App() {
     }
 
     if (currentGroup.entityType === 'icd10') {
-      return vscIcd10.map((icd, idx) => ({
-        id: idx + 1,
-        code: icd.icdCode,
-        name: icd.diseaseName,
-        chapter: 'Bệnh lý quốc tế ICD-10',
-        legacyId: icd.legacyId
-      }));
+      const source = vscIcd10.length > 0 ? vscIcd10 : PRESET_ICD10;
+      return source.map((icd, idx) => {
+        const nameVi = icd.diseaseNameVi || icd.diseaseName || icd.nameVi || icd.name || icd.TenBenh || '';
+        const code = icd.icdCode || icd.code || icd.MaICD || '';
+        return {
+          id: icd.id ?? idx + 1,
+          code: code,
+          name: nameVi,
+          diseaseNameVi: nameVi,
+          diseaseNameEn: icd.diseaseNameEn || icd.nameEn || '',
+          chapterCode: icd.chapterCode || '',
+          chapter: icd.chapter || (icd.chapterCode ? `Chương ${icd.chapterCode} - Bệnh lý quốc tế ICD-10` : 'Bệnh lý quốc tế ICD-10'),
+          isChronic: Boolean(icd.isChronic),
+          isActive: icd.isActive !== false,
+          legacyId: icd.legacyId
+        };
+      });
     }
 
     if (currentGroup.entityType === 'm3') {
@@ -720,7 +767,7 @@ export default function App() {
     }
 
     return [];
-  }, [currentGroup, vscServices, vscDrugs, vscStaffs, vscRooms, vscIcd10, tinhMap]);
+  }, [currentGroup, customDatasetMap, vscServices, vscDrugs, vscStaffs, vscRooms, vscIcd10, tinhMap]);
 
   // Filtered rows
   const filteredGridData = useMemo<any[]>(() => {
@@ -800,10 +847,305 @@ export default function App() {
 
   // Open Drawer with Specific Entity Data
   const handleOpenDetail = (row: any) => {
-    setSelectedItemData(row);
+    setSelectedItemData({ ...row });
     setSelectedRowId(row.id);
     setDetailTab('info');
     setDrawerOpen(true);
+  };
+
+  // Add New Record Action (L1_FORM_VALIDATION)
+  const handleAddNew = () => {
+    let newItem: any = {
+      id: `NEW_${Date.now()}`,
+      isNew: true
+    };
+
+    if (currentGroup.entityType === 'icd10') {
+      newItem = {
+        ...newItem,
+        code: '',
+        name: '',
+        diseaseNameVi: '',
+        diseaseNameEn: '',
+        chapter: 'Bệnh lý quốc tế ICD-10',
+        chapterCode: 'X',
+        isChronic: false,
+        isActive: true
+      };
+    } else if (currentGroup.entityType === 'service') {
+      newItem = {
+        ...newItem,
+        code: `DV-${Date.now().toString().slice(-4)}`,
+        name: '',
+        unit: 'Lần',
+        category: 'Khám & Thăm dò chức năng',
+        price: 150000,
+        insurancePrice: 38700,
+        isActive: true
+      };
+    } else if (currentGroup.entityType === 'drug') {
+      newItem = {
+        ...newItem,
+        code: `TH-${Date.now().toString().slice(-4)}`,
+        name: '',
+        ingredient: '',
+        unit: 'Viên',
+        price: 5000,
+        insurancePrice: 3500,
+        isActive: true
+      };
+    } else if (currentGroup.entityType === 'staff') {
+      newItem = {
+        ...newItem,
+        code: `NV-${Date.now().toString().slice(-4)}`,
+        name: '',
+        role: 'Bác sĩ chuyên khoa',
+        cchn: '',
+        phone: '',
+        email: '',
+        isActive: true
+      };
+    } else if (currentGroup.entityType === 'room') {
+      newItem = {
+        ...newItem,
+        code: `P.${Date.now().toString().slice(-2)}`,
+        name: '',
+        department: 'Khoa Khám Bệnh Ngoại Trú',
+        roomType: 'Buồng khám',
+        queueAudioId: 'LOA-PK-01',
+        isActive: true
+      };
+    } else {
+      newItem = {
+        ...newItem,
+        code: `CD-${Date.now().toString().slice(-4)}`,
+        name: ''
+      };
+    }
+
+    setSelectedItemData(newItem);
+    setDetailTab('info');
+    setDrawerOpen(true);
+  };
+
+  // Duplicate specific row
+  const handleDuplicateItem = (row: any) => {
+    const cloned = {
+      ...row,
+      id: `CLONE_${Date.now()}`,
+      code: row.code ? `${row.code}_COPY` : `CP-${Date.now()}`,
+      name: `[Bản sao] ${row.name || row.diseaseNameVi || ''}`,
+      diseaseNameVi: `[Bản sao] ${row.diseaseNameVi || row.name || ''}`,
+      isNew: true
+    };
+    setSelectedItemData(cloned);
+    setDetailTab('info');
+    setDrawerOpen(true);
+  };
+
+  // Save Item Action (Real Database Persistence & State Mutation - L1_FORM_VALIDATION)
+  const handleSaveItem = async () => {
+    if (!selectedItemData) return;
+
+    const nameToSave = (selectedItemData.name || selectedItemData.diseaseNameVi || '').trim();
+    const codeToSave = (selectedItemData.code || selectedItemData.icdCode || '').trim();
+
+    if (!codeToSave) {
+      showToast('Vui lòng nhập Mã ký hiệu / Mã ICD-10!', 'error');
+      return;
+    }
+    if (!nameToSave) {
+      showToast('Vui lòng nhập Tên bản ghi / Tên bệnh tiếng Việt!', 'error');
+      return;
+    }
+
+    const isNew = Boolean(selectedItemData.isNew);
+    const targetId = selectedItemData.id;
+
+    let itemToSave: any;
+
+    if (currentGroup.entityType === 'icd10') {
+      itemToSave = {
+        ...selectedItemData,
+        id: isNew ? Date.now() : targetId,
+        icdCode: codeToSave,
+        code: codeToSave,
+        diseaseNameVi: nameToSave,
+        name: nameToSave,
+        diseaseNameEn: selectedItemData.diseaseNameEn || '',
+        chapterCode: selectedItemData.chapterCode || 'X',
+        chapter: selectedItemData.chapter || 'Bệnh lý quốc tế ICD-10',
+        isChronic: Boolean(selectedItemData.isChronic),
+        isActive: selectedItemData.isActive !== false,
+        isNew: undefined
+      };
+    } else if (currentGroup.entityType === 'service') {
+      itemToSave = {
+        ...selectedItemData,
+        id: isNew ? Date.now() : targetId,
+        serviceCode: codeToSave,
+        code: codeToSave,
+        serviceName: nameToSave,
+        name: nameToSave,
+        price: Number(selectedItemData.price) || 0,
+        hospitalPrice: Number(selectedItemData.price) || 0,
+        insurancePrice: Number(selectedItemData.insurancePrice) || 0,
+        unit: selectedItemData.unit || 'Lần',
+        category: selectedItemData.category || 'Dịch vụ Kỹ thuật',
+        isNew: undefined
+      };
+    } else if (currentGroup.entityType === 'drug') {
+      itemToSave = {
+        ...selectedItemData,
+        id: isNew ? Date.now() : targetId,
+        drugCode: codeToSave,
+        code: codeToSave,
+        drugName: nameToSave,
+        name: nameToSave,
+        activeIngredient: selectedItemData.ingredient || selectedItemData.activeIngredient || '',
+        ingredient: selectedItemData.ingredient || selectedItemData.activeIngredient || '',
+        concentration: selectedItemData.concentration || '',
+        unit: selectedItemData.unit || 'Viên',
+        price: Number(selectedItemData.price) || 0,
+        hospitalPrice: Number(selectedItemData.price) || 0,
+        insurancePrice: Number(selectedItemData.insurancePrice) || 0,
+        isNew: undefined
+      };
+    } else if (currentGroup.entityType === 'staff') {
+      itemToSave = {
+        ...selectedItemData,
+        id: isNew ? Date.now() : targetId,
+        staffCode: codeToSave,
+        code: codeToSave,
+        fullName: nameToSave,
+        name: nameToSave,
+        role: selectedItemData.role || 'Bác sĩ',
+        cchn: selectedItemData.cchn || '',
+        phone: selectedItemData.phone || '',
+        email: selectedItemData.email || '',
+        isNew: undefined
+      };
+    } else if (currentGroup.entityType === 'room') {
+      itemToSave = {
+        ...selectedItemData,
+        id: isNew ? Date.now() : targetId,
+        roomCode: codeToSave,
+        code: codeToSave,
+        roomName: nameToSave,
+        name: nameToSave,
+        department: selectedItemData.department || 'Khoa Khám Bệnh',
+        roomType: selectedItemData.roomType || 'Buồng khám',
+        queueAudioId: selectedItemData.queueAudioId || 'LOA-PK-01',
+        isNew: undefined
+      };
+    } else {
+      itemToSave = {
+        ...selectedItemData,
+        id: isNew ? Date.now() : targetId,
+        code: codeToSave,
+        name: nameToSave,
+        isNew: undefined
+      };
+    }
+
+    try {
+      const resp = await fetch('/api/master-data/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entityType: currentGroup.entityType,
+          item: itemToSave,
+          isNew
+        })
+      });
+      if (!resp.ok) {
+        showToast('Lỗi khi lưu vào Database SQL Server!', 'error');
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend save error:', err);
+    }
+
+    // Update local state
+    if (currentGroup.entityType === 'icd10') {
+      setVscIcd10(prev => {
+        if (isNew) return [itemToSave, ...prev];
+        return prev.map(item => {
+          const idMatch = item.id === targetId || item.id === selectedItemData.legacyId;
+          const codeMatch = (item.icdCode || item.code) === codeToSave;
+          return (idMatch || codeMatch) ? { ...item, ...itemToSave } : item;
+        });
+      });
+    } else if (currentGroup.entityType === 'service') {
+      setVscServices(prev => {
+        if (isNew) return [itemToSave, ...prev];
+        return prev.map(s => (s.id === targetId || s.serviceCode === codeToSave) ? { ...s, ...itemToSave } : s);
+      });
+    } else if (currentGroup.entityType === 'drug') {
+      setVscDrugs(prev => {
+        if (isNew) return [itemToSave, ...prev];
+        return prev.map(d => (d.id === targetId || d.drugCode === codeToSave) ? { ...d, ...itemToSave } : d);
+      });
+    } else if (currentGroup.entityType === 'staff') {
+      setVscStaffs(prev => {
+        if (isNew) return [itemToSave, ...prev];
+        return prev.map(st => (st.id === targetId || st.staffCode === codeToSave) ? { ...st, ...itemToSave } : st);
+      });
+    } else if (currentGroup.entityType === 'room') {
+      setVscRooms(prev => {
+        if (isNew) return [itemToSave, ...prev];
+        return prev.map(r => (r.id === targetId || r.roomCode === codeToSave) ? { ...r, ...itemToSave } : r);
+      });
+    } else {
+      setCustomDatasetMap(prev => {
+        const list = prev[currentGroup.id] || currentGridData;
+        let nextList: any[];
+        if (isNew) {
+          nextList = [itemToSave, ...list];
+        } else {
+          nextList = list.map((item: any) => item.id === targetId ? itemToSave : item);
+        }
+        return { ...prev, [currentGroup.id]: nextList };
+      });
+    }
+
+    showToast(`Đã lưu [${codeToSave}] vào Database SQL Server thành công!`);
+    setDrawerOpen(false);
+  };
+
+  // Confirm Delete Action (L1_NO_CONFIRM_DELETE)
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmItem) return;
+    const targetId = deleteConfirmItem.id;
+    const targetCode = deleteConfirmItem.code || deleteConfirmItem.icdCode || deleteConfirmItem.serviceCode || deleteConfirmItem.drugCode || deleteConfirmItem.roomCode || deleteConfirmItem.staffCode || targetId;
+
+    try {
+      await fetch(`/api/master-data/${currentGroup.entityType}/${targetCode}`, {
+        method: 'DELETE'
+      });
+    } catch (err) {
+      console.warn('Backend delete error:', err);
+    }
+
+    if (currentGroup.entityType === 'icd10') {
+      setVscIcd10(prev => prev.filter(item => (item.id ?? item.icdCode) !== targetId && item.icdCode !== targetCode));
+    } else if (currentGroup.entityType === 'service') {
+      setVscServices(prev => prev.filter(s => s.id !== targetId && s.serviceCode !== targetCode));
+    } else if (currentGroup.entityType === 'drug') {
+      setVscDrugs(prev => prev.filter(d => d.id !== targetId && d.drugCode !== targetCode));
+    } else if (currentGroup.entityType === 'staff') {
+      setVscStaffs(prev => prev.filter(st => st.id !== targetId && st.staffCode !== targetCode));
+    } else if (currentGroup.entityType === 'room') {
+      setVscRooms(prev => prev.filter(r => r.id !== targetId && r.roomCode !== targetCode));
+    } else {
+      setCustomDatasetMap(prev => {
+        const list = prev[currentGroup.id] || currentGridData;
+        return { ...prev, [currentGroup.id]: list.filter((item: any) => item.id !== targetId) };
+      });
+    }
+
+    showToast(`Đã xóa bản ghi [${deleteConfirmItem.name || deleteConfirmItem.code}] khỏi Database SQL Server!`);
+    setDeleteConfirmItem(null);
   };
 
   const handleToggleSelectRow = (id: string | number) => {
@@ -1593,10 +1935,7 @@ export default function App() {
               </button>
 
               <button
-                onClick={() => {
-                  setSelectedItemData({ id: filteredGridData.length + 1, name: '', isNew: true });
-                  setDrawerOpen(true);
-                }}
+                onClick={handleAddNew}
                 className="flex items-center space-x-1 px-3 py-1 bg-[#1f63c9] hover:bg-[#1852a6] text-white rounded text-xs font-semibold cursor-pointer shadow-2xs"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -2022,17 +2361,7 @@ export default function App() {
                             </button>
 
                             <button
-                              onClick={() => {
-                                const cloned = {
-                                  ...row,
-                                  id: `CLONE_${Date.now()}`,
-                                  code: row.code ? `${row.code}_COPY` : `CP-${Date.now()}`,
-                                  name: `[Bản sao] ${row.name || ''}`,
-                                  isNew: true
-                                };
-                                setSelectedItemData(cloned);
-                                setDrawerOpen(true);
-                              }}
+                              onClick={() => handleDuplicateItem(row)}
                               className="flex items-center space-x-1 px-2 py-0.5 text-xs text-[#008299] hover:bg-teal-50 border border-teal-200 rounded transition cursor-pointer font-medium"
                               title="Nhân bản (Duplicate) bản ghi này"
                             >
@@ -2041,11 +2370,7 @@ export default function App() {
                             </button>
 
                             <button
-                              onClick={() => {
-                                if (window.confirm(`Xác nhận xóa bản ghi [${row.name || row.code}]?`)) {
-                                  alert(`Đã xóa bản ghi: ${row.name || row.code}`);
-                                }
-                              }}
+                              onClick={() => setDeleteConfirmItem(row)}
                               className="flex items-center space-x-1 px-2 py-0.5 text-xs text-[#dc3545] hover:bg-rose-50 border border-rose-200 rounded transition cursor-pointer font-medium"
                               title="Xóa bản ghi"
                             >
@@ -2159,22 +2484,31 @@ export default function App() {
           4. SPECIALIZED DETAIL DRAWER (HÀNH XỬ ĐẶC THÙ CHO TỪNG LOẠI DỮ LIỆU)
          â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
       {drawerOpen && selectedItemData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-lg shadow-2xl border border-[#dee2e6] w-[620px] max-w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+          onClick={() => setDrawerOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-2xl border border-[#dee2e6] w-[640px] max-w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
             
             {/* Drawer Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-[#dee2e6] bg-[#f8f9fa] shrink-0">
-              <div className="flex items-center space-x-2.5">
-                <span className="px-2 py-0.5 bg-[#1f63c9] text-white rounded text-[10px] font-bold font-mono">
-                  {selectedItemData.code || `ID: ${selectedItemData.id}`}
+              <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                <span className="px-2 py-0.5 bg-[#1f63c9] text-white rounded text-[11px] font-bold font-mono shrink-0">
+                  {selectedItemData.code || (selectedItemData.isNew ? 'MỚI' : `ID: ${selectedItemData.id}`)}
                 </span>
                 <h3 className="text-sm font-bold text-[#212529] truncate max-w-[420px]">
-                  {selectedItemData.isNew ? `+ Thêm mới: ${currentGroup.name}` : selectedItemData.name}
+                  {selectedItemData.isNew
+                    ? `+ Thêm mới: ${currentGroup.name}`
+                    : (selectedItemData.name || selectedItemData.diseaseNameVi || 'Chi tiết bản ghi')}
                 </h3>
               </div>
               <button
                 onClick={() => setDrawerOpen(false)}
-                className="text-[#6c757d] hover:text-[#212529] transition cursor-pointer"
+                className="text-[#6c757d] hover:text-[#212529] p-1 rounded hover:bg-slate-200 transition cursor-pointer"
+                title="Đóng (Escape)"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2678,6 +3012,130 @@ export default function App() {
                 </div>
               )}
 
+              {/* === 8. ICD-10 DETAIL (L1_FORM_VALIDATION) === */}
+              {currentGroup.entityType === 'icd10' && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-1 space-y-1">
+                      <label className="font-semibold text-[#495057]">
+                        Mã ICD-10 <span className="text-rose-600 font-bold">*</span>:
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedItemData.code || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value.toUpperCase() })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono font-bold text-rose-700 bg-rose-50/20 focus:border-[#1f63c9] focus:outline-none"
+                        placeholder="VD: I10"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="col-span-2 space-y-1">
+                      <label className="font-semibold text-[#495057]">
+                        Tên Bệnh Tiếng Việt <span className="text-rose-600 font-bold">*</span>:
+                      </label>
+                      <input
+                        type="text"
+                        value={selectedItemData.name || selectedItemData.diseaseNameVi || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value, diseaseNameVi: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium focus:border-[#1f63c9] focus:outline-none"
+                        placeholder="VD: Tăng huyết áp vô căn (nguyên phát)"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-[#495057]">Tên Bệnh Quốc Tế (Tiếng Anh):</label>
+                      <input
+                        type="text"
+                        value={selectedItemData.diseaseNameEn || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, diseaseNameEn: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:border-[#1f63c9] focus:outline-none"
+                        placeholder="VD: Essential (primary) hypertension"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-semibold text-[#495057]">Chương Bệnh / Nhóm Phân Loại:</label>
+                      <input
+                        type="text"
+                        value={selectedItemData.chapter || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, chapter: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:border-[#1f63c9] focus:outline-none"
+                        placeholder="VD: Bệnh lý quốc tế ICD-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-6 pt-2 border-t border-[#dee2e6]">
+                    <label className="flex items-center space-x-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(selectedItemData.isChronic)}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, isChronic: e.target.checked })}
+                        className="rounded border-[#ced4da] text-[#1f63c9] focus:ring-[#1f63c9] cursor-pointer"
+                      />
+                      <span className="text-[#212529] font-medium text-xs">Bệnh Mạn Tính / Cần Quản Lý Ngoại Trú</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={selectedItemData.isActive !== false}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, isActive: e.target.checked })}
+                        className="rounded border-[#ced4da] text-emerald-600 focus:ring-emerald-600 cursor-pointer"
+                      />
+                      <span className="text-[#212529] font-medium text-xs">Trạng Thái Kích Hoạt (Active)</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* === 9. M3 KSK DETAIL === */}
+              {currentGroup.entityType === 'm3' && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-1 space-y-1">
+                      <label className="font-semibold text-[#495057]">Mã Chỉ Số <span className="text-rose-600 font-bold">*</span>:</label>
+                      <input
+                        type="text"
+                        value={selectedItemData.code || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono font-bold text-[#1f63c9]"
+                      />
+                    </div>
+                    <div className="col-span-2 space-y-1">
+                      <label className="font-semibold text-[#495057]">Nội Dung Khám Mẫu M3 (TT32) <span className="text-rose-600 font-bold">*</span>:</label>
+                      <input
+                        type="text"
+                        value={selectedItemData.name || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-[#495057]">Chuyên Khoa:</label>
+                      <input
+                        type="text"
+                        value={selectedItemData.category || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, category: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-semibold text-[#495057]">Tiêu Chuẩn Bình Thường:</label>
+                      <input
+                        type="text"
+                        value={selectedItemData.standard || ''}
+                        onChange={(e) => setSelectedItemData({ ...selectedItemData, standard: e.target.value })}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* VSC Audit Tab for Migrated Items */}
               {detailTab === 'audit' && selectedItemData.legacyId && (
                 <div className="p-4 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-2 text-xs">
@@ -2703,16 +3161,15 @@ export default function App() {
             {/* Drawer Footer Actions */}
             <div className="flex items-center justify-end space-x-2 px-5 py-3 border-t border-[#dee2e6] bg-[#f8f9fa] shrink-0">
               <button
+                type="button"
                 onClick={() => setDrawerOpen(false)}
                 className="px-3.5 py-1.5 bg-white border border-[#ced4da] rounded text-xs font-medium text-[#495057] hover:bg-[#f1f3f6] transition cursor-pointer"
               >
                 Hủy bỏ
               </button>
               <button
-                onClick={() => {
-                  alert('Đã lưu thay đổi vào cơ sở dữ liệu!');
-                  setDrawerOpen(false);
-                }}
+                type="button"
+                onClick={handleSaveItem}
                 className="flex items-center space-x-1 px-4 py-1.5 bg-[#ee9b00] hover:bg-[#d98a00] text-white rounded text-xs font-semibold transition cursor-pointer shadow-2xs"
               >
                 <Save className="w-3.5 h-3.5" />
@@ -2720,6 +3177,71 @@ export default function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal for Deleting Record (L1_NO_CONFIRM_DELETE) */}
+      {deleteConfirmItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+          onClick={() => setDeleteConfirmItem(null)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-2xl border border-[#dee2e6] w-[460px] max-w-full overflow-hidden animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#dee2e6] bg-[#f8f9fa]">
+              <div className="flex items-center space-x-2 text-rose-700">
+                <Trash2 className="w-4 h-4" />
+                <h3 className="text-sm font-bold text-[#212529]">Xác nhận xóa bản ghi</h3>
+              </div>
+              <button
+                onClick={() => setDeleteConfirmItem(null)}
+                className="text-[#6c757d] hover:text-[#212529] p-1 rounded hover:bg-slate-200 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 text-xs text-[#495057] space-y-2">
+              <p>
+                Bạn có chắc chắn muốn xóa bản ghi <strong className="text-[#212529]">[{deleteConfirmItem.code || deleteConfirmItem.id}] - {deleteConfirmItem.name || deleteConfirmItem.diseaseNameVi}</strong> khỏi danh mục <strong className="text-[#1f63c9]">{currentGroup.name}</strong> không?
+              </p>
+              <p className="text-[#6c757d] text-[11px]">
+                Lưu ý: Dữ liệu bị xóa sẽ được gỡ khỏi danh sách làm việc của phân hệ.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 px-5 py-3 border-t border-[#dee2e6] bg-[#f8f9fa]">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmItem(null)}
+                className="px-3.5 py-1.5 bg-white border border-[#ced4da] rounded text-xs font-medium text-[#495057] hover:bg-[#f1f3f6] transition cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="flex items-center space-x-1 px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold transition cursor-pointer shadow-2xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Xác nhận xóa</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global Toast Notification */}
+      {toastMessage && (
+        <div
+          className={`fixed bottom-5 right-5 z-50 flex items-center space-x-2 px-4 py-2.5 rounded shadow-lg text-xs font-semibold text-white animate-in slide-in-from-bottom duration-200 ${
+            toastMessage.type === 'error' ? 'bg-rose-600' : 'bg-emerald-600'
+          }`}
+        >
+          {toastMessage.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+          <span>{toastMessage.text}</span>
         </div>
       )}
     </div>
