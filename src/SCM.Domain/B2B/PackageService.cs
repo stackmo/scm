@@ -1,4 +1,5 @@
 using SCM.Domain.MasterData;
+using SCM.Domain.Shared.Enums;
 
 namespace SCM.Domain.B2B;
 
@@ -20,6 +21,11 @@ public class PackageService
     public bool IsRequired { get; set; } = true;
     public bool IsSpecialApproved { get; set; } = false;
 
+    // VSC Extended fields (Hình 1 - 4)
+    public PackageServiceRegisterType RegisterType { get; set; } = PackageServiceRegisterType.Chon;
+    public int OrderIndex { get; set; } = 1;
+    public bool IsSpecimenOutsource { get; set; } = false;
+
     public PackageService() { }
 
     public PackageService(
@@ -33,7 +39,10 @@ public class PackageService
         decimal floorPrice,
         Guid? targetGroupId = null,
         bool isRequired = true,
-        bool isSpecialApproved = false)
+        bool isSpecialApproved = false,
+        PackageServiceRegisterType registerType = PackageServiceRegisterType.Chon,
+        int orderIndex = 1,
+        bool isSpecimenOutsource = false)
     {
         if (packageId == Guid.Empty)
             throw new ArgumentException("PackageId không được để trống.", nameof(packageId));
@@ -60,8 +69,11 @@ public class PackageService
         OriginalPrice = originalPrice;
         DealPrice = dealPrice;
         FloorPrice = floorPrice;
-        IsRequired = isRequired;
+        RegisterType = registerType;
+        IsRequired = isRequired && (registerType == PackageServiceRegisterType.Chon);
         IsSpecialApproved = isSpecialApproved;
+        OrderIndex = orderIndex > 0 ? orderIndex : 1;
+        IsSpecimenOutsource = isSpecimenOutsource;
     }
 
     public void SetDealPrice(decimal newDealPrice, bool isSpecialApproved = false)

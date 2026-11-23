@@ -149,11 +149,19 @@ public class PackageAppService : IPackageAppService
         if (package == null)
             throw new BusinessException(SCMErrorCodes.PackageNotFound, $"Không tìm thấy gói khám có Id = {input.PackageId}.");
 
+        var maxOrder = await _context.PackageTargetGroups
+            .Where(x => x.PackageId == input.PackageId)
+            .Select(x => (int?)x.OrderIndex)
+            .MaxAsync() ?? 0;
+
         var group = new PackageTargetGroup(
             packageId: input.PackageId,
             name: input.Name,
             targetGender: input.TargetGender,
-            description: input.Description
+            description: input.Description,
+            code: input.Code,
+            orderIndex: input.OrderIndex > 0 ? input.OrderIndex : maxOrder + 1,
+            isActive: input.IsActive
         );
 
         _context.PackageTargetGroups.Add(group);
@@ -163,9 +171,12 @@ public class PackageAppService : IPackageAppService
         {
             Id = group.Id,
             PackageId = group.PackageId,
+            Code = group.Code,
             Name = group.Name,
             TargetGender = group.TargetGender,
-            Description = group.Description
+            Description = group.Description,
+            OrderIndex = group.OrderIndex,
+            IsActive = group.IsActive
         };
     }
 
@@ -182,6 +193,11 @@ public class PackageAppService : IPackageAppService
                 throw new BusinessException(SCMErrorCodes.TargetGroupNotFound, $"Không tìm thấy nhóm đối tượng có Id = {input.TargetGroupId.Value}.");
         }
 
+        var maxOrder = await _context.PackageServices
+            .Where(x => x.PackageId == input.PackageId && x.TargetGroupId == input.TargetGroupId)
+            .Select(x => (int?)x.OrderIndex)
+            .MaxAsync() ?? 0;
+
         // FloorPrice validation occurs inside entity constructor or guard
         var service = new PackageService(
             packageId: input.PackageId,
@@ -194,13 +210,143 @@ public class PackageAppService : IPackageAppService
             floorPrice: input.FloorPrice,
             targetGroupId: input.TargetGroupId,
             isRequired: input.IsRequired,
-            isSpecialApproved: input.IsSpecialApproved
+            isSpecialApproved: input.IsSpecialApproved,
+            registerType: input.RegisterType,
+            orderIndex: input.OrderIndex > 0 ? input.OrderIndex : maxOrder + 1,
+            isSpecimenOutsource: input.IsSpecimenOutsource
         );
 
         _context.PackageServices.Add(service);
         await _context.SaveChangesAsync();
 
         return MapServiceToDto(service);
+    }
+
+    public async Task<List<PackageServiceDto>> BatchAddServicesAsync(BatchAddPackageServicesDto input)
+    {
+        var package = await _context.Packages.FirstOrDefaultAsync(x => x.Id == input.PackageId);
+        if (package == null)
+            throw new BusinessException(SCMErrorCodes.PackageNotFound, $"Không tìm thấy gói khám có Id = {input.PackageId}.");
+
+        var maxOrder = await _context.PackageServices
+            .Where(x => x.PackageId == input.PackageId && x.TargetGroupId == input.TargetGroupId)
+            .Select(x => (int?)x.OrderIndex)
+            .MaxAsync() ?? 0;
+
+        int currentOrder = maxOrder;
+        PackageService? preService = null;
+        var createdList = new List<PackageService>();
+
+        foreach (var srvInput in input.Services)
+        {
+            var regType = srvInput.RegisterType != default ? srvInput.RegisterType : input.DefaultRegisterType;
+            var isOutsource = srvInput.IsSpecimenOutsource || input.DefaultIsSpecimenOutsource;
+
+            // VSC Logic: Liên tiếp cùng loại TuyChon -> Giữ nguyên OrderIndex để tạo nhóm X trong Y
+            if (preService != null && preService.RegisterType == PackageServiceRegisterType.TuyChon && regType == PackageServiceRegisterType.TuyChon)
+            {
+                // Giữ nguyên orderIndex của preService
+            }
+            else
+            {
+                currentOrder++;
+            }
+
+            var service = new PackageService(
+                packageId: input.PackageId,
+                serviceId: srvInput.ServiceId,
+                serviceCode: srvInput.ServiceCode,
+                serviceName: srvInput.ServiceName,
+                quantity: srvInput.Quantity > 0 ? srvInput.Quantity : 1,
+                originalPrice: srvInput.OriginalPrice,
+                dealPrice: srvInput.DealPrice > 0 ? srvInput.DealPrice : srvInput.OriginalPrice,
+                floorPrice: srvInput.FloorPrice,
+                targetGroupId: input.TargetGroupId,
+                isRequired: regType == PackageServiceRegisterType.Chon,
+                isSpecialApproved: srvInput.IsSpecialApproved,
+                registerType: regType,
+                orderIndex: currentOrder,
+                isSpecimenOutsource: isOutsource
+            );
+
+            preService = service;
+            createdList.Add(service);
+        }
+
+        if (createdList.Count > 0)
+        {
+            _context.PackageServices.AddRange(createdList);
+            await _context.SaveChangesAsync();
+        }
+
+        return createdList.Select(MapServiceToDto).ToList();
+    }
+
+    public async Task<List<PackageServiceDto>> BatchUpdateServicesAsync(BatchUpdatePackageServicesDto input)
+    {
+        var ids = input.Items.Select(x => x.Id).ToList();
+        var services = await _context.PackageServices
+            .Where(x => x.PackageId == input.PackageId && ids.Contains(x.Id))
+            .ToListAsync();
+
+        var itemMap = input.Items.ToDictionary(x => x.Id);
+
+        foreach (var srv in services)
+        {
+            if (itemMap.TryGetValue(srv.Id, out var item))
+            {
+                srv.RegisterType = item.RegisterType;
+                srv.IsRequired = item.RegisterType == PackageServiceRegisterType.Chon;
+                srv.OrderIndex = item.OrderIndex > 0 ? item.OrderIndex : 1;
+                srv.IsSpecimenOutsource = item.IsSpecimenOutsource;
+                if (item.DealPrice >= 0)
+                {
+                    srv.SetDealPrice(item.DealPrice, srv.IsSpecialApproved);
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return services.Select(MapServiceToDto).ToList();
+    }
+
+    public async Task RemoveServiceAsync(Guid serviceId)
+    {
+        var service = await _context.PackageServices.FirstOrDefaultAsync(x => x.Id == serviceId);
+        if (service != null)
+        {
+            _context.PackageServices.Remove(service);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<List<PackageServiceDto>> ApplyDiscountAsync(ApplyDiscountBatchDto input)
+    {
+        var query = _context.PackageServices.Where(x => x.PackageId == input.PackageId);
+        if (input.TargetGroupId.HasValue)
+        {
+            query = query.Where(x => x.TargetGroupId == input.TargetGroupId.Value);
+        }
+
+        var services = await query.ToListAsync();
+
+        foreach (var srv in services)
+        {
+            decimal newPrice = srv.OriginalPrice;
+            if (input.DiscountPercent.HasValue && input.DiscountPercent.Value > 0)
+            {
+                newPrice = srv.OriginalPrice * (1 - (input.DiscountPercent.Value / 100m));
+            }
+            else if (input.DiscountAmount.HasValue && input.DiscountAmount.Value > 0)
+            {
+                newPrice = Math.Max(0, srv.OriginalPrice - input.DiscountAmount.Value);
+            }
+
+            srv.SetDealPrice(newPrice, srv.IsSpecialApproved);
+        }
+
+        await _context.SaveChangesAsync();
+        return services.Select(MapServiceToDto).ToList();
     }
 
     public async Task<PackageServiceDto> UpdateServicePriceAsync(Guid serviceId, decimal dealPrice, bool isSpecialApproved = false)
@@ -231,15 +377,18 @@ public class PackageAppService : IPackageAppService
             IsNationalSyncRequired = entity.IsNationalSyncRequired,
             NationalTemplateCode = entity.NationalTemplateCode,
             CreatedAt = entity.CreatedAt,
-            TargetGroups = entity.TargetGroups.Select(g => new PackageTargetGroupDto
+            TargetGroups = entity.TargetGroups.OrderBy(g => g.OrderIndex).Select(g => new PackageTargetGroupDto
             {
                 Id = g.Id,
                 PackageId = g.PackageId,
+                Code = g.Code,
                 Name = g.Name,
                 TargetGender = g.TargetGender,
-                Description = g.Description
+                Description = g.Description,
+                OrderIndex = g.OrderIndex,
+                IsActive = g.IsActive
             }).ToList(),
-            Services = entity.Services.Select(MapServiceToDto).ToList()
+            Services = entity.Services.OrderBy(s => s.OrderIndex).Select(MapServiceToDto).ToList()
         };
     }
 
@@ -259,7 +408,10 @@ public class PackageAppService : IPackageAppService
             DealPrice = entity.DealPrice,
             FloorPrice = entity.FloorPrice,
             IsRequired = entity.IsRequired,
-            IsSpecialApproved = entity.IsSpecialApproved
+            IsSpecialApproved = entity.IsSpecialApproved,
+            RegisterType = entity.RegisterType,
+            OrderIndex = entity.OrderIndex,
+            IsSpecimenOutsource = entity.IsSpecimenOutsource
         };
     }
 }

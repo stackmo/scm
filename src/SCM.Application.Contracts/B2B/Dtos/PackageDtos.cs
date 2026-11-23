@@ -35,17 +35,23 @@ public class PackageTargetGroupDto
 {
     public Guid Id { get; set; }
     public Guid PackageId { get; set; }
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public TargetGender TargetGender { get; set; }
     public string Description { get; set; } = string.Empty;
+    public int OrderIndex { get; set; } = 1;
+    public bool IsActive { get; set; } = true;
 }
 
 public class CreateUpdatePackageTargetGroupDto
 {
     public Guid PackageId { get; set; }
+    public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public TargetGender TargetGender { get; set; } = TargetGender.All;
     public string Description { get; set; } = string.Empty;
+    public int OrderIndex { get; set; } = 1;
+    public bool IsActive { get; set; } = true;
 }
 
 public class PackageServiceDto
@@ -63,6 +69,11 @@ public class PackageServiceDto
     public decimal FloorPrice { get; set; }
     public bool IsRequired { get; set; }
     public bool IsSpecialApproved { get; set; }
+
+    // VSC Extended fields (Hình 1 - 4)
+    public PackageServiceRegisterType RegisterType { get; set; } = PackageServiceRegisterType.Chon;
+    public int OrderIndex { get; set; } = 1;
+    public bool IsSpecimenOutsource { get; set; } = false;
 }
 
 public class CreateUpdatePackageServiceDto
@@ -78,6 +89,43 @@ public class CreateUpdatePackageServiceDto
     public decimal FloorPrice { get; set; }
     public bool IsRequired { get; set; } = true;
     public bool IsSpecialApproved { get; set; } = false;
+
+    // VSC Extended fields (Hình 1 - 4)
+    public PackageServiceRegisterType RegisterType { get; set; } = PackageServiceRegisterType.Chon;
+    public int OrderIndex { get; set; } = 1;
+    public bool IsSpecimenOutsource { get; set; } = false;
+}
+
+public class BatchAddPackageServicesDto
+{
+    public Guid PackageId { get; set; }
+    public Guid? TargetGroupId { get; set; }
+    public PackageServiceRegisterType DefaultRegisterType { get; set; } = PackageServiceRegisterType.Chon;
+    public bool DefaultIsSpecimenOutsource { get; set; } = false;
+    public List<CreateUpdatePackageServiceDto> Services { get; set; } = new();
+}
+
+public class BatchUpdatePackageServicesDto
+{
+    public Guid PackageId { get; set; }
+    public List<UpdatePackageServiceItemDto> Items { get; set; } = new();
+}
+
+public class UpdatePackageServiceItemDto
+{
+    public Guid Id { get; set; }
+    public PackageServiceRegisterType RegisterType { get; set; }
+    public int OrderIndex { get; set; }
+    public bool IsSpecimenOutsource { get; set; }
+    public decimal DealPrice { get; set; }
+}
+
+public class ApplyDiscountBatchDto
+{
+    public Guid PackageId { get; set; }
+    public Guid? TargetGroupId { get; set; }
+    public decimal? DiscountPercent { get; set; }
+    public decimal? DiscountAmount { get; set; }
 }
 
 public class ChangePackageStatusDto

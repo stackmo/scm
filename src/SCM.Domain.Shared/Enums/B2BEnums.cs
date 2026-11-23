@@ -44,3 +44,10 @@ public enum CompanyEmployeeStatus
     DaKham = 2,
     Vang = 3
 }
+
+public enum PackageServiceRegisterType
+{
+    Chon = 1,        // Chọn (Bắt buộc trong gói) - Đỏ
+    TuyChon = 2,     // Tùy_Chọn (Chọn X trong Y theo STT) - Xanh lá
+    LamThem = 3      // Làm_Thêm (Tự nguyện ngoài gói, tự trả) - Xanh dương
+}
