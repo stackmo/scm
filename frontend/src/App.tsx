@@ -37,8 +37,10 @@ import {
   MapPin,
   Phone,
   Mail,
-  Award
+  Award,
+  Syringe
 } from 'lucide-react';
+import { PreExamPhlebotomyPage } from './pages/PreExamPhlebotomyPage';
 
 // --- CATALOG DATASETS (HỢP NHẤT VSC & CỔNG M3) ---
 import xaPhuongData from './data/catalogs/DiaChiHienTai_XaPhuong.json';
@@ -910,6 +912,18 @@ export default function App() {
             <span>Khám đoàn B2B</span>
           </button>
 
+          <button
+            onClick={() => setActiveNavMenu('phlebotomy_group')}
+            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
+              activeNavMenu === 'phlebotomy_group'
+                ? 'bg-white/15 text-white border-white'
+                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
+            }`}
+          >
+            <Syringe className="w-3.5 h-3.5" />
+            <span>Lấy mẫu ngoại viện (WF 03A)</span>
+          </button>
+
           {/* Hệ thống Menu (Active với Flyout 6 Khối - Image 1) */}
           <div className="relative h-full">
             <button
@@ -1083,10 +1097,12 @@ export default function App() {
         </div>
       </div>
 
-      {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• 
-          3. MAIN WORKSPACE: CONDITIONAL VIEW (B2B KHÁM ĐOÀN CỔNG Y TẾ VS MASTER DATA)
-         â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
-      {activeNavMenu === 'corporate_group' ? (
+      {/* ─────────────────────────────────────────────────────────────
+          3. MAIN WORKSPACE: CONDITIONAL VIEW (PHLEBOTOMY VS B2B VS MASTER DATA)
+         ───────────────────────────────────────────────────────────── */}
+      {activeNavMenu === 'phlebotomy_group' ? (
+        <PreExamPhlebotomyPage />
+      ) : activeNavMenu === 'corporate_group' ? (
         /* ── B2B KHÁM ĐOÀN & LIÊN THÔNG CỔNG Y TẾ CỘNG ĐỒNG (MẪU M3 - TT 32/2023/TT-BYT) ── */
         <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
           {/* Cột trái: Danh sách nhân viên trong đoàn khám */}

@@ -43,4 +43,18 @@ public static class SCMErrorCodes
     public const string InvalidCccdFormat = "SCM:EMP:003";
     public const string EmployeeGenderMismatch = "SCM:EMP:004";
     public const string EmployeeBirthDateInvalid = "SCM:EMP:005";
+
+    // Phlebotomy & Mobile Sampling
+    public const string PhlebotomyBatchNotFound = "SCM:PHL:001";
+    public const string DuplicateBatchCode = "SCM:PHL:002";
+    public const string InvalidBatchStatusTransition = "SCM:PHL:003";
+    public const string SpecimenTubeNotFound = "SCM:PHL:004";
+    public const string DuplicateTubeBarcode = "SCM:PHL:005";
+    public const string BatchEmployeeNotFound = "SCM:PHL:006";
+
+    // Cold Chain Logistics
+    public const string ColdChainManifestNotFound = "SCM:COLD:001";
+    public const string DuplicateManifestCode = "SCM:COLD:002";
+    public const string ColdChainTemperatureBreach = "SCM:COLD:003";
+    public const string ManifestAlreadyReceived = "SCM:COLD:004";
 }
