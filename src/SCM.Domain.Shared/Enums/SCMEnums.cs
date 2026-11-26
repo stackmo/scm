@@ -12,7 +12,22 @@ public enum EncounterType
     OutpatientStandard = 1,
     ReExamination = 2,
     CorporateB2B = 3,
-    Vaccination = 4
+    Vaccination = 4,
+    PersonalHealthCheckup = 5, // KSK Lẻ / Cá nhân (Xuất Mẫu M3)
+    OutpatientBhyt = 6         // KCB Bảo hiểm Y tế (Xuất XML QĐ 130)
+}
+
+public enum PackageScope
+{
+    ClinicRetail = 1, // Gói khám riêng của phòng khám (không gắn B2B/Contract)
+    B2BCorporate = 2  // Gói khám sức khỏe đoàn doanh nghiệp
+}
+
+public enum ReceiptType
+{
+    DirectFee = 1,      // Thu thẳng dịch vụ / gói khám
+    AdvanceDeposit = 2, // Tạm ứng viện phí
+    FinalSettlement = 3 // Quyết toán cấn trừ tạm ứng cuối buổi
 }
 
 public enum EncounterStatus
@@ -39,7 +54,8 @@ public enum PaymentMethod
     VietQR = 2,
     POS_Card = 3,
     B2B_CorporateDebt = 4,
-    BHTM_Guarantee = 5
+    BHTM_Guarantee = 5,
+    BhytInsurance = 6
 }
 
 public enum InvoiceStatus
@@ -49,6 +65,14 @@ public enum InvoiceStatus
     Paid = 3,
     Adjusted = 4,
     Cancelled = 5
+}
+
+public enum ReceiptItemType
+{
+    ParaclinicalService = 1,
+    PrescriptionDrug = 2,
+    PackageFee = 3,
+    Deposit = 4
 }
 
 public enum PaymentTransactionStatus

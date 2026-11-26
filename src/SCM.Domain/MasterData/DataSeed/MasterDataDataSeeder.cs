@@ -81,11 +81,29 @@ public static class MasterDataDataSeeder
 
         return new List<Staff>
         {
-            new Staff("BS01", "BS.CKI Nguyễn Văn An", StaffRole.Doctor, depKham?.Id, practiceCertificateCode: "001234/BYT-CCHN", specialty: "Nội Tim Mạch", academicTitle: "BS.CKI", phoneNumber: "0901234567", email: "bs.an@smartclinic.vn", legacyId: 1),
-            new Staff("BS02", "ThS.BS Trần Thị Bình", StaffRole.Doctor, depCdha?.Id, practiceCertificateCode: "005678/HCM-CCHN", specialty: "Chẩn Đoán Hình Ảnh", academicTitle: "ThS.BS", phoneNumber: "0912345678", email: "bs.binh@smartclinic.vn", legacyId: 2),
-            new Staff("DS01", "Dược sĩ Lê Văn Cường", StaffRole.Pharmacist, depDuoc?.Id, practiceCertificateCode: "009988/HCM-CCHN", specialty: "Dược Lâm Sàng", academicTitle: "Dược sĩ ĐH", phoneNumber: "0923456789", email: "ds.cuong@smartclinic.vn", legacyId: 3),
-            new Staff("TN01", "Phạm Thị Duyên", StaffRole.Cashier, depVienPhi?.Id, specialty: "Kế toán viện phí", phoneNumber: "0934567890", email: "tn.duyen@smartclinic.vn", legacyId: 4),
-            new Staff("LT01", "Hoàng Thị Mai", StaffRole.Receptionist, depKham?.Id, specialty: "Lễ tân điều phối", phoneNumber: "0945678901", email: "lt.mai@smartclinic.vn", legacyId: 5)
+            new Staff(
+                "BS01", "BS.CKI Nguyễn Văn An", StaffRole.Doctor, depKham?.Id,
+                practiceCertificateCode: "001234/BYT-CCHN", specialty: "Nội Tổng Quát", academicTitle: "BS.CKI",
+                phoneNumber: "0901234567", email: "bs.an@smartclinic.vn", identityNumber: "079085001234", legacyId: 1,
+                gender: "Nam", dateOfBirth: new DateTime(1985, 5, 20), address: "123 Nguyễn Trãi, Quận 5, TP.HCM",
+                avatarUrl: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150",
+                licenseIssueDate: new DateTime(2024, 1, 15), licenseExpiryDate: new DateTime(2029, 1, 15),
+                nationalStaffId: "BYT-001234", primarySpecialty: "Nội Tổng Quát", secondarySpecialties: "Nhi Khoa, Lão Khoa",
+                canFinalizeHealthCheckup: true, digitalCertSerial: "54010123456789ABCDEF", assignedRoomIds: "PK.01, PK.02", consultationFee: 250000),
+
+            new Staff(
+                "BS02", "ThS.BS Trần Thị Bình", StaffRole.Doctor, depCdha?.Id,
+                practiceCertificateCode: "005678/HCM-CCHN", specialty: "Chẩn Đoán Hình Ảnh", academicTitle: "ThS.BS",
+                phoneNumber: "0912345678", email: "bs.binh@smartclinic.vn", identityNumber: "079188005678", legacyId: 2,
+                gender: "Nữ", dateOfBirth: new DateTime(1988, 10, 12), address: "456 Lê Văn Sỹ, Quận 3, TP.HCM",
+                avatarUrl: "https://images.unsplash.com/photo-1594824813583-a4c3f58b0933?w=150",
+                licenseIssueDate: new DateTime(2023, 6, 1), licenseExpiryDate: new DateTime(2028, 6, 1),
+                nationalStaffId: "BYT-005678", primarySpecialty: "Chẩn Đoán Hình Ảnh", secondarySpecialties: "Thăm Dò Chức Năng",
+                canFinalizeHealthCheckup: false, digitalCertSerial: "54020987654321FEDCBA", assignedRoomIds: "PK.03", consultationFee: 300000),
+
+            new Staff("DS01", "Dược sĩ Lê Văn Cường", StaffRole.Pharmacist, depDuoc?.Id, practiceCertificateCode: "009988/HCM-CCHN", specialty: "Dược Lâm Sàng", academicTitle: "Dược sĩ ĐH", phoneNumber: "0923456789", email: "ds.cuong@smartclinic.vn", identityNumber: "079090009988", legacyId: 3, gender: "Nam", primarySpecialty: "Dược Lâm Sàng"),
+            new Staff("TN01", "Phạm Thị Duyên", StaffRole.Cashier, depVienPhi?.Id, specialty: "Kế toán viện phí", academicTitle: "Cử nhân", phoneNumber: "0934567890", email: "tn.duyen@smartclinic.vn", identityNumber: "079192003456", legacyId: 4, gender: "Nữ", primarySpecialty: "Kế toán"),
+            new Staff("LT01", "Hoàng Thị Mai", StaffRole.Receptionist, depKham?.Id, specialty: "Lễ tân điều phối", academicTitle: "Cao đẳng", phoneNumber: "0945678901", email: "lt.mai@smartclinic.vn", identityNumber: "079195007890", legacyId: 5, gender: "Nữ", primarySpecialty: "Tiếp đón")
         };
     }
 

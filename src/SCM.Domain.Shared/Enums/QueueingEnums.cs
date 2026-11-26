@@ -21,5 +21,6 @@ public enum AssignmentStatus
     Waiting = 1,        // Đang chờ tại phòng
     InConsultation = 2, // Đang được bác sĩ khám
     Finished = 3,       // Đã khám xong tại phòng
-    Skipped = 4         // Gọi qua lượt / vắng mặt
+    Skipped = 4,        // Gọi qua lượt / vắng mặt
+    PendingCls = 5      // Tạm rời buồng đi làm CLS/thu ngân, giữ slot quay lại ưu tiên
 }

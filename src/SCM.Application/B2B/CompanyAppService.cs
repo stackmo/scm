@@ -54,6 +54,7 @@ public class CompanyAppService : ICompanyAppService
             contactPerson: input.ContactPerson,
             contactPhone: input.ContactPhone,
             contactEmail: input.ContactEmail,
+            creditLimit: input.CreditLimit,
             isActive: input.IsActive
         );
 
@@ -84,6 +85,7 @@ public class CompanyAppService : ICompanyAppService
         company.ContactPerson = input.ContactPerson.Trim();
         company.ContactPhone = input.ContactPhone.Trim();
         company.ContactEmail = input.ContactEmail.Trim();
+        company.CreditLimit = input.CreditLimit >= 0 ? input.CreditLimit : 0m;
         company.IsActive = input.IsActive;
 
         await _context.SaveChangesAsync();
@@ -114,6 +116,7 @@ public class CompanyAppService : ICompanyAppService
             ContactPerson = entity.ContactPerson,
             ContactPhone = entity.ContactPhone,
             ContactEmail = entity.ContactEmail,
+            CreditLimit = entity.CreditLimit,
             IsActive = entity.IsActive,
             CreatedAt = entity.CreatedAt
         };

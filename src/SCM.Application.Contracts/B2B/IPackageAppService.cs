@@ -6,6 +6,7 @@ namespace SCM.Application.Contracts.B2B;
 public interface IPackageAppService
 {
     Task<PackageDto> GetAsync(Guid id);
+    Task<List<PackageDto>> GetListAsync(PackageScope? scope = null, bool? activeOnly = null);
     Task<List<PackageDto>> GetListByCompanyAsync(Guid companyId);
     Task<PackageDto> CreateAsync(CreateUpdatePackageDto input);
     Task<PackageDto> UpdateAsync(Guid id, CreateUpdatePackageDto input);

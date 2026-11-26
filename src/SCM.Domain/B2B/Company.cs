@@ -12,6 +12,7 @@ public class Company
     public string ContactPerson { get; set; } = string.Empty;
     public string ContactPhone { get; set; } = string.Empty;
     public string ContactEmail { get; set; } = string.Empty;
+    public decimal CreditLimit { get; set; } = 0m;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -29,6 +30,7 @@ public class Company
         string contactPerson = "",
         string contactPhone = "",
         string contactEmail = "",
+        decimal creditLimit = 0m,
         bool isActive = true)
     {
         if (string.IsNullOrWhiteSpace(code))
@@ -43,6 +45,7 @@ public class Company
         ContactPerson = contactPerson.Trim();
         ContactPhone = contactPhone.Trim();
         ContactEmail = contactEmail.Trim();
+        CreditLimit = creditLimit >= 0 ? creditLimit : 0m;
         IsActive = isActive;
         CreatedAt = DateTime.UtcNow;
     }

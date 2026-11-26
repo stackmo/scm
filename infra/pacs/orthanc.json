@@ -1,0 +1,34 @@
+{
+  "Name": "SCM-ORTHANC-PACS",
+  "StorageDirectory": "/var/lib/orthanc/db",
+  "IndexDirectory": "/var/lib/orthanc/db",
+  "DicomServerEnabled": true,
+  "DicomAet": "SCM_PACS",
+  "DicomCheckCalledAet": false,
+  "DicomPort": 4242,
+  "HttpServerEnabled": true,
+  "HttpPort": 8042,
+  "RemoteAccessAllowed": true,
+  "AuthenticationEnabled": true,
+  "RegisteredUsers": {
+    "scm_pacs": "ScmPacs@2026"
+  },
+  "DicomWeb": {
+    "Enable": true,
+    "Root": "/dicom-web/",
+    "EnableWado": true,
+    "WadoRoot": "/wado",
+    "Ssl": false,
+    "StudiesMetadata": "Full",
+    "SeriesMetadata": "Full"
+  },
+  "Worklists": {
+    "Enable": true,
+    "Database": "/var/lib/orthanc/worklists"
+  },
+  "LuaScripts": [
+    "/etc/orthanc/orthanc-webhook.lua"
+  ],
+  "StableAge": 10,
+  "OverwriteInstances": false
+}

@@ -733,6 +733,13 @@ export const ColdChainManifestModal: React.FC<ColdChainManifestModalProps> = ({
                       </div>
                     )}
 
+                    {manifest.hasDiscrepancy && (
+                      <div className="p-2.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs border border-amber-500/20 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                        <span>{manifest.discrepancyNote || `CẢNH BÁO THẤT LẠC: Lệch ${manifest.discrepancyCount} ống nghiệm giữa bàn giao và thực nhận!`}</span>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                       <span>
                         Tổng số ống: <strong className="text-foreground">{manifest.totalTubesHandedOver}</strong> •

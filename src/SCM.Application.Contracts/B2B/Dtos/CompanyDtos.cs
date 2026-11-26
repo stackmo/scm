@@ -10,6 +10,7 @@ public class CompanyDto
     public string ContactPerson { get; set; } = string.Empty;
     public string ContactPhone { get; set; } = string.Empty;
     public string ContactEmail { get; set; } = string.Empty;
+    public decimal CreditLimit { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
 }
@@ -23,5 +24,6 @@ public class CreateUpdateCompanyDto
     public string ContactPerson { get; set; } = string.Empty;
     public string ContactPhone { get; set; } = string.Empty;
     public string ContactEmail { get; set; } = string.Empty;
+    public decimal CreditLimit { get; set; }
     public bool IsActive { get; set; } = true;
 }

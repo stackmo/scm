@@ -83,7 +83,24 @@ export interface ColdChainManifest {
   status: ManifestStatus;
   statusName: string;
   isTemperatureBreach: boolean;
+  isDegraded?: boolean;
+  hasDiscrepancy?: boolean;
+  discrepancyCount?: number;
+  discrepancyNote?: string;
+  transitDurationHours?: number;
   breachWarningMessage?: string;
   notes: string;
   specimenTubes: SpecimenTube[];
+}
+
+export interface PreExamBloodResultGate {
+  employeeId: string;
+  fullName: string;
+  employeeCode: string;
+  identificationNumber: string;
+  isEligibleForRoute1FastTrack: boolean;
+  totalBloodTubes: number;
+  completedBloodTubes: number;
+  pendingBloodTubes: number;
+  message: string;
 }

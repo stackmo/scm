@@ -1,0 +1,47 @@
+[
+  {
+    "Id": "a865d8d4-c6c5-49cb-a3e9-fa9bfc18bdc2",
+    "LegacyPackageId": 1,
+    "Code": "GK-TOTALGAZ-2024",
+    "Name": "G\u00F3i Kh\u00E1m S\u1EE9c Kh\u1ECFe \u0110\u1ECBnh K\u1EF3 Doanh Nghi\u1EC7p 2024",
+    "CompanyId": "102079c2-d700-416f-9998-911350397a5c",
+    "CompanyName": "C\u00D4NG TY TNHH TOTALGAZ VI\u1EC6T NAM",
+    "Price": 2500000,
+    "StartDate": "2024-01-01T00:00:00",
+    "EndDate": "2026-12-31T00:00:00",
+    "ContractType": 1,
+    "Status": 1,
+    "IsNationalSyncRequired": true,
+    "NationalTemplateCode": "M3"
+  },
+  {
+    "Id": "57f1cb98-ffc2-45a5-97d5-969cef38cd9f",
+    "LegacyPackageId": 2,
+    "Code": "GK-VCB-VIP-2024",
+    "Name": "G\u00F3i Kh\u00E1m S\u1EE9c Kh\u1ECFe To\u00E0n Di\u1EC7n VIP - Kh\u1ED1i C\u00E1n B\u1ED9 Qu\u1EA3n L\u00FD",
+    "CompanyId": "e3350cbd-b382-41e4-a8e1-37476f549bbb",
+    "CompanyName": "Ng\u00E2n H\u00E0ng TMCP Ngo\u1EA1i Th\u01B0\u01A1ng Vi\u1EC7t Nam - CN \u0110\u00F4ng S\u00E0i G\u00F2n",
+    "Price": 5800000,
+    "StartDate": "2024-01-01T00:00:00",
+    "EndDate": "2026-12-31T00:00:00",
+    "ContractType": 1,
+    "Status": 1,
+    "IsNationalSyncRequired": true,
+    "NationalTemplateCode": "M3"
+  },
+  {
+    "Id": "35785f0f-b6ce-40c3-bd78-60215ab4084f",
+    "LegacyPackageId": 3,
+    "Code": "GK-TT14-STANDARD",
+    "Name": "G\u00F3i Kh\u00E1m Tuy\u1EC3n D\u1EE5ng \u0026 S\u1EE9c Kh\u1ECFe Ngh\u1EC1 Nghi\u1EC7p (TT14/BYT)",
+    "CompanyId": "102079c2-d700-416f-9998-911350397a5c",
+    "CompanyName": "C\u00D4NG TY TNHH TOTALGAZ VI\u1EC6T NAM",
+    "Price": 1200000,
+    "StartDate": "2024-01-01T00:00:00",
+    "EndDate": "2026-12-31T00:00:00",
+    "ContractType": 1,
+    "Status": 1,
+    "IsNationalSyncRequired": true,
+    "NationalTemplateCode": "M3"
+  }
+]

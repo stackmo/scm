@@ -1,10 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using SCM.Domain.B2B;
+using SCM.Domain.Branches;
+using SCM.Domain.Billing;
+using SCM.Domain.Clinical;
+using SCM.Domain.Diagnostics;
+using SCM.Domain.Diagnostics.Gateway;
+using SCM.Domain.Grading;
+using SCM.Domain.Identity;
+using SCM.Domain.Outbox;
+using SCM.Domain.Pharmacy;
+using SCM.Domain.Prescription;
 using SCM.Domain.MasterData;
 using SCM.Domain.MasterData.Gateways;
 using SCM.Domain.MasterData.NationalRef;
 using SCM.Domain.Phlebotomy;
 using SCM.Domain.Queueing;
+using SCM.Domain.Reception;
 
 namespace SCM.EntityFrameworkCore;
 
@@ -19,9 +30,11 @@ public class SCMDbContext : DbContext
     public DbSet<MedicalService> MedicalServices => Set<MedicalService>();
     public DbSet<ActiveIngredient> ActiveIngredients => Set<ActiveIngredient>();
     public DbSet<Drug> Drugs => Set<Drug>();
+    public DbSet<MedicalSupply> MedicalSupplies => Set<MedicalSupply>();
     public DbSet<Staff> Staffs => Set<Staff>();
     public DbSet<Icd10> Icd10s => Set<Icd10>();
     public DbSet<HealthcareFacility> HealthcareFacilities => Set<HealthcareFacility>();
+    public DbSet<BranchServiceAvailability> BranchServiceAvailabilities => Set<BranchServiceAvailability>();
 
     // ==============================================================
     // 2. National Gateways & LIS/Drug Mappings (V2 Infrastructural)
@@ -78,17 +91,94 @@ public class SCMDbContext : DbContext
     // ====================================================================
     // 6. Wave 4: Clinic Reception & Smart Queueing (Workflow 03B)
     // ====================================================================
+    public DbSet<Patient> Patients => Set<Patient>();
+    public DbSet<Encounter> Encounters => Set<Encounter>();
     public DbSet<QueueTicket> QueueTickets => Set<QueueTicket>();
     public DbSet<QueueAssignment> QueueAssignments => Set<QueueAssignment>();
     public DbSet<ClinicRoomLoad> ClinicRoomLoads => Set<ClinicRoomLoad>();
+    public DbSet<ClinicRoomQueue> ClinicRoomQueues => Set<ClinicRoomQueue>();
+    public DbSet<QueueSequence> QueueSequences => Set<QueueSequence>();
 
-    public SCMDbContext(DbContextOptions<SCMDbContext> options) : base(options)
+    // ====================================================================
+    // 7. Wave 5: Clinical Examination 8 Specialties & Dental 32 (WF 05)
+    // ====================================================================
+    public DbSet<ClinicalExamination> ClinicalExaminations => Set<ClinicalExamination>();
+    public DbSet<VitalSigns> VitalSigns => Set<VitalSigns>();
+    public DbSet<SpecialtyExamDetail> SpecialtyExamDetails => Set<SpecialtyExamDetail>();
+    public DbSet<Dental32TeethDetail> Dental32TeethDetails => Set<Dental32TeethDetail>();
+    public DbSet<MedicalOrder> MedicalOrders => Set<MedicalOrder>();
+    public DbSet<MedicalOrderItem> MedicalOrderItems => Set<MedicalOrderItem>();
+
+    // ====================================================================
+    // 8. Wave 6: Diagnostics (LIS/PACS) & National E-Prescription (WF 04, 06)
+    // ====================================================================
+    public DbSet<LabResultRecord> LabResultRecords => Set<LabResultRecord>();
+    public DbSet<DiagnosticImagingRecord> DiagnosticImagingRecords => Set<DiagnosticImagingRecord>();
+    public DbSet<CapturedMedia> CapturedMedias => Set<CapturedMedia>();
+    public DbSet<ImagingReportTemplate> ImagingReportTemplates => Set<ImagingReportTemplate>();
+    public DbSet<LabPanicThreshold> LabPanicThresholds => Set<LabPanicThreshold>();
+    public DbSet<DiagnosticAuditLog> DiagnosticAuditLogs => Set<DiagnosticAuditLog>();
+    public DbSet<LisPartnerConfig> LisPartnerConfigs => Set<LisPartnerConfig>();
+    public DbSet<ExternalServiceMapping> ExternalServiceMappings => Set<ExternalServiceMapping>();
+    public DbSet<LisIntegrationOutbox> LisIntegrationOutboxes => Set<LisIntegrationOutbox>();
+    public DbSet<Prescription> Prescriptions => Set<Prescription>();
+    public DbSet<PrescriptionItem> PrescriptionItems => Set<PrescriptionItem>();
+    public DbSet<PrescriptionTemplate> PrescriptionTemplates => Set<PrescriptionTemplate>();
+    public DbSet<PrescriptionTemplateItem> PrescriptionTemplateItems => Set<PrescriptionTemplateItem>();
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<StockLotExpiry> StockLotExpiries => Set<StockLotExpiry>();
+    public DbSet<MedicationDispense> MedicationDispenses => Set<MedicationDispense>();
+    public DbSet<MedicationDispenseItem> MedicationDispenseItems => Set<MedicationDispenseItem>();
+    public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
+    public DbSet<GppRetailSale> GppRetailSales => Set<GppRetailSale>();
+    public DbSet<GppRetailSaleItem> GppRetailSaleItems => Set<GppRetailSaleItem>();
+
+    // ====================================================================
+    // 9. Wave 7: Physical Fitness Auto-Grading & Outbox M3 191 (WF 07, 08)
+    // ====================================================================
+    public DbSet<MedicalRecordSummary> MedicalRecordSummaries => Set<MedicalRecordSummary>();
+    public DbSet<NationalSyncOutbox> NationalSyncOutboxRecords => Set<NationalSyncOutbox>();
+    public DbSet<InvoiceSeries> InvoiceSeries => Set<InvoiceSeries>();
+    public DbSet<BillingSequence> BillingSequences => Set<BillingSequence>();
+    public DbSet<CashierShift> CashierShifts => Set<CashierShift>();
+    public DbSet<ElectronicInvoice> ElectronicInvoices => Set<ElectronicInvoice>();
+    public DbSet<PatientConsentSignature> PatientConsentSignatures => Set<PatientConsentSignature>();
+    public DbSet<ElectronicInvoiceItem> ElectronicInvoiceItems => Set<ElectronicInvoiceItem>();
+    public DbSet<ElectronicInvoiceReceiptLink> ElectronicInvoiceReceiptLinks => Set<ElectronicInvoiceReceiptLink>();
+
+    // ====================================================================
+    // 10. Wave 8: Cashier, BHYT QĐ 130, B2B Settlement & E-Invoice (WF 09)
+    // ====================================================================
+    public DbSet<Receipt> Receipts => Set<Receipt>();
+    public DbSet<ReceiptItem> ReceiptItems => Set<ReceiptItem>();
+    public DbSet<RefundReceipt> RefundReceipts => Set<RefundReceipt>();
+    public DbSet<CompanySettlement> CompanySettlements => Set<CompanySettlement>();
+
+    // ====================================================================
+    // 11. Wave 0 & Wave 1: Multi-Branch & RBAC Identity Foundation
+    // ====================================================================
+    public DbSet<Branch> Branches => Set<Branch>();
+    public DbSet<StaffBranchAssignment> StaffBranchAssignments => Set<StaffBranchAssignment>();
+    public DbSet<AuditLogPII> AuditLogPIIs => Set<AuditLogPII>();
+    public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
+    public DbSet<RolePermissionRule> RolePermissionRules => Set<RolePermissionRule>();
+    public DbSet<UserPermissionOverride> UserPermissionOverrides => Set<UserPermissionOverride>();
+    public DbSet<ConclusionAdviceDictionary> ConclusionAdviceDictionaries => Set<ConclusionAdviceDictionary>();
+
+    private readonly ICurrentBranch _currentBranch;
+
+    public SCMDbContext(DbContextOptions<SCMDbContext> options, ICurrentBranch? currentBranch = null) : base(options)
     {
+        _currentBranch = currentBranch ?? new NullCurrentBranch();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Wave 0 Multi-Branch & RBAC configurations
+        modelBuilder.ConfigureBranches();
+        modelBuilder.ConfigureIdentityAndRbac();
 
         // Wave 2 B2B & Package configurations
         modelBuilder.ConfigureB2BAndPackages();
@@ -99,6 +189,171 @@ public class SCMDbContext : DbContext
         // Wave 4 Queueing & Reception configurations
         modelBuilder.ConfigureQueueing();
 
+        // Wave 5 Clinical Examination & Dental configurations
+        modelBuilder.ConfigureClinical();
+
+        // Wave 6 Diagnostics & Prescription configurations
+        modelBuilder.ConfigureWave6DiagnosticsAndPrescription();
+        modelBuilder.ConfigureWave6PharmacyAndDispense();
+        modelBuilder.ConfigureWave2LisRisWorkstationAndGateway();
+
+        // Wave 7 Auto-Grading & Outbox M3 configurations
+        modelBuilder.ConfigureWave7AutoGradingAndOutboxM3();
+
+        // Wave 8 Billing & Settlement configurations
+        modelBuilder.ConfigureWave8BillingAndSettlement();
+
+        // Wave 0: Multi-Branch Global Query Filter Enforcement (Invariant 3 & Zero Cross-Branch Leakage)
+        modelBuilder.Entity<Encounter>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<MedicalOrder>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<QueueTicket>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<ClinicalExamination>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<PatientConsentSignature>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<LabResultRecord>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<DiagnosticImagingRecord>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<Prescription>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<Warehouse>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<StockLotExpiry>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<MedicationDispense>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<StockTransaction>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<GppRetailSale>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<MedicalRecordSummary>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<NationalSyncOutbox>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<Receipt>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<ReceiptItem>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<CompanySettlement>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<CompanyContract>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<PhlebotomyBatch>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<ColdChainManifest>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<SpecimenTube>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<LabPanicThreshold>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<DiagnosticAuditLog>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<InvoiceSeries>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<CashierShift>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<ElectronicInvoice>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<LisPartnerConfig>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<ExternalServiceMapping>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
+        modelBuilder.Entity<LisIntegrationOutbox>().HasQueryFilter(e =>
+            _currentBranch.IsAllBranches ||
+            (_currentBranch.Code != null && e.BranchCode == _currentBranch.Code) ||
+            (_currentBranch.Id != null && (Guid?)e.BranchId == _currentBranch.Id));
+
         // -------------------------------------------------------------
         // 1. Internal Core Master Data Configurations
         // -------------------------------------------------------------
@@ -108,6 +363,7 @@ public class SCMDbContext : DbContext
             b.HasKey(x => x.Id);
             b.Property(x => x.DepartmentCode).IsRequired().HasMaxLength(20);
             b.Property(x => x.DepartmentName).IsRequired().HasMaxLength(150);
+            b.Property(x => x.MinistryDepartmentCode).HasMaxLength(20);
             b.HasIndex(x => x.DepartmentCode).IsUnique();
         });
 
@@ -118,12 +374,37 @@ public class SCMDbContext : DbContext
             b.Property(x => x.RoomCode).IsRequired().HasMaxLength(20);
             b.Property(x => x.RoomName).IsRequired().HasMaxLength(150);
             b.Property(x => x.StandardExamFee).HasPrecision(18, 2);
-            b.HasIndex(x => x.RoomCode).IsUnique();
+            b.HasIndex(x => x.RoomCode);
+            b.HasIndex(x => x.BranchId);
 
             b.HasOne(x => x.Department)
              .WithMany(d => d.Rooms)
              .HasForeignKey(x => x.DepartmentId)
              .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasOne(x => x.Branch)
+             .WithMany()
+             .HasForeignKey(x => x.BranchId)
+             .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<BranchServiceAvailability>(b =>
+        {
+            b.ToTable("AppBranchServiceAvailabilities");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.CustomPrice).HasPrecision(18, 2);
+            b.Property(x => x.CustomFloorPrice).HasPrecision(18, 2);
+            b.HasIndex(x => new { x.BranchId, x.MedicalServiceId }).IsUnique();
+
+            b.HasOne(x => x.Branch)
+             .WithMany()
+             .HasForeignKey(x => x.BranchId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasOne(x => x.MedicalService)
+             .WithMany()
+             .HasForeignKey(x => x.MedicalServiceId)
+             .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<ServiceGroup>(b =>
@@ -149,6 +430,9 @@ public class SCMDbContext : DbContext
             b.Property(x => x.MinistryEquivalentCode).HasMaxLength(50);
             b.Property(x => x.MinistryEquivalentName).HasMaxLength(255);
             b.Property(x => x.DecisionNumber).HasMaxLength(50);
+            b.Property(x => x.MinistryPriceCode).HasMaxLength(50);
+            b.Property(x => x.InsuranceCoverageRate).HasPrecision(5, 4);
+            b.Property(x => x.SurgeryType).HasMaxLength(50);
             b.HasIndex(x => x.ServiceCode);
 
             b.HasOne(x => x.ServiceGroup)
@@ -180,6 +464,10 @@ public class SCMDbContext : DbContext
             b.Property(x => x.CostPrice).HasPrecision(18, 2);
             b.Property(x => x.RegistrationNumber).HasMaxLength(150);
             b.Property(x => x.NationalDrugCode).HasMaxLength(100);
+            b.Property(x => x.MinistryRouteCode).HasMaxLength(20);
+            b.Property(x => x.ActiveIngredientCode).HasMaxLength(50);
+            b.Property(x => x.InsuranceCoverageRate).HasPrecision(5, 4);
+            b.Property(x => x.TenderDecisionNumber).HasMaxLength(100);
             b.Property(x => x.Manufacturer).HasMaxLength(150);
             b.Property(x => x.CountryOfOrigin).HasMaxLength(100);
             b.HasIndex(x => x.DrugCode);
@@ -202,7 +490,37 @@ public class SCMDbContext : DbContext
             b.Property(x => x.PhoneNumber).HasMaxLength(20);
             b.Property(x => x.Email).HasMaxLength(100);
             b.Property(x => x.IdentityNumber).HasMaxLength(20);
+            b.Property(x => x.Gender).HasMaxLength(20);
+            b.Property(x => x.Address).HasMaxLength(255);
+            b.Property(x => x.AvatarUrl).HasMaxLength(1000);
+            b.Property(x => x.NationalStaffId).HasMaxLength(50);
+            b.Property(x => x.PrimarySpecialty).HasMaxLength(100);
+            b.Property(x => x.SecondarySpecialties).HasMaxLength(500);
+            b.Property(x => x.DigitalCertSerial).HasMaxLength(100);
+            b.Property(x => x.CertificateTrainingKsk).HasMaxLength(100);
+            b.Property(x => x.AssignedRoomIds).HasMaxLength(500);
+            b.Property(x => x.ConsultationFee).HasPrecision(18, 2);
             b.HasIndex(x => x.StaffCode).IsUnique();
+        });
+
+        modelBuilder.Entity<MedicalSupply>(b =>
+        {
+            b.ToTable("AppMedicalSupplies");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.SupplyCode).IsRequired().HasMaxLength(30);
+            b.Property(x => x.SupplyName).IsRequired().HasMaxLength(255);
+            b.Property(x => x.Unit).IsRequired().HasMaxLength(30);
+            b.Property(x => x.Specification).HasMaxLength(255);
+            b.Property(x => x.StandardPrice).HasPrecision(18, 2);
+            b.Property(x => x.InsurancePrice).HasPrecision(18, 2);
+            b.Property(x => x.CostPrice).HasPrecision(18, 2);
+            b.Property(x => x.MinistrySupplyCode).HasMaxLength(50);
+            b.Property(x => x.MinistryEquivalentName).HasMaxLength(255);
+            b.Property(x => x.InsuranceCoverageRate).HasPrecision(5, 4);
+            b.Property(x => x.TenderDecisionNumber).HasMaxLength(100);
+            b.Property(x => x.Manufacturer).HasMaxLength(150);
+            b.Property(x => x.CountryOfOrigin).HasMaxLength(100);
+            b.HasIndex(x => x.SupplyCode);
         });
 
         modelBuilder.Entity<Icd10>(b =>
@@ -234,11 +552,16 @@ public class SCMDbContext : DbContext
         {
             b.ToTable("NationalGatewayConfigs");
             b.HasKey(x => x.Id);
+            b.Property(x => x.BranchCode).HasMaxLength(50);
             b.Property(x => x.FacilityCode).IsRequired().HasMaxLength(20);
+            b.Property(x => x.ProviderCode).HasMaxLength(50);
+            b.Property(x => x.TaxCode).HasMaxLength(30);
             b.Property(x => x.BaseUrl).IsRequired().HasMaxLength(255);
             b.Property(x => x.ClientId).IsRequired().HasMaxLength(100);
             b.Property(x => x.ClientSecret).IsRequired().HasMaxLength(255);
             b.Property(x => x.SignCertSerial).HasMaxLength(100);
+            b.Property(x => x.DefaultTemplateCode).HasMaxLength(30);
+            b.Property(x => x.DefaultSeriesCode).HasMaxLength(30);
             b.HasIndex(x => new { x.FacilityCode, x.GatewayType }).IsUnique();
         });
 
@@ -305,7 +628,7 @@ public class SCMDbContext : DbContext
             b.Property(x => x.Id).ValueGeneratedNever();
             b.Property(x => x.MaICD).IsRequired().HasMaxLength(20);
             b.Property(x => x.Name).IsRequired().HasMaxLength(500);
-            b.HasIndex(x => x.MaICD).IsUnique();
+            b.HasIndex(x => x.MaICD);
         });
 
         modelBuilder.Entity<AppRef_M3DoiTuongKham>(b =>
@@ -329,7 +652,7 @@ public class SCMDbContext : DbContext
             b.ToTable("AppRef_GioiTinh");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
-            b.Property(x => x.Name).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name).IsRequired().HasMaxLength(100);
             b.Property(x => x.Code).HasMaxLength(10);
         });
 
@@ -347,7 +670,7 @@ public class SCMDbContext : DbContext
             b.ToTable("AppRef_NhomMau");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
-            b.Property(x => x.Name).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name).IsRequired().HasMaxLength(100);
             b.Property(x => x.Code).HasMaxLength(10);
         });
 
@@ -356,7 +679,7 @@ public class SCMDbContext : DbContext
             b.ToTable("AppRef_YeuToNhomMau");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
-            b.Property(x => x.Name).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name).IsRequired().HasMaxLength(100);
             b.Property(x => x.Code).HasMaxLength(10);
         });
 
@@ -428,7 +751,7 @@ public class SCMDbContext : DbContext
             b.ToTable("AppRef_TrangThaiXetNghiem");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
-            b.Property(x => x.Name).IsRequired().HasMaxLength(150);
+            b.Property(x => x.Name).IsRequired().HasMaxLength(255);
         });
 
         modelBuilder.Entity<AppRef_BenhGiaDinh>(b =>
@@ -444,7 +767,7 @@ public class SCMDbContext : DbContext
             b.ToTable("AppRef_YesNo");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
-            b.Property(x => x.Name).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name).IsRequired().HasMaxLength(100);
         });
 
         modelBuilder.Entity<AppRef_PhanLoaiSucKhoe>(b =>
@@ -452,7 +775,7 @@ public class SCMDbContext : DbContext
             b.ToTable("AppRef_PhanLoaiSucKhoe");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
-            b.Property(x => x.Name).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name).IsRequired().HasMaxLength(255);
         });
 
         modelBuilder.Entity<AppRef_TinhTrangRang>(b =>
@@ -461,7 +784,7 @@ public class SCMDbContext : DbContext
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
             b.Property(x => x.Code).HasMaxLength(10);
-            b.Property(x => x.Name).IsRequired().HasMaxLength(100);
+            b.Property(x => x.Name).IsRequired().HasMaxLength(255);
         });
 
         modelBuilder.Entity<AppRef_KetQuaMaTuy>(b =>
@@ -469,7 +792,7 @@ public class SCMDbContext : DbContext
             b.ToTable("AppRef_KetQuaMaTuy");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
-            b.Property(x => x.Name).IsRequired().HasMaxLength(50);
+            b.Property(x => x.Name).IsRequired().HasMaxLength(255);
             b.Property(x => x.Code).HasMaxLength(10);
         });
 
@@ -496,12 +819,63 @@ public class SCMDbContext : DbContext
             b.ToTable("AppRef_DuocQuocGia");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).ValueGeneratedNever();
-            b.Property(x => x.MaThuoc).IsRequired().HasMaxLength(30);
+            b.Property(x => x.MaThuoc).IsRequired().HasMaxLength(100);
             b.Property(x => x.TenHoatChat).IsRequired().HasMaxLength(255);
             b.Property(x => x.HamLuong).HasMaxLength(100);
             b.Property(x => x.DuongDung).HasMaxLength(100);
-            b.Property(x => x.SoDangKy).HasMaxLength(50);
+            b.Property(x => x.SoDangKy).HasMaxLength(255);
             b.HasIndex(x => x.MaThuoc).IsUnique();
         });
     }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyBranchAuditAndSecurityInvariants();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override int SaveChanges()
+    {
+        ApplyBranchAuditAndSecurityInvariants();
+        return base.SaveChanges();
+    }
+
+    private void ApplyBranchAuditAndSecurityInvariants()
+    {
+        // Invariant C-0.5: PII Audit Trail Immutability
+        var auditEntries = ChangeTracker.Entries<AuditLogPII>();
+        foreach (var entry in auditEntries)
+        {
+            if (entry.State == EntityState.Modified || entry.State == EntityState.Deleted)
+            {
+                throw new InvalidOperationException("Bảng AuditLogPII là bất biến (Immutable), nghiêm cấm sửa đổi hoặc xóa bản ghi theo TT 54/2017 và NĐ 13/2023.");
+            }
+        }
+
+        // Invariant C-0.3: Auto-populate BranchId & BranchCode for new IBranchScopedEntity if empty
+        var scopedEntries = ChangeTracker.Entries<IBranchScopedEntity>();
+        foreach (var entry in scopedEntries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                if (entry.Entity.BranchId == Guid.Empty && _currentBranch.Id.HasValue)
+                {
+                    entry.Entity.BranchId = _currentBranch.Id.Value;
+                }
+                if (string.IsNullOrEmpty(entry.Entity.BranchCode) && !string.IsNullOrEmpty(_currentBranch.Code) && _currentBranch.Code != "ALL")
+                {
+                    entry.Entity.BranchCode = _currentBranch.Code;
+                }
+            }
+        }
+    }
+}
+
+public class NullCurrentBranch : ICurrentBranch
+{
+    public Guid? Id => null;
+    public string? Code => null;
+    public bool IsAllBranches => true;
+    public string? CurrentRole => null;
+    public void Change(Guid? branchId, string? branchCode, bool isAllBranches = false, string? role = null) { }
 }

@@ -36,7 +36,9 @@ public class ColdChainAppService : IColdChainAppService
             courierStaff: input.CourierStaff,
             departureTemperature: input.DepartureTemperature,
             departureTime: input.DepartureTime ?? DateTime.UtcNow,
-            notes: input.Notes
+            notes: input.Notes,
+            branchId: batch.BranchId,
+            branchCode: batch.BranchCode
         );
 
         if (input.TubeIds.Count > 0)
@@ -80,20 +82,28 @@ public class ColdChainAppService : IColdChainAppService
         int acceptedCount = 0;
         int rejectedCount = 0;
 
-        foreach (var tube in manifest.SpecimenTubes)
+        if (manifest.SpecimenTubes.Count > 0)
         {
-            var tubeBarcodeUpper = tube.TubeBarcode.ToUpperInvariant();
+            foreach (var tube in manifest.SpecimenTubes)
+            {
+                var tubeBarcodeUpper = tube.TubeBarcode.ToUpperInvariant();
 
-            if (rejectedDict.TryGetValue(tubeBarcodeUpper, out var reason))
-            {
-                tube.Reject(reason);
-                rejectedCount++;
+                if (rejectedDict.TryGetValue(tubeBarcodeUpper, out var reason))
+                {
+                    tube.Reject(reason);
+                    rejectedCount++;
+                }
+                else if (acceptedSet.Count == 0 || acceptedSet.Contains(tubeBarcodeUpper))
+                {
+                    tube.Receive();
+                    acceptedCount++;
+                }
             }
-            else if (acceptedSet.Count == 0 || acceptedSet.Contains(tubeBarcodeUpper))
-            {
-                tube.Receive();
-                acceptedCount++;
-            }
+        }
+        else
+        {
+            acceptedCount = input.AcceptedBarcodes.Count;
+            rejectedCount = input.RejectedBarcodes.Count;
         }
 
         manifest.Receive(
@@ -153,12 +163,25 @@ public class ColdChainAppService : IColdChainAppService
     private static ColdChainManifestDto MapToDto(ColdChainManifest manifest, string? batchCode = null)
     {
         string? breachWarning = null;
-        if (manifest.Status == ManifestStatus.TemperatureBreach)
+        if (manifest.Status == ManifestStatus.TemperatureBreach || manifest.IsDegraded)
         {
-            breachWarning = $"CẢNH BÁO VI PHẠM NHIỆT ĐỘ CHUỖI LẠNH: Đi {manifest.DepartureTemperature:F1}°C" +
-                            (manifest.ArrivalTemperature.HasValue ? $", Đến {manifest.ArrivalTemperature.Value:F1}°C" : "") +
-                            $" (Quy chuẩn bắt buộc: [2.0°C - 8.0°C]).";
+            var reasons = new List<string>();
+            if (manifest.HasTemperatureBreach())
+            {
+                reasons.Add($"Nhiệt độ ngoài dải [2.0°C - 8.0°C] (Đi: {manifest.DepartureTemperature:F1}°C" +
+                            (manifest.ArrivalTemperature.HasValue ? $", Đến: {manifest.ArrivalTemperature.Value:F1}°C" : "") + ")");
+            }
+            if (manifest.HasTransitTimeExceeded())
+            {
+                var hours = (manifest.ArrivalTime!.Value - manifest.DepartureTime).TotalHours;
+                reasons.Add($"Thời gian vận chuyển vượt quá 4 giờ quy chuẩn ({hours:F1}h)");
+            }
+            breachWarning = $"CẢNH BÁO VI PHẠM NHIỆT ĐỘ CHUỖI LẠNH (DEGRADED): {string.Join("; ", reasons)}.";
         }
+
+        double? durationHours = manifest.ArrivalTime.HasValue
+            ? Math.Round((manifest.ArrivalTime.Value - manifest.DepartureTime).TotalHours, 2)
+            : null;
 
         return new ColdChainManifestDto
         {
@@ -177,14 +200,19 @@ public class ColdChainAppService : IColdChainAppService
             TotalTubesAccepted = manifest.TotalTubesAccepted,
             TotalTubesRejected = manifest.TotalTubesRejected,
             Status = manifest.Status,
+            IsDegraded = manifest.IsDegraded,
+            HasDiscrepancy = manifest.HasDiscrepancy,
+            DiscrepancyCount = manifest.DiscrepancyCount,
+            DiscrepancyNote = manifest.DiscrepancyNote,
+            TransitDurationHours = durationHours,
             BreachWarningMessage = breachWarning,
             Notes = manifest.Notes,
             CreatedAt = manifest.CreatedAt,
             SpecimenTubes = manifest.SpecimenTubes.Select(t => new SpecimenTubeDto
             {
                 Id = t.Id,
-                BatchEmployeeMappingId = t.BatchEmployeeMappingId,
-                EmployeeId = t.EmployeeId,
+                BatchEmployeeMappingId = t.BatchEmployeeMappingId ?? Guid.Empty,
+                EmployeeId = t.EmployeeId ?? Guid.Empty,
                 EmployeeName = t.Employee?.FullName ?? string.Empty,
                 EmployeeCode = t.Employee?.EmployeeCode ?? string.Empty,
                 IdentificationNumber = t.Employee?.IdentificationNumber ?? string.Empty,

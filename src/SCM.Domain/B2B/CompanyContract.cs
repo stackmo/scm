@@ -1,11 +1,14 @@
+using SCM.Domain.Branches;
 using SCM.Domain.Shared.Enums;
 using SCM.Domain.Shared.Exceptions;
 
 namespace SCM.Domain.B2B;
 
-public class CompanyContract
+public class CompanyContract : IBranchScopedEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid BranchId { get; set; } = Guid.Empty;
+    public string BranchCode { get; set; } = string.Empty;
     public Guid CompanyId { get; set; }
     public Company? Company { get; set; }
     public string ContractNumber { get; set; } = string.Empty;

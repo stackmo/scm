@@ -50,6 +50,10 @@ public class PhlebotomyBatchAppService : IPhlebotomyBatchAppService
             status: BatchStatus.Draft
         );
 
+        // Kế thừa chi nhánh từ Hợp đồng doanh nghiệp (Wave 0 Multi-Branch Isolation)
+        batch.BranchId = contract.BranchId;
+        batch.BranchCode = contract.BranchCode;
+
         _context.PhlebotomyBatches.Add(batch);
         await _context.SaveChangesAsync();
 
@@ -194,6 +198,12 @@ public class PhlebotomyBatchAppService : IPhlebotomyBatchAppService
             }
         }
 
+        // Đồng bộ trạng thái đã thu thập mẫu sang CompanyEmployee (Liên kết Wave 2)
+        if (mapping.Employee != null)
+        {
+            mapping.Employee.IsSampleCollected = true;
+        }
+
         batch.RecalculateCounts();
 
         if (batch.Status == BatchStatus.Scheduled || batch.Status == BatchStatus.Draft)
@@ -211,6 +221,47 @@ public class PhlebotomyBatchAppService : IPhlebotomyBatchAppService
             IsCollected = mapping.IsCollected,
             CheckinTime = mapping.CheckinTime ?? DateTime.UtcNow,
             CollectedTubesCount = tubesCount
+        };
+    }
+
+    /// <summary>
+    /// C-3.4 Pre-Exam Blood Result Gate: Kiểm tra tính sẵn sàng kết quả LIS máu tiền trạm trước ngày khám lâm sàng (Liên kết Wave 4)
+    /// </summary>
+    public async Task<PreExamBloodResultGateDto> CheckPreExamBloodResultGateAsync(Guid employeeId)
+    {
+        var employee = await _context.CompanyEmployees.FindAsync(employeeId);
+        if (employee == null)
+            throw new BusinessException(SCMErrorCodes.EmployeeNotFound, $"Không tìm thấy người lao động có Id = {employeeId}.");
+
+        var tubes = await _context.SpecimenTubes
+            .Where(t => t.EmployeeId == employeeId &&
+                        (t.TubeType == TubeType.EDTA || t.TubeType == TubeType.Serum || t.TubeType == TubeType.NaF))
+            .ToListAsync();
+
+        int totalBlood = tubes.Count;
+        int completedBlood = tubes.Count(t => t.Status == TubeStatus.Resulted || t.Status == TubeStatus.Received || t.Status == TubeStatus.ReceivedLab);
+        int pendingBlood = totalBlood - completedBlood;
+
+        // C-3.4: 100% ống nghiệm máu có kết quả hoặc đã tiếp nhận xử lý LIS trước ngày khám lâm sàng
+        bool isEligible = totalBlood > 0 && pendingBlood == 0;
+
+        string message = isEligible
+            ? "ĐỦ ĐIỀU KIỆN ROUTE 1 (FAST-TRACK): CBNV đã hoàn tất kết quả xét nghiệm máu tiền trạm, không cần nhịn ăn sáng khi khám lâm sàng."
+            : totalBlood == 0
+                ? "CHƯA CÓ MẪU: CBNV chưa được lấy mẫu máu tiền trạm ngoại viện. Cần chuyển vào Route 2 (Lấy máu tại viện & nhịn ăn)."
+                : $"ĐANG XỬ LÝ: Còn {pendingBlood}/{totalBlood} ống nghiệm máu chưa hoàn tất kết quả LIS.";
+
+        return new PreExamBloodResultGateDto
+        {
+            EmployeeId = employee.Id,
+            FullName = employee.FullName,
+            EmployeeCode = employee.EmployeeCode,
+            IdentificationNumber = employee.IdentificationNumber,
+            IsEligibleForRoute1FastTrack = isEligible,
+            TotalBloodTubes = totalBlood,
+            CompletedBloodTubes = completedBlood,
+            PendingBloodTubes = pendingBlood,
+            Message = message
         };
     }
 
@@ -243,8 +294,8 @@ public class PhlebotomyBatchAppService : IPhlebotomyBatchAppService
             SpecimenTubes = m.SpecimenTubes.Select(t => new SpecimenTubeDto
             {
                 Id = t.Id,
-                BatchEmployeeMappingId = t.BatchEmployeeMappingId,
-                EmployeeId = t.EmployeeId,
+                BatchEmployeeMappingId = t.BatchEmployeeMappingId ?? Guid.Empty,
+                EmployeeId = t.EmployeeId ?? Guid.Empty,
                 EmployeeName = m.Employee?.FullName ?? string.Empty,
                 EmployeeCode = m.Employee?.EmployeeCode ?? string.Empty,
                 IdentificationNumber = m.Employee?.IdentificationNumber ?? string.Empty,

@@ -10,12 +10,18 @@ namespace SCM.Domain.MasterData.Gateways;
 public class NationalGatewayConfig
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string FacilityCode { get; set; } = string.Empty; // Mã CSKCB 5 số của Bộ Y tế cấp (vd: 79012)
+    public Guid? BranchId { get; set; }
+    public string? BranchCode { get; set; }
+    public string FacilityCode { get; set; } = string.Empty; // Mã CSKCB 5 số hoặc BranchCode
     public GatewayType GatewayType { get; set; } = GatewayType.CongYTeM3;
+    public string ProviderCode { get; set; } = string.Empty; // VIETTEL_SINVOICE | VNPT_INVOICE | MISA_MEINVOICE | SANDBOX
+    public string? TaxCode { get; set; }
     public string BaseUrl { get; set; } = string.Empty;
     public string ClientId { get; set; } = string.Empty;
     public string ClientSecret { get; set; } = string.Empty;
     public string? SignCertSerial { get; set; }
+    public string? DefaultTemplateCode { get; set; }
+    public string? DefaultSeriesCode { get; set; }
     public bool IsActive { get; set; } = true;
 
     public NationalGatewayConfig() { }

@@ -42,6 +42,11 @@ public class Drug
     public decimal CostPrice { get; set; }
     public string? RegistrationNumber { get; set; }
     public string? NationalDrugCode { get; set; }
+    public string? MinistryRouteCode { get; set; } // Mã đường dùng chuẩn BYT (theo QĐ 130 XML2: 1.01 uống, 2.01 tiêm...)
+    public string? ActiveIngredientCode { get; set; } // Mã hoạt chất chuẩn BYT (theo TT 20/2022)
+    public decimal InsuranceCoverageRate { get; set; } = 1.0m; // Tỷ lệ thanh toán BHYT (1.0 = 100%)
+    public bool IsInsuranceCovered { get; set; } = true; // Thuộc danh mục BHYT chi trả
+    public string? TenderDecisionNumber { get; set; } // Số quyết định trúng thầu / Công bố BYT
     public string? Manufacturer { get; set; }
     public string? CountryOfOrigin { get; set; }
     public bool IsPrescriptionRequired { get; set; } = true;
@@ -69,7 +74,12 @@ public class Drug
         bool isPrescriptionRequired = true,
         bool isHighAlert = false,
         int minStockLevel = 50,
-        int? legacyId = null)
+        int? legacyId = null,
+        string? ministryRouteCode = null,
+        string? activeIngredientCode = null,
+        decimal insuranceCoverageRate = 1.0m,
+        bool isInsuranceCovered = true,
+        string? tenderDecisionNumber = null)
     {
         if (activeIngredientId == Guid.Empty)
         {
@@ -98,6 +108,11 @@ public class Drug
         IsHighAlert = isHighAlert;
         MinStockLevel = minStockLevel;
         LegacyId = legacyId;
+        MinistryRouteCode = ministryRouteCode;
+        ActiveIngredientCode = activeIngredientCode;
+        InsuranceCoverageRate = insuranceCoverageRate;
+        IsInsuranceCovered = isInsuranceCovered;
+        TenderDecisionNumber = tenderDecisionNumber;
         IsActive = true;
     }
 }

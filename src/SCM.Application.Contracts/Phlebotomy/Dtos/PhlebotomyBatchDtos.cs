@@ -87,3 +87,16 @@ public class BatchEmployeeDetailDto
     public string SamplingNotes { get; set; } = string.Empty;
     public List<SpecimenTubeDto> SpecimenTubes { get; set; } = new();
 }
+
+public class PreExamBloodResultGateDto
+{
+    public Guid EmployeeId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string EmployeeCode { get; set; } = string.Empty;
+    public string IdentificationNumber { get; set; } = string.Empty;
+    public bool IsEligibleForRoute1FastTrack { get; set; }
+    public int TotalBloodTubes { get; set; }
+    public int CompletedBloodTubes { get; set; }
+    public int PendingBloodTubes { get; set; }
+    public string Message { get; set; } = string.Empty;
+}

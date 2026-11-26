@@ -7,12 +7,20 @@ public class PackageDto
     public Guid Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public Guid CompanyId { get; set; }
+    public PackageScope Scope { get; set; } = PackageScope.B2BCorporate;
+    public Guid? CompanyId { get; set; }
     public string CompanyName { get; set; } = string.Empty;
-    public Guid ContractId { get; set; }
+    public Guid? ContractId { get; set; }
     public string ContractNumber { get; set; } = string.Empty;
     public ContractType ContractType { get; set; }
     public PackageStatus Status { get; set; }
+    public decimal TargetPrice { get; set; }
+    public TargetGender ApplicableGender { get; set; } = TargetGender.All;
+    public int? MinAge { get; set; }
+    public int? MaxAge { get; set; }
+    public DateTime? ValidFrom { get; set; }
+    public DateTime? ValidTo { get; set; }
+    public bool IsActive { get; set; } = true;
     public bool IsNationalSyncRequired { get; set; }
     public string NationalTemplateCode { get; set; } = "M3";
     public DateTime CreatedAt { get; set; }
@@ -24,9 +32,17 @@ public class CreateUpdatePackageDto
 {
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public Guid CompanyId { get; set; }
-    public Guid ContractId { get; set; }
+    public PackageScope Scope { get; set; } = PackageScope.B2BCorporate;
+    public Guid? CompanyId { get; set; }
+    public Guid? ContractId { get; set; }
     public ContractType ContractType { get; set; } = ContractType.TronGoi;
+    public decimal TargetPrice { get; set; } = 0m;
+    public TargetGender ApplicableGender { get; set; } = TargetGender.All;
+    public int? MinAge { get; set; }
+    public int? MaxAge { get; set; }
+    public DateTime? ValidFrom { get; set; }
+    public DateTime? ValidTo { get; set; }
+    public bool IsActive { get; set; } = true;
     public bool IsNationalSyncRequired { get; set; } = true;
     public string NationalTemplateCode { get; set; } = "M3";
 }

@@ -1,16 +1,20 @@
 using SCM.Domain.B2B;
+using SCM.Domain.Branches;
 using SCM.Domain.Shared.Enums;
 
 namespace SCM.Domain.Queueing;
 
-public class QueueTicket
+public class QueueTicket : IBranchScopedEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid BranchId { get; set; } = Guid.Empty;
+    public string BranchCode { get; set; } = string.Empty;
     public string TicketNumber { get; set; } = string.Empty;
     public ReceptionStreamType StreamType { get; set; } = ReceptionStreamType.StreamA_FastTrack;
     public Guid PatientId { get; set; }
     public string PatientName { get; set; } = string.Empty;
     public string Cccd { get; set; } = string.Empty;
+    public int? BirthYear { get; set; }
     public Guid? ContractId { get; set; }
     public CompanyContract? Contract { get; set; }
     public DateTime CheckinTime { get; set; } = DateTime.UtcNow;
@@ -33,7 +37,10 @@ public class QueueTicket
         Guid? contractId = null,
         int priorityLevel = 1,
         bool isPregnantOrSuspected = false,
-        string notes = "")
+        string notes = "",
+        Guid? branchId = null,
+        string? branchCode = null,
+        int? birthYear = null)
     {
         if (string.IsNullOrWhiteSpace(ticketNumber))
             throw new ArgumentException("Số phiếu (TicketNumber) không được để trống.", nameof(ticketNumber));
@@ -53,6 +60,9 @@ public class QueueTicket
         Status = TicketStatus.Issued;
         IsPregnantOrSuspected = isPregnantOrSuspected;
         Notes = notes?.Trim() ?? string.Empty;
+        BirthYear = birthYear;
+        if (branchId.HasValue) BranchId = branchId.Value;
+        if (!string.IsNullOrEmpty(branchCode)) BranchCode = branchCode.Trim().ToUpperInvariant();
     }
 
     public void MarkCalling()

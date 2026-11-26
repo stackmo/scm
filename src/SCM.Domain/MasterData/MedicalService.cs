@@ -41,6 +41,11 @@ public class MedicalService
     public string? MinistryEquivalentCode { get; set; }
     public string? MinistryEquivalentName { get; set; }
     public string? DecisionNumber { get; set; }
+    public int? MinistryCostGroupId { get; set; } // Mã nhóm chi phí BHYT (1-18 theo QĐ 130 XML3)
+    public string? MinistryPriceCode { get; set; } // Mã giá theo QĐ 130 / TT 37 / TT 13
+    public decimal InsuranceCoverageRate { get; set; } = 1.0m; // Tỷ lệ thanh toán BHYT (1.0 = 100%)
+    public bool IsCoveredByInsurance { get; set; } = true; // Thuộc danh mục BHYT chi trả
+    public string? SurgeryType { get; set; } // Phân loại phẫu thuật, thủ thuật (Loại 1, 2, 3, Đặc biệt)
     public Guid? ExecutionRoomId { get; set; }
     public bool IsActive { get; set; } = true;
     public int? LegacyId { get; set; }
@@ -59,7 +64,12 @@ public class MedicalService
         string? ministryEquivalentCode = null,
         string? ministryEquivalentName = null,
         string? decisionNumber = null,
-        int? legacyId = null)
+        int? legacyId = null,
+        int? ministryCostGroupId = null,
+        string? ministryPriceCode = null,
+        decimal insuranceCoverageRate = 1.0m,
+        bool isCoveredByInsurance = true,
+        string? surgeryType = null)
     {
         if (standardPrice < 0 || insurancePrice < 0 || corporatePrice < 0)
         {
@@ -78,6 +88,11 @@ public class MedicalService
         MinistryEquivalentName = ministryEquivalentName;
         DecisionNumber = decisionNumber;
         LegacyId = legacyId;
+        MinistryCostGroupId = ministryCostGroupId;
+        MinistryPriceCode = ministryPriceCode;
+        InsuranceCoverageRate = insuranceCoverageRate;
+        IsCoveredByInsurance = isCoveredByInsurance;
+        SurgeryType = surgeryType;
         IsActive = true;
     }
 

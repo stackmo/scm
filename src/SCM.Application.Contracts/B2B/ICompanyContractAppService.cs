@@ -8,5 +8,6 @@ public interface ICompanyContractAppService
     Task<List<CompanyContractDto>> GetListByCompanyAsync(Guid companyId);
     Task<CompanyContractDto> CreateAsync(CreateUpdateCompanyContractDto input);
     Task<CompanyContractDto> UpdateAsync(Guid id, CreateUpdateCompanyContractDto input);
+    Task<CompanyContractDto> ApproveContractAsync(Guid contractId);
     Task DeleteAsync(Guid id);
 }

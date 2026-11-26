@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SCM.Application.Contracts.Identity;
 using SCM.Application.Contracts.Queueing;
 using SCM.Application.Contracts.Queueing.Dtos;
 using SCM.Domain.MasterData;
@@ -13,16 +14,27 @@ public class SmartQueueingService : ISmartQueueingService
 {
     private readonly SCMDbContext _dbContext;
     private readonly ILogger<SmartQueueingService> _logger;
+    private readonly ICurrentDoctorContext? _currentDoctor;
+    private readonly IClinicalAuthorizationGuard? _authGuard;
+    private readonly IPessimisticQueueLockService? _lockService;
 
     // Weight coefficients for Cost Function
     private const double W1_Wait = 0.5;
     private const double W2_Dist = 0.2;
     private const double W3_Urgency = 0.3;
 
-    public SmartQueueingService(SCMDbContext dbContext, ILogger<SmartQueueingService> logger)
+    public SmartQueueingService(
+        SCMDbContext dbContext,
+        ILogger<SmartQueueingService> logger,
+        ICurrentDoctorContext? currentDoctor = null,
+        IClinicalAuthorizationGuard? authGuard = null,
+        IPessimisticQueueLockService? lockService = null)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _currentDoctor = currentDoctor;
+        _authGuard = authGuard;
+        _lockService = lockService;
     }
 
     public async Task InitializeRoomLoadsAsync()
@@ -151,6 +163,21 @@ public class SmartQueueingService : ISmartQueueingService
             throw new ArgumentException("Mã phòng không được để trống.", nameof(roomCode));
 
         roomCode = roomCode.Trim().ToUpperInvariant();
+        if (_authGuard != null && _currentDoctor?.IsAuthenticated == true)
+        {
+            await _authGuard.EnsureAssignedToRoomAsync(roomCode);
+        }
+
+        if (_lockService != null)
+        {
+            return await _lockService.ExecuteRoomLockAsync(roomCode, () => ExecuteCallNextInternalAsync(roomCode));
+        }
+
+        return await ExecuteCallNextInternalAsync(roomCode);
+    }
+
+    private async Task<CallNextResultDto> ExecuteCallNextInternalAsync(string roomCode)
+    {
         var room = await _dbContext.ClinicRoomLoads.FirstOrDefaultAsync(r => r.RoomCode == roomCode);
         if (room == null)
         {
@@ -162,11 +189,13 @@ public class SmartQueueingService : ISmartQueueingService
             }
         }
 
-        // Get waiting assignments for this room, ordered by Ticket Priority DESC, then AssignedAt ASC
+        // Get waiting assignments for this room: PriorityRecall first, then Ticket Priority DESC, OrderIndex ASC, AssignedAt ASC
         var candidates = await _dbContext.QueueAssignments
             .Include(a => a.Ticket)
             .Where(a => a.RoomCode == roomCode && a.Status == AssignmentStatus.Waiting)
-            .OrderByDescending(a => a.Ticket!.PriorityLevel)
+            .OrderByDescending(a => a.PriorityRecall)
+            .ThenByDescending(a => a.Ticket!.PriorityLevel)
+            .ThenBy(a => a.OrderIndex)
             .ThenBy(a => a.AssignedAt)
             .ToListAsync();
 
@@ -180,15 +209,13 @@ public class SmartQueueingService : ISmartQueueingService
             };
         }
 
-        // Check each candidate for business invariants
         QueueAssignment? selectedAssignment = null;
         foreach (var candidate in candidates)
         {
             var ticket = candidate.Ticket;
             if (ticket == null) continue;
 
-            // Invariant 1: Atomic Status Transition
-            // A patient cannot be called if they are currently InConsultation in another room!
+            // Invariant 1: A patient cannot be called if they are currently InConsultation in another room
             bool isInConsultationElsewhere = await _dbContext.QueueAssignments
                 .AnyAsync(a => a.TicketId == ticket.Id && a.Id != candidate.Id && a.Status == AssignmentStatus.InConsultation);
 
@@ -198,8 +225,7 @@ public class SmartQueueingService : ISmartQueueingService
                 continue;
             }
 
-            // Invariant 2: Final Review Guard (Bác sĩ Trưởng đoàn)
-            // Room P.TK01 only calls when 100% other assignments are Finished or Skipped!
+            // Invariant 2: Room P.TK01 only calls when 100% other assignments are Finished or Skipped
             if (roomCode == "P.TK01")
             {
                 bool hasUnfinishedOtherAssignments = await _dbContext.QueueAssignments
@@ -226,12 +252,9 @@ public class SmartQueueingService : ISmartQueueingService
             };
         }
 
-        // Start consultation for this assignment
-        selectedAssignment.StartConsultation();
+        selectedAssignment.StartConsultation(_currentDoctor?.StaffId, _currentDoctor?.FullName);
         var currentTicket = selectedAssignment.Ticket!;
         currentTicket.MarkServing();
-
-        // Update room load
         room.SetServing(currentTicket.TicketNumber, currentTicket.PatientName);
 
         await _dbContext.SaveChangesAsync();
@@ -239,32 +262,256 @@ public class SmartQueueingService : ISmartQueueingService
 
         var roomLoads = await GetRoomLoadsAsync();
         var updatedRoomLoad = roomLoads.FirstOrDefault(r => r.RoomCode == roomCode);
+        var hydrated = (await HydrateAssignmentsAsync(new List<QueueAssignment> { selectedAssignment })).First();
 
         return new CallNextResultDto
         {
             HasPatient = true,
-            Assignment = new QueueAssignmentDto
-            {
-                Id = selectedAssignment.Id,
-                TicketId = selectedAssignment.TicketId,
-                TicketNumber = currentTicket.TicketNumber,
-                PatientName = currentTicket.PatientName,
-                RoomId = selectedAssignment.RoomId,
-                RoomCode = selectedAssignment.RoomCode,
-                RoomName = selectedAssignment.RoomName,
-                RoomType = selectedAssignment.RoomType,
-                OrderIndex = selectedAssignment.OrderIndex,
-                AssignedAt = selectedAssignment.AssignedAt,
-                CalledAt = selectedAssignment.CalledAt,
-                CompletedAt = selectedAssignment.CompletedAt,
-                Status = selectedAssignment.Status,
-                DoctorStaffId = selectedAssignment.DoctorStaffId,
-                DoctorStaffName = selectedAssignment.DoctorStaffName,
-                Notes = selectedAssignment.Notes
-            },
+            Assignment = hydrated,
             RoomLoad = updatedRoomLoad,
             Message = $"Đã gọi thành công bệnh nhân {currentTicket.PatientName} ({currentTicket.TicketNumber}) vào phòng {room.RoomName}."
         };
+    }
+
+    public async Task<RoomQueueBoardDto> GetRoomQueueBoardAsync(string roomCode)
+    {
+        if (string.IsNullOrWhiteSpace(roomCode))
+            throw new ArgumentException("Mã phòng không được để trống.", nameof(roomCode));
+
+        var normalized = roomCode.Trim().ToUpperInvariant();
+        if (_authGuard != null && _currentDoctor?.IsAuthenticated == true)
+        {
+            await _authGuard.EnsureAssignedToRoomAsync(normalized);
+        }
+
+        var roomLoad = await _dbContext.ClinicRoomLoads.AsNoTracking()
+            .FirstOrDefaultAsync(r => r.RoomCode == normalized);
+        var clinicRoom = await _dbContext.ClinicRooms.AsNoTracking()
+            .FirstOrDefaultAsync(r => r.RoomCode == normalized);
+
+        var roomName = roomLoad?.RoomName ?? clinicRoom?.RoomName ?? normalized;
+        var roomType = roomLoad?.RoomType ?? clinicRoom?.RoomType ?? RoomType.GeneralClinical;
+
+        var assignments = await _dbContext.QueueAssignments
+            .Include(a => a.Ticket)
+            .Where(a => a.RoomCode == normalized)
+            .OrderByDescending(a => a.PriorityRecall)
+            .ThenByDescending(a => a.Ticket!.PriorityLevel)
+            .ThenBy(a => a.OrderIndex)
+            .ThenBy(a => a.AssignedAt)
+            .ToListAsync();
+
+        var dtos = await HydrateAssignmentsAsync(assignments);
+
+        return new RoomQueueBoardDto
+        {
+            RoomCode = normalized,
+            RoomName = roomName,
+            RoomType = roomType,
+            DefaultTabKey = ResolveDefaultTabForRoom(roomType, normalized),
+            Waiting = dtos.Where(a => a.Status == AssignmentStatus.Waiting).ToList(),
+            InConsultation = dtos.Where(a => a.Status == AssignmentStatus.InConsultation).ToList(),
+            PendingCls = dtos.Where(a => a.Status == AssignmentStatus.PendingCls).ToList(),
+            Completed = dtos.Where(a => a.Status == AssignmentStatus.Finished || a.Status == AssignmentStatus.Skipped)
+                .OrderByDescending(a => a.CompletedAt)
+                .Take(30)
+                .ToList()
+        };
+    }
+
+    public async Task<CallNextResultDto> RecallPatientAsync(Guid assignmentId)
+    {
+        var assignment = await _dbContext.QueueAssignments
+            .Include(a => a.Ticket)
+            .FirstOrDefaultAsync(a => a.Id == assignmentId)
+            ?? throw new KeyNotFoundException($"Không tìm thấy lượt phân phòng AssignmentId={assignmentId}");
+
+        if (_authGuard != null && _currentDoctor?.IsAuthenticated == true)
+        {
+            await _authGuard.EnsureAssignedToRoomAsync(assignment.RoomCode);
+        }
+
+        assignment.Recall(_currentDoctor?.StaffId, _currentDoctor?.FullName);
+        assignment.Ticket?.MarkServing();
+
+        var room = await _dbContext.ClinicRoomLoads.FirstOrDefaultAsync(r => r.RoomCode == assignment.RoomCode);
+        if (room != null && assignment.Ticket != null)
+        {
+            room.SetServing(assignment.Ticket.TicketNumber, assignment.Ticket.PatientName);
+        }
+
+        await _dbContext.SaveChangesAsync();
+        await RefreshRoomLoadsAsync();
+
+        var hydrated = (await HydrateAssignmentsAsync(new List<QueueAssignment> { assignment })).First();
+        var updatedRoomLoad = (await GetRoomLoadsAsync()).FirstOrDefault(r => r.RoomCode == assignment.RoomCode);
+
+        return new CallNextResultDto
+        {
+            HasPatient = true,
+            Assignment = hydrated,
+            RoomLoad = updatedRoomLoad,
+            Message = $"Đang gọi lại lần {assignment.CallAttemptCount}: {hydrated.PatientName} ({hydrated.TicketNumber}) vào {assignment.RoomName}."
+        };
+    }
+
+    public async Task<QueueAssignmentDto> SkipPatientAsync(Guid assignmentId, string reason)
+    {
+        var assignment = await _dbContext.QueueAssignments
+            .Include(a => a.Ticket)
+            .FirstOrDefaultAsync(a => a.Id == assignmentId)
+            ?? throw new KeyNotFoundException($"Không tìm thấy lượt phân phòng AssignmentId={assignmentId}");
+
+        if (_authGuard != null && _currentDoctor?.IsAuthenticated == true)
+        {
+            await _authGuard.EnsureAssignedToRoomAsync(assignment.RoomCode);
+        }
+
+        assignment.Skip(string.IsNullOrWhiteSpace(reason) ? "Bệnh nhân vắng mặt khi gọi" : reason);
+        var room = await _dbContext.ClinicRoomLoads.FirstOrDefaultAsync(r => r.RoomCode == assignment.RoomCode);
+        if (room != null && room.CurrentCallingTicketNumber == assignment.Ticket?.TicketNumber)
+        {
+            room.ClearServing();
+        }
+
+        await _dbContext.SaveChangesAsync();
+        await RefreshRoomLoadsAsync();
+
+        return (await HydrateAssignmentsAsync(new List<QueueAssignment> { assignment })).First();
+    }
+
+    public async Task<QueueAssignmentDto> SendToClsAndPauseAsync(Guid assignmentId, string? notes = null)
+    {
+        var assignment = await _dbContext.QueueAssignments
+            .Include(a => a.Ticket)
+            .FirstOrDefaultAsync(a => a.Id == assignmentId)
+            ?? throw new KeyNotFoundException($"Không tìm thấy lượt phân phòng AssignmentId={assignmentId}");
+
+        if (_authGuard != null && _currentDoctor?.IsAuthenticated == true)
+        {
+            await _authGuard.EnsureAssignedToRoomAsync(assignment.RoomCode);
+        }
+
+        assignment.MarkPendingCls(notes);
+        var room = await _dbContext.ClinicRoomLoads.FirstOrDefaultAsync(r => r.RoomCode == assignment.RoomCode);
+        if (room != null && room.CurrentCallingTicketNumber == assignment.Ticket?.TicketNumber)
+        {
+            room.ClearServing();
+        }
+
+        await _dbContext.SaveChangesAsync();
+        await RefreshRoomLoadsAsync();
+
+        return (await HydrateAssignmentsAsync(new List<QueueAssignment> { assignment })).First();
+    }
+
+    public async Task<QueueAssignmentDto> ResumeFromClsAsync(Guid assignmentId)
+    {
+        var assignment = await _dbContext.QueueAssignments
+            .Include(a => a.Ticket)
+            .FirstOrDefaultAsync(a => a.Id == assignmentId)
+            ?? throw new KeyNotFoundException($"Không tìm thấy lượt phân phòng AssignmentId={assignmentId}");
+
+        if (_authGuard != null && _currentDoctor?.IsAuthenticated == true)
+        {
+            await _authGuard.EnsureAssignedToRoomAsync(assignment.RoomCode);
+        }
+
+        assignment.MarkReturnedFromCls();
+        await _dbContext.SaveChangesAsync();
+        await RefreshRoomLoadsAsync();
+
+        return (await HydrateAssignmentsAsync(new List<QueueAssignment> { assignment })).First();
+    }
+
+    private async Task<List<QueueAssignmentDto>> HydrateAssignmentsAsync(List<QueueAssignment> assignments)
+    {
+        if (assignments.Count == 0) return new List<QueueAssignmentDto>();
+
+        var patientIds = assignments
+            .Where(a => a.Ticket != null && a.Ticket.PatientId != Guid.Empty)
+            .Select(a => a.Ticket!.PatientId)
+            .Distinct()
+            .ToList();
+
+        var patients = await _dbContext.Patients.AsNoTracking()
+            .Where(p => patientIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id);
+
+        var ticketIds = assignments.Select(a => a.TicketId).Distinct().ToList();
+        var encounters = await _dbContext.Encounters.AsNoTracking()
+            .Where(e => patientIds.Contains(e.PatientId) || (e.QueueTicketId.HasValue && ticketIds.Contains(e.QueueTicketId.Value)))
+            .OrderByDescending(e => e.EncounterDate)
+            .ToListAsync();
+
+        var encounterByTicket = encounters
+            .Where(e => e.QueueTicketId.HasValue)
+            .GroupBy(e => e.QueueTicketId!.Value)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        var latestEncounterByPatient = encounters
+            .GroupBy(e => e.PatientId)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        return assignments.Select(a =>
+        {
+            var pid = a.Ticket?.PatientId ?? Guid.Empty;
+            patients.TryGetValue(pid, out var pat);
+            if (!encounterByTicket.TryGetValue(a.TicketId, out var enc))
+            {
+                latestEncounterByPatient.TryGetValue(pid, out enc);
+            }
+
+            return new QueueAssignmentDto
+            {
+                Id = a.Id,
+                TicketId = a.TicketId,
+                TicketNumber = a.Ticket?.TicketNumber ?? string.Empty,
+                PatientName = a.Ticket?.PatientName ?? pat?.FullName ?? string.Empty,
+                RoomId = a.RoomId,
+                RoomCode = a.RoomCode,
+                RoomName = a.RoomName,
+                RoomType = a.RoomType,
+                OrderIndex = a.OrderIndex,
+                AssignedAt = a.AssignedAt,
+                CalledAt = a.CalledAt,
+                CompletedAt = a.CompletedAt,
+                Status = a.Status,
+                DoctorStaffId = a.DoctorStaffId,
+                DoctorStaffName = a.DoctorStaffName,
+                Notes = a.Notes,
+                CallAttemptCount = a.CallAttemptCount,
+                PriorityRecall = a.PriorityRecall,
+                SentToClsAt = a.SentToClsAt,
+                ReturnedFromClsAt = a.ReturnedFromClsAt,
+                PatientId = pid != Guid.Empty ? pid : null,
+                EncounterId = enc?.Id,
+                EncounterCode = enc?.EncounterCode,
+                PatientGender = pat?.Gender.ToString(),
+                PatientCccd = a.Ticket?.Cccd ?? pat?.IdentityCardNumber,
+                BirthYear = a.Ticket?.BirthYear ?? (pat != null && pat.BirthDate.Year > 1900 ? pat.BirthDate.Year : null)
+            };
+        }).ToList();
+    }
+
+    private string ResolveDefaultTabForRoom(RoomType roomType, string roomCode)
+    {
+        if (roomCode.Equals("P.TK01", StringComparison.OrdinalIgnoreCase)) return "tab_lead_summary";
+
+        var mapped = roomType switch
+        {
+            RoomType.GeneralClinical or RoomType.Consultation => "tab_internal",
+            RoomType.Surgery => "tab_surgery",
+            RoomType.Ophthalmology => "tab_eye",
+            RoomType.ENT => "tab_ent",
+            RoomType.Dental => "tab_dental",
+            RoomType.Dermatology => "tab_dermatology",
+            RoomType.ObGyn => "tab_obgyn",
+            RoomType.Ultrasound or RoomType.XRay or RoomType.ECG => "tab_imaging_capture",
+            RoomType.Phlebotomy or RoomType.Laboratory => "tab_lab_lis",
+            _ => _currentDoctor?.Capability?.GetDefaultClinicalTabKey() ?? "tab_history"
+        };
+        return mapped;
     }
 
     public async Task<QueueAssignmentDto> CompleteAssignmentAsync(Guid assignmentId, CompleteAssignmentInputDto? input = null)
@@ -350,7 +597,12 @@ public class SmartQueueingService : ISmartQueueingService
         var scoredAssignments = waitingAssignments.Select(a =>
         {
             double score = 100.0;
-            if (roomLoadsDict.TryGetValue(a.RoomCode.ToUpperInvariant(), out var rLoad))
+            // Invariant: P.TK01 (Phòng Tổng Kết) phải luôn nằm cuối cùng của lộ trình khám
+            if (a.RoomCode == "P.TK01")
+            {
+                score = 9999.0;
+            }
+            else if (roomLoadsDict.TryGetValue(a.RoomCode.ToUpperInvariant(), out var rLoad))
             {
                 score = CalculateRoomCostScore(rLoad, currentPatientFloor: 1, isUrgent: ticket.PriorityLevel > 1);
             }

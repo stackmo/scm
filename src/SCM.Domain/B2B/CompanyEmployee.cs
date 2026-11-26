@@ -24,6 +24,7 @@ public class CompanyEmployee
     public string Email { get; set; } = string.Empty;
     public string HealthInsuranceCode { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
+    public bool IsSampleCollected { get; set; } = false;
     public CompanyEmployeeStatus Status { get; set; } = CompanyEmployeeStatus.ChuaKham;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

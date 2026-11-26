@@ -1,11 +1,14 @@
 using SCM.Domain.B2B;
+using SCM.Domain.Branches;
 using SCM.Domain.Shared.Enums;
 
 namespace SCM.Domain.Phlebotomy;
 
-public class PhlebotomyBatch
+public class PhlebotomyBatch : IBranchScopedEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid BranchId { get; set; } = Guid.Empty;
+    public string BranchCode { get; set; } = string.Empty;
     public Guid CompanyId { get; set; }
     public Company? Company { get; set; }
     public Guid ContractId { get; set; }

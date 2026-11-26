@@ -27,6 +27,11 @@ public class ColdChainManifestDto
         _ => Status.ToString()
     };
     public bool IsTemperatureBreach => Status == ManifestStatus.TemperatureBreach;
+    public bool IsDegraded { get; set; }
+    public bool HasDiscrepancy { get; set; }
+    public int DiscrepancyCount { get; set; }
+    public string DiscrepancyNote { get; set; } = string.Empty;
+    public double? TransitDurationHours { get; set; }
     public string? BreachWarningMessage { get; set; }
     public string Notes { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }

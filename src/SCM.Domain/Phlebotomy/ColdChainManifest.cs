@@ -1,13 +1,17 @@
+using SCM.Domain.Branches;
 using SCM.Domain.Shared.Enums;
 
 namespace SCM.Domain.Phlebotomy;
 
-public class ColdChainManifest
+public class ColdChainManifest : IBranchScopedEntity
 {
     public const decimal MinSafeTemperature = 2.0m;
     public const decimal MaxSafeTemperature = 8.0m;
+    public const double MaxSafeTransitHours = 4.0; // C-3.2: Quá 4 giờ vận chuyển mẫu coi là suy giảm chất lượng
 
     public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid BranchId { get; set; } = Guid.Empty;
+    public string BranchCode { get; set; } = string.Empty;
     public Guid BatchId { get; set; }
     public PhlebotomyBatch? Batch { get; set; }
     public string ManifestCode { get; set; } = string.Empty;
@@ -22,8 +26,20 @@ public class ColdChainManifest
     public int TotalTubesAccepted { get; set; }
     public int TotalTubesRejected { get; set; }
     public ManifestStatus Status { get; set; } = ManifestStatus.InTransit;
+    public bool IsDegraded { get; set; } = false; // C-3.2 Sample Degraded Flag
+    public bool HasDiscrepancy { get; set; } = false; // C-3.5 Dual Signoff Discrepancy
+    public int DiscrepancyCount { get; set; } = 0;
+    public string DiscrepancyNote { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // Aliases matching PROMPT-WAVE-03-PHLEBOTOMY
+    public int SentTubeCount => TotalTubesHandedOver;
+    public int ReceivedTubeCount => TotalTubesAccepted + TotalTubesRejected;
+    public DateTime DispatchTime => DepartureTime;
+    public DateTime? DeliveryTime => ArrivalTime;
+    public decimal StartTempCelsius => DepartureTemperature;
+    public decimal? ArrivalTempCelsius => ArrivalTemperature;
 
     public List<SpecimenTube> SpecimenTubes { get; set; } = new();
 
@@ -36,7 +52,9 @@ public class ColdChainManifest
         string courierStaff,
         decimal departureTemperature,
         DateTime? departureTime = null,
-        string notes = "")
+        string notes = "",
+        Guid? branchId = null,
+        string? branchCode = null)
     {
         if (batchId == Guid.Empty)
             throw new ArgumentException("BatchId không được để trống.", nameof(batchId));
@@ -47,6 +65,8 @@ public class ColdChainManifest
         if (string.IsNullOrWhiteSpace(courierStaff))
             throw new ArgumentException("Người vận chuyển không được để trống.", nameof(courierStaff));
 
+        BranchId = branchId ?? Guid.Empty;
+        BranchCode = branchCode ?? string.Empty;
         BatchId = batchId;
         ManifestCode = manifestCode.Trim().ToUpperInvariant();
         HandoverStaff = handoverStaff.Trim();
@@ -56,15 +76,7 @@ public class ColdChainManifest
         Notes = notes.Trim();
         CreatedAt = DateTime.UtcNow;
 
-        // If departure temperature is already outside safe range, flag immediately
-        if (!IsSafeTemperature(departureTemperature))
-        {
-            Status = ManifestStatus.TemperatureBreach;
-        }
-        else
-        {
-            Status = ManifestStatus.InTransit;
-        }
+        ValidateQuality();
     }
 
     public static bool IsSafeTemperature(decimal temperature)
@@ -83,6 +95,39 @@ public class ColdChainManifest
         return false;
     }
 
+    public bool HasTransitTimeExceeded()
+    {
+        if (!ArrivalTime.HasValue) return false;
+        var duration = (ArrivalTime.Value - DepartureTime).TotalHours;
+        return duration > MaxSafeTransitHours;
+    }
+
+    /// <summary>
+    /// C-3.2 Cold-Chain Temperature & Transit Time Quality Guard
+    /// </summary>
+    public bool ValidateQuality()
+    {
+        bool breach = HasTemperatureBreach();
+        bool timeExceeded = HasTransitTimeExceeded();
+
+        if (breach || timeExceeded)
+        {
+            IsDegraded = true;
+            Status = ManifestStatus.TemperatureBreach;
+            return false;
+        }
+
+        IsDegraded = false;
+        if (Status != ManifestStatus.Received)
+        {
+            Status = ManifestStatus.InTransit;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// C-3.5 Dual Signoff Handover Manifest: Nghiệm thu tại Lab và đối soát số lượng ống
+    /// </summary>
     public void Receive(
         string labReceiverStaff,
         decimal arrivalTemperature,
@@ -100,6 +145,21 @@ public class ColdChainManifest
         TotalTubesAccepted = acceptedCount;
         TotalTubesRejected = rejectedCount;
 
+        // C-3.5: Kiểm tra lệch số lượng bàn giao vs thực nhận
+        int totalReceived = acceptedCount + rejectedCount;
+        if (TotalTubesHandedOver > 0 && totalReceived != TotalTubesHandedOver)
+        {
+            HasDiscrepancy = true;
+            DiscrepancyCount = Math.Abs(TotalTubesHandedOver - totalReceived);
+            DiscrepancyNote = $"CẢNH BÁO THẤT LẠC MẪU: Đội lưu động bàn giao {TotalTubesHandedOver} ống, phòng Lab nhận {totalReceived} ống (Lệch {DiscrepancyCount} ống)!";
+        }
+        else
+        {
+            HasDiscrepancy = false;
+            DiscrepancyCount = 0;
+            DiscrepancyNote = string.Empty;
+        }
+
         if (!string.IsNullOrWhiteSpace(additionalNotes))
         {
             Notes = string.IsNullOrWhiteSpace(Notes) 
@@ -107,11 +167,16 @@ public class ColdChainManifest
                 : $"{Notes}; {additionalNotes.Trim()}";
         }
 
-        if (HasTemperatureBreach())
+        if (HasDiscrepancy)
         {
-            Status = ManifestStatus.TemperatureBreach;
+            Notes = string.IsNullOrWhiteSpace(Notes)
+                ? DiscrepancyNote
+                : $"{Notes}; {DiscrepancyNote}";
         }
-        else
+
+        ValidateQuality();
+
+        if (!IsDegraded)
         {
             Status = ManifestStatus.Received;
         }

@@ -234,15 +234,6 @@ export const CATALOGS_REGISTRY: CatalogMeta[] = [
     keyFields: ['Id', 'Name'],
     scope: 'ĐẶC THÙ CỔNG M3 (TT32)'
   },
-  {
-    code: 'EINVOICE',
-    title: 'Hóa Đơn Điện Tử (Thông tư 78)',
-    group: 'Bảng giá & Dịch vụ Kỹ thuật',
-    type: 'form',
-    description: 'Cấu hình nhà cung cấp MISA, FAST, VNPT; phát hành HĐĐT cho doanh nghiệp KSK và bệnh nhân lẻ',
-    scope: 'DÙNG CHUNG (HIS + KSK)'
-  },
-
   // ── NHÂN SỰ & BÁC SĨ (CCHN) ──
   {
     code: 'STAFF',
@@ -278,6 +269,14 @@ export const CATALOGS_REGISTRY: CatalogMeta[] = [
   },
 
   // ── CẤU HÌNH & CỔNG LIÊN THÔNG ──
+  {
+    code: 'EINVOICE',
+    title: 'Hóa Đơn Điện Tử (Thông tư 78)',
+    group: 'Cấu hình & Cổng Liên thông',
+    type: 'form',
+    description: 'Cấu hình nhà cung cấp MISA, FAST, VNPT; phát hành HĐĐT cho doanh nghiệp KSK và bệnh nhân lẻ',
+    scope: 'DÙNG CHUNG (HIS + KSK)'
+  },
   {
     code: 'M3_NguoiLon_18_59',
     title: 'Mẫu M3 KSK Người Lớn (192 trường TT32)',

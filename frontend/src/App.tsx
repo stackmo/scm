@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   UserPlus,
   HeartPulse,
@@ -18,9 +18,12 @@ import {
   Filter,
   Plus,
   Download,
+  Upload,
+  AlertTriangle,
   Edit2,
   Trash2,
   ChevronDown,
+  ChevronRight,
   ArrowLeft,
   Eye,
   Copy,
@@ -33,6 +36,7 @@ import {
   HardDrive,
   FileSpreadsheet,
   CheckCircle2,
+  Check,
   AlertCircle,
   Clock,
   MapPin,
@@ -41,11 +45,25 @@ import {
   Award,
   Syringe,
   Tag,
-  FolderTree
+  FolderTree,
+  Keyboard,
+  CheckSquare
 } from 'lucide-react';
-import { PreExamPhlebotomyPage } from './pages/PreExamPhlebotomyPage';
 import { ReceptionQueuePage } from './pages/ReceptionQueuePage';
 import { B2BPackageManagementPage } from './pages/B2BPackageManagementPage';
+import { ClinicalDoctorDeskPage } from './pages/ClinicalDoctorDeskPage';
+import { ClinicalExaminationPage } from './pages/ClinicalExaminationPage';
+import { RolePermissionAdminPage } from './pages/RolePermissionAdminPage';
+import { ACTOR_GROUP_LABELS, apiFetch, useAuthRbac } from './contexts/AuthRbacContext';
+import { updateBranchDepositConfig } from './services/pharmacyApi';
+import { DiagnosticsPrescriptionBillingPage } from './pages/DiagnosticsPrescriptionBillingPage';
+import { LabWorkstationPage } from './pages/LabWorkstationPage';
+import { ImagingWorkstationPage } from './pages/ImagingWorkstationPage';
+import { LisGatewayConfigPage } from './pages/LisGatewayConfigPage';
+import { PharmacyInventoryPage } from './pages/PharmacyInventoryPage';
+import { EInvoicePortalPage } from './pages/EInvoicePortalPage';
+import { NationalOutboxPortalPage } from './pages/NationalOutboxPortalPage';
+import { EmrPortalPage } from './pages/EmrPortalPage';
 import { ServiceSelectorModal } from './components/ServiceSelectorModal';
 
 // --- CATALOG DATASETS (HỢP NHẤT VSC & CỔNG M3) ---
@@ -61,11 +79,60 @@ import tienSuBenhData from './data/catalogs/TS_GiaDinh_MacBenh_DanhSachBenh.json
 import ketLuanDeNghiData from './data/catalogs/KetLuan_DeNghi.json';
 import chiTraData from './data/catalogs/ChiTra.json';
 
+// --- QUY CHUẨN Y TẾ & CHUYÊN KHOA BÁC SĨ (LUẬT KCB 2023 & TT 32/2023) ---
+export const MEDICAL_SPECIALTIES = [
+  'Nội Tổng Quát',
+  'Nhi Khoa',
+  'Ngoại Tổng Quát',
+  'Sản Phụ Khoa',
+  'Mắt (Nhãn Khoa)',
+  'Tai Mũi Họng',
+  'Răng Hàm Mặt',
+  'Chẩn Đoán Hình Ảnh',
+  'Nội Soi Tiêu Hóa',
+  'Da Liễu',
+  'Xét Nghiệm',
+  'Cơ Xương Khớp',
+  'Thăm Dò Chức Năng'
+];
+
+export const ACADEMIC_TITLES = [
+  'Bác sĩ',
+  'ThS.BS',
+  'BS.CKI',
+  'BS.CKII',
+  'TS.BS',
+  'PGS.TS',
+  'GS.TS',
+  'Dược sĩ ĐH',
+  'Cử nhân',
+  'Điều dưỡng'
+];
+
+export const getSpecialtyBadgeStyle = (spec: string) => {
+  if (!spec) return 'bg-gray-100 text-gray-700 border-gray-300';
+  if (spec.includes('Nội Tổng') || spec.includes('Nội Tim')) return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (spec.includes('Nhi')) return 'bg-amber-50 text-amber-700 border-amber-200';
+  if (spec.includes('Ngoại')) return 'bg-red-50 text-red-700 border-red-200';
+  if (spec.includes('Sản')) return 'bg-pink-50 text-pink-700 border-pink-200';
+  if (spec.includes('Mắt')) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+  if (spec.includes('Tai Mũi')) return 'bg-purple-50 text-purple-700 border-purple-200';
+  if (spec.includes('Răng')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (spec.includes('Hình Ảnh')) return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+  if (spec.includes('Nội Soi')) return 'bg-teal-50 text-teal-700 border-teal-200';
+  if (spec.includes('Da Liễu')) return 'bg-violet-50 text-violet-700 border-violet-200';
+  if (spec.includes('Xét Nghiệm')) return 'bg-lime-50 text-lime-800 border-lime-300';
+  if (spec.includes('Xương')) return 'bg-orange-50 text-orange-700 border-orange-200';
+  return 'bg-slate-100 text-slate-700 border-slate-300';
+};
+
 // --- TYPES ---
 export interface MasterBlock {
   id: string;
   title: string;
+  fullTitle?: string;
   subtitle: string;
+  section: 'catalogs' | 'config';
   icon: React.ComponentType<{ className?: string }>;
   groups: MasterGroup[];
 }
@@ -76,15 +143,17 @@ export interface MasterGroup {
   badge: string | number;
   badgeVariant?: 'primary' | 'warning' | 'danger' | 'success' | 'secondary';
   icon: React.ComponentType<{ className?: string }>;
-  entityType: 'service' | 'service_group' | 'drug' | 'staff' | 'room' | 'demographics' | 'icd10' | 'chain' | 'm3' | 'generic';
+  entityType: 'service' | 'service_group' | 'drug' | 'staff' | 'room' | 'demographics' | 'icd10' | 'chain' | 'm3' | 'user' | 'generic';
 }
 
-// 5 Unified Master Data Architectural Groups (Tên gọi tinh gọn, số liệu thống kê chuẩn xác qua Badge)
+// 5 Unified Master Data Groups (Gom 2 nhóm: Danh mục & Cấu hình theo chuẩn tinh gọn)
 const MASTER_BLOCKS: MasterBlock[] = [
   {
     id: 'block_admin',
-    title: 'Hành chính & Nhân khẩu',
+    title: 'Hành chính',
+    fullTitle: 'Hành chính & Nhân khẩu',
     subtitle: 'Đối tượng KSK, doanh nghiệp, dân tộc, địa bàn',
+    section: 'catalogs',
     icon: Users,
     groups: [
       { id: 'grp_doituong', name: 'Đối Tượng KSK', badge: 21, icon: Users, entityType: 'demographics' },
@@ -97,8 +166,10 @@ const MASTER_BLOCKS: MasterBlock[] = [
   },
   {
     id: 'block_clinical',
-    title: 'Chuyên môn Lâm sàng & CLS',
+    title: 'Chuyên môn',
+    fullTitle: 'Chuyên môn Lâm sàng & CLS',
     subtitle: 'ICD-10, chuyên khoa khám, tốc ký, tiền sử',
+    section: 'catalogs',
     icon: Heart,
     groups: [
       { id: 'grp_icd10', name: 'ICD-10 Quốc Tế', badge: '11.4k', badgeVariant: 'warning', icon: Heart, entityType: 'icd10' },
@@ -112,39 +183,76 @@ const MASTER_BLOCKS: MasterBlock[] = [
   },
   {
     id: 'block_finance',
-    title: 'Bảng giá & Dịch vụ Kỹ thuật',
+    title: 'Bảng giá',
+    fullTitle: 'Bảng giá & Dịch vụ Kỹ thuật',
     subtitle: 'Dịch vụ kỹ thuật, thuốc, nguồn chi trả',
+    section: 'catalogs',
     icon: CreditCard,
     groups: [
       { id: 'grp_dichvu', name: 'Dịch Vụ Kỹ Thuật & CLS', badge: 640, badgeVariant: 'primary', icon: Layers, entityType: 'service' },
       { id: 'grp_thuoc', name: 'Thuốc & Vật Tư Y Tế', badge: 867, badgeVariant: 'primary', icon: Pill, entityType: 'drug' },
-      { id: 'grp_nguonchitro', name: 'Nguồn Chi Trả KSK', badge: 7, icon: CreditCard, entityType: 'generic' },
-      { id: 'grp_hdt78', name: 'Hóa Đơn Điện Tử', badge: 1, icon: FileSpreadsheet, entityType: 'generic' }
+      { id: 'grp_nguonchitro', name: 'Nguồn Chi Trả KSK', badge: 4, icon: CreditCard, entityType: 'generic' }
     ]
   },
   {
     id: 'block_hr',
-    title: 'Nhân sự & Bác sĩ (CCHN)',
-    subtitle: 'Bác sĩ, buồng khám, địa điểm',
+    title: 'Nhân sự',
+    fullTitle: 'Nhân sự & Bác sĩ (CCHN)',
+    subtitle: 'Bác sĩ, buồng khám, địa điểm, tài khoản',
+    section: 'config',
     icon: Stethoscope,
     groups: [
-      { id: 'grp_bacsi', name: 'Bác Sĩ & CCHN', badge: 137, badgeVariant: 'primary', icon: Stethoscope, entityType: 'staff' },
+      { id: 'grp_bacsi', name: 'Bác Sĩ & CCHN', badge: 103, badgeVariant: 'primary', icon: Stethoscope, entityType: 'staff' },
       { id: 'grp_buongkham', name: 'Buồng Khám & Khoa Phòng', badge: 47, badgeVariant: 'primary', icon: Building2, entityType: 'room' },
+      { id: 'grp_taikhoan', name: 'Tài Khoản Người Dùng', badge: 49, badgeVariant: 'primary', icon: Users, entityType: 'user' },
       { id: 'grp_diadiem', name: 'Địa Điểm Khám KSK', badge: 5, icon: Building2, entityType: 'generic' }
     ]
   },
   {
     id: 'block_config',
-    title: 'Cấu hình & Cổng Liên thông',
-    subtitle: 'Mẫu M3 KSK, chuỗi cơ sở, cổng đơn thuốc QG',
+    title: 'Cấu hình',
+    fullTitle: 'Cấu hình & Cổng Liên thông',
+    subtitle: 'HĐĐT, M3, chuỗi cơ sở, cổng BYT, LIS & phân quyền ACL',
+    section: 'config',
     icon: Settings,
     groups: [
+      { id: 'grp_hdt78', name: 'Hóa Đơn Điện Tử', badge: 1, icon: FileSpreadsheet, entityType: 'generic' },
       { id: 'grp_maum3', name: 'Mẫu M3 KSK (TT32)', badge: 192, icon: FileText, entityType: 'm3' },
       { id: 'grp_ketluan', name: 'Kết Luận & Xử Trí KSK', badge: 5, icon: FileText, entityType: 'generic' },
       { id: 'grp_chuoipk', name: 'Chuỗi Phòng Khám', badge: 4, icon: Building2, entityType: 'chain' },
-      { id: 'grp_congqg', name: 'Cổng Đơn Thuốc Quốc Gia', badge: 1, icon: Network, entityType: 'generic' }
+      { id: 'grp_congqg', name: 'Cổng BYT (M3 & Đơn thuốc QG)', badge: 1, icon: Network, entityType: 'generic' },
+      { id: 'grp_lis', name: 'LIS & Máy Xét Nghiệm', badge: 3, icon: Activity, entityType: 'generic' },
+      { id: 'grp_rbac', name: 'Phân quyền ACL (Admin)', badge: 1, icon: ShieldCheck, entityType: 'generic' }
     ]
   }
+];
+
+// Predefined Clinic Departments (Khoa Phòng Trực Thuộc)
+export const PRESET_DEPARTMENTS = [
+  { id: 'K-KHAM', code: 'K01', name: 'Khoa Khám Bệnh', departmentName: 'Khoa Khám Bệnh', isClinical: true, sortOrder: 1 },
+  { id: 'K-CDHA', code: 'K02', name: 'Khoa Chẩn Đoán Hình Ảnh', departmentName: 'Khoa Chẩn Đoán Hình Ảnh', isClinical: false, sortOrder: 2 },
+  { id: 'K-XN', code: 'K03', name: 'Khoa Xét Nghiệm', departmentName: 'Khoa Xét Nghiệm', isClinical: false, sortOrder: 3 },
+  { id: 'K-DUOC', code: 'K04', name: 'Khoa Dược & Nhà Thuốc', departmentName: 'Khoa Dược & Nhà Thuốc', isClinical: false, sortOrder: 4 },
+  { id: 'K-HSCC', code: 'K05', name: 'Khoa Hồi Sức Cấp Cứu', departmentName: 'Khoa Hồi Sức Cấp Cứu', isClinical: true, sortOrder: 5 },
+  { id: 'K-SAN', code: 'K06', name: 'Khoa Phụ Sản', departmentName: 'Khoa Phụ Sản', isClinical: true, sortOrder: 6 },
+  { id: 'K-NHI', code: 'K07', name: 'Khoa Nhi', departmentName: 'Khoa Nhi', isClinical: true, sortOrder: 7 },
+  { id: 'K-TMH', code: 'K08', name: 'Khoa Tai Mũi Họng - RHM', departmentName: 'Khoa Tai Mũi Họng - RHM', isClinical: true, sortOrder: 8 },
+  { id: 'K-VP', code: 'K09', name: 'Bộ Phận Thu Ngân & Viện Phí', departmentName: 'Bộ Phận Thu Ngân & Viện Phí', isClinical: false, sortOrder: 9 }
+];
+
+export const PRESET_ROOMS = [
+  { id: 1, roomCode: 'PK-01', roomName: 'Phòng Khám Nội Tổng Quát 1', department: 'Khoa Khám Bệnh', departmentId: 'K-KHAM', roomType: 0, queueAudioId: 'LOA-PK-01', isActive: true },
+  { id: 2, roomCode: 'PK-02', roomName: 'Phòng Khám Nội Tim Mạch', department: 'Khoa Khám Bệnh', departmentId: 'K-KHAM', roomType: 0, queueAudioId: 'LOA-PK-02', isActive: true },
+  { id: 3, roomCode: 'K02', roomName: 'Khoa Hồi sức cấp cứu', department: 'Khoa Hồi Sức Cấp Cứu', departmentId: 'K-HSCC', roomType: 0, queueAudioId: 'LOA-PK-2', isActive: true },
+  { id: 4, roomCode: 'PK-04', roomName: 'Phòng Khám Nhi Đồng', department: 'Khoa Nhi', departmentId: 'K-NHI', roomType: 0, queueAudioId: 'LOA-PK-04', isActive: true },
+  { id: 5, roomCode: 'PK-05', roomName: 'Phòng Khám Sản Phụ Khoa', department: 'Khoa Phụ Sản', departmentId: 'K-SAN', roomType: 0, queueAudioId: 'LOA-PK-05', isActive: true },
+  { id: 6, roomCode: 'PK-06', roomName: 'Phòng Khám Mắt & Đo Khúc Xạ', department: 'Khoa Khám Bệnh', departmentId: 'K-KHAM', roomType: 0, queueAudioId: 'LOA-PK-06', isActive: true },
+  { id: 7, roomCode: 'PK-07', roomName: 'Phòng Khám Tai Mũi Họng - RHM', department: 'Khoa Tai Mũi Họng - RHM', departmentId: 'K-TMH', roomType: 0, queueAudioId: 'LOA-PK-07', isActive: true },
+  { id: 8, roomCode: 'XQ-01', roomName: 'Phòng Chụp X-Quang Kỹ Thuật Số', department: 'Khoa Chẩn Đoán Hình Ảnh', departmentId: 'K-CDHA', roomType: 1, queueAudioId: 'LOA-CDHA-01', isActive: true },
+  { id: 9, roomCode: 'SA-01', roomName: 'Phòng Siêu Âm Màu 4D', department: 'Khoa Chẩn Đoán Hình Ảnh', departmentId: 'K-CDHA', roomType: 1, queueAudioId: 'LOA-CDHA-02', isActive: true },
+  { id: 10, roomCode: 'XN-01', roomName: 'Phòng Lấy Mẫu & Huyết Học', department: 'Khoa Xét Nghiệm', departmentId: 'K-XN', roomType: 1, queueAudioId: 'LOA-XN-01', isActive: true },
+  { id: 11, roomCode: 'TN-01', roomName: 'Quầy Thu Ngân & Viện Phí 1', department: 'Bộ Phận Thu Ngân & Viện Phí', departmentId: 'K-VP', roomType: 1, queueAudioId: 'LOA-VP-01', isActive: true },
+  { id: 12, roomCode: 'NT-01', roomName: 'Quầy Cấp Phát Thuốc BHYT & Dịch Vụ', department: 'Khoa Dược & Nhà Thuốc', departmentId: 'K-DUOC', roomType: 1, queueAudioId: 'LOA-DUOC-01', isActive: true }
 ];
 
 // Predefined 21 Demographic groups (Image 2)
@@ -180,6 +288,36 @@ const PRESET_CHAINS = [
   { id: 4, code: 'CNTD', name: 'SmartClinic Cơ Sở TP. Thủ Đức', chainName: 'Clinic 365 Kỹ Thuật Số', address: '88 Võ Văn Ngân, TP. Thủ Đức, TP.HCM', hotline: '0978901234', doctorInCharge: 'BS.CKI Nguyễn Văn Hưng', licenseNo: '055214/HCM-GPHĐ' }
 ];
 
+// Wave 0: Multi-Branch & RBAC Identity Foundation Roles (Chuẩn y tế Việt Nam)
+const ROLE_DEFINITIONS = [
+  { code: 'super_admin', label: 'Super Admin (Hệ thống SaaS)', desc: 'Toàn quyền cấu hình hạ tầng, tenants, liên thông cổng QG' },
+  { code: 'admin_chain', label: 'Quản Trị Chuỗi Phòng Khám', desc: 'Toàn quyền Master Data, bảng giá, kho dược, nhân sự chuỗi' },
+  { code: 'admin_branch', label: 'Quản Trị Chi Nhánh (Giám Đốc Cơ Sở)', desc: 'Quản lý vận hành, ca trực, điều phối buồng khám tại cơ sở' },
+  { code: 'khth', label: 'Kế Hoạch Tổng Hợp & Giám Định', desc: 'Thống kê KCB, duyệt chỉ định chuyên môn, hồ sơ BHYT, danh mục kỹ thuật' },
+  { code: 'doctor', label: 'Bác Sĩ Chuyên Khoa', desc: 'Khám bệnh, chỉ định CLS, kê đơn thuốc, chẩn đoán ICD-10' },
+  { code: 'nurse_tech', label: 'Điều Dưỡng / Kỹ Thuật Viên', desc: 'Đo sinh hiệu, tiêm chủng, lấy mẫu ngoại viện, thực hiện CLS' },
+  { code: 'receptionist', label: 'Lễ Tân Tiếp Đón', desc: 'Tiếp nhận bệnh nhân, xếp số thứ tự hàng đợi, thông tin hành chính' },
+  { code: 'cashier', label: 'Thu Ngân Viện Phí', desc: 'Quyết toán viện phí, phát hành VietQR, thu tiền tại quầy' },
+  { code: 'accountant', label: 'Kế Toán Viện Phí & Công Nợ B2B', desc: 'Đối soát công nợ doanh nghiệp, hóa đơn điện tử, chốt sổ doanh thu' },
+  { code: 'pharmacist', label: 'Dược Sĩ Nhà Thuốc & Kho', desc: 'Cấp phát thuốc theo đơn, trừ kho, đối soát tồn kho Odoo' },
+  { code: 'it_admin', label: 'IT Quản Trị Hệ Thống', desc: 'Thiết bị Kiosk, máy in barcode, chữ ký số HSM, cấu hình cổng liên thông' },
+];
+
+// Ma trận Phân Quyền Menu theo Vai Trò (Role-to-Menu RBAC Matrix)
+const ROLE_NAV_PERMISSIONS: Record<string, string[]> = {
+  super_admin: ['reception_group', 'clinical_group', 'paraclinical_group', 'billing_group', 'pharmacy_group', 'corporate_group', 'system_group'],
+  admin_chain: ['reception_group', 'clinical_group', 'paraclinical_group', 'billing_group', 'pharmacy_group', 'corporate_group', 'system_group'],
+  admin_branch: ['reception_group', 'clinical_group', 'paraclinical_group', 'billing_group', 'pharmacy_group', 'corporate_group', 'system_group'],
+  khth: ['reception_group', 'clinical_group', 'paraclinical_group', 'corporate_group', 'system_group'],
+  doctor: ['clinical_group', 'paraclinical_group'],
+  nurse_tech: ['reception_group', 'clinical_group', 'paraclinical_group', 'corporate_group'],
+  receptionist: ['reception_group', 'corporate_group'],
+  cashier: ['billing_group'],
+  accountant: ['billing_group', 'corporate_group'],
+  pharmacist: ['pharmacy_group'],
+  it_admin: ['system_group'],
+};
+
 // Predefined ICD-10 List (Chuẩn WHO + VSC với Phân Nhóm Chương Bệnh Rõ Ràng)
 const PRESET_ICD10 = [
   { id: 1, icdCode: 'I10', diseaseNameVi: 'Tăng huyết áp vô căn (nguyên phát)', diseaseNameEn: 'Essential (primary) hypertension', chapterCode: 'IX', chapter: 'Chương IX: Bệnh hệ tuần hoàn (I00-I99)', isChronic: true, isActive: true },
@@ -192,6 +330,32 @@ const PRESET_ICD10 = [
   { id: 8, icdCode: 'M54.5', diseaseNameVi: 'Đau thắt lưng cột sống cơ năng', diseaseNameEn: 'Low back pain', chapterCode: 'XIII', chapter: 'Chương XIII: Bệnh hệ cơ - xương - khớp (M00-M99)', isChronic: true, isActive: true },
   { id: 9, icdCode: 'C50.9', diseaseNameVi: 'Khối u ác tính của vú, không đặc hiệu', diseaseNameEn: 'Malignant neoplasm of breast, unspecified', chapterCode: 'II', chapter: 'Chương II: Khối u & Ung thư (C00-D48)', isChronic: true, isActive: true },
   { id: 10, icdCode: 'N39.0', diseaseNameVi: 'Nhiễm trùng đường tiết niệu, vị trí không xác định', diseaseNameEn: 'Urinary tract infection, site not specified', chapterCode: 'XIV', chapter: 'Chương XIV: Bệnh hệ sinh dục - tiết niệu (N00-N99)', isChronic: false, isActive: true }
+];
+
+// 21 Chương Chuẩn WHO ICD-10 Quốc Tế (Kế thừa mô hình phân loại VSC Desktop)
+const WHO_ICD10_CHAPTERS = [
+  { code: 'I', name: 'Một số bệnh nhiễm trùng và ký sinh trùng', range: 'A00-B99' },
+  { code: 'II', name: 'Khối u (Tân sinh)', range: 'C00-D48' },
+  { code: 'III', name: 'Bệnh của máu, cơ quan tạo máu và các rối loạn liên quan cơ chế miễn dịch', range: 'D50-D89' },
+  { code: 'IV', name: 'Bệnh nội tiết, dinh dưỡng và chuyển hóa', range: 'E00-E90' },
+  { code: 'V', name: 'Rối loạn tâm thần và hành vi', range: 'F00-F99' },
+  { code: 'VI', name: 'Bệnh của hệ thần kinh', range: 'G00-G99' },
+  { code: 'VII', name: 'Bệnh của mắt và phần phụ', range: 'H00-H59' },
+  { code: 'VIII', name: 'Bệnh của tai và xương chũm', range: 'H60-H95' },
+  { code: 'IX', name: 'Bệnh của hệ tuần hoàn', range: 'I00-I99' },
+  { code: 'X', name: 'Bệnh của hệ hô hấp', range: 'J00-J99' },
+  { code: 'XI', name: 'Bệnh của hệ tiêu hóa', range: 'K00-K93' },
+  { code: 'XII', name: 'Bệnh của da và mô dưới da', range: 'L00-L99' },
+  { code: 'XIII', name: 'Bệnh của hệ cơ - xương - khớp và mô liên kết', range: 'M00-M99' },
+  { code: 'XIV', name: 'Bệnh của hệ sinh dục - tiết niệu', range: 'N00-N99' },
+  { code: 'XV', name: 'Thai nghén, sinh đẻ và hậu sản', range: 'O00-O99' },
+  { code: 'XVI', name: 'Bệnh xuất phát trong thời kỳ chu sinh', range: 'P00-P96' },
+  { code: 'XVII', name: 'Dị tật bẩm sinh, biến dạng và bất thường nhiễm sắc thể', range: 'Q00-Q99' },
+  { code: 'XVIII', name: 'Triệu chứng, dấu hiệu và kết quả lâm sàng bất thường', range: 'R00-R99' },
+  { code: 'XIX', name: 'Vết thương, ngộ độc và một số hậu quả khác của nguyên nhân bên ngoài', range: 'S00-T98' },
+  { code: 'XX', name: 'Nguyên nhân bên ngoài của bệnh tật và tử vong', range: 'V01-Y98' },
+  { code: 'XXI', name: 'Các yếu tố ảnh hưởng đến tình trạng sức khỏe và tiếp xúc dịch vụ y tế', range: 'Z00-Z99' },
+  { code: 'XXII', name: 'Mã dùng cho các mục đích đặc biệt (COVID-19...)', range: 'U00-U85' },
 ];
 
 // Helper formatters with digit grouping (VSC Invariant)
@@ -208,20 +372,78 @@ const parseNumberFromCommas = (str: string) => {
 };
 
 export default function App() {
+  const { doctorContext, accounts, login, switchAccount } = useAuthRbac();
+  const [loginUserName, setLoginUserName] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('Scm@2026');
+
   // --- STATE HOOKS (RULES OF HOOKS) ---
-  const [activeNavMenu, setActiveNavMenu] = useState<string>('system_group');
-  const [corporateSubView, setCorporateSubView] = useState<'packages' | 'm3_portal'>('packages');
+  const [activeNavMenu, setActiveNavMenu] = useState<string>('clinical_group');
+  const [activeParaclinicalSubMenu, setActiveParaclinicalSubMenu] = useState<'chan_doan_hinh_anh' | 'can_lam_sang_dieu_duong'>('can_lam_sang_dieu_duong');
+  const [activeSystemSection, setActiveSystemSection] = useState<'catalogs' | 'config'>('catalogs');
   const [selectedBlockId, setSelectedBlockId] = useState<string>('block_admin');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('grp_doituong');
   const [showSystemMenu, setShowSystemMenu] = useState<boolean>(false);
 
-  // Grouping & Category Filters (Dịch vụ, ICD-10, Địa bàn Tỉnh thành)
+  // Wave 0: Multi-Branch & RBAC Identity Foundation State (localStorage persistence)
+  const [selectedBranchCode, setSelectedBranchCode] = useState<string>(() => {
+    return localStorage.getItem('scm_selected_branch') || 'CNQ1';
+  });
+  const [showBranchMenu, setShowBranchMenu] = useState<boolean>(false);
+  const [branchDepositEnabled, setBranchDepositEnabled] = useState<boolean>(true);
+  const [currentRoleCode, setCurrentRoleCode] = useState<string>(() => {
+    return localStorage.getItem('scm_current_role') || 'admin_chain';
+  });
+  const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('scm_selected_branch', selectedBranchCode);
+    } catch (e) {
+      console.warn('Cannot write scm_selected_branch to localStorage', e);
+    }
+  }, [selectedBranchCode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('scm_current_role', currentRoleCode);
+    } catch (e) {
+      console.warn('Cannot write scm_current_role to localStorage', e);
+    }
+  }, [currentRoleCode]);
+
+  // RBAC Permission Check for Navigation Menu
+  const isNavAllowed = useCallback((menuKey: string) => {
+    const allowed = ROLE_NAV_PERMISSIONS[currentRoleCode] || ROLE_NAV_PERMISSIONS['admin_chain'];
+    return allowed.includes(menuKey);
+  }, [currentRoleCode]);
+
+  // Auto-switch to first authorized menu when role changes
+  useEffect(() => {
+    const allowed = ROLE_NAV_PERMISSIONS[currentRoleCode] || ROLE_NAV_PERMISSIONS['admin_chain'];
+    if (!allowed.includes(activeNavMenu)) {
+      setActiveNavMenu(allowed[0] || 'reception_group');
+    }
+  }, [currentRoleCode]);
+
+  // Left Navigator (Tree Search State)
+  const [navSearchText, setNavSearchText] = useState<string>('');
+
+  // Keep activeSystemSection and selectedBlockId strictly in sync
+  useEffect(() => {
+    const currentBlk = MASTER_BLOCKS.find(b => b.id === selectedBlockId);
+    if (currentBlk && currentBlk.section !== activeSystemSection) {
+      setActiveSystemSection(currentBlk.section);
+    }
+  }, [selectedBlockId, activeSystemSection]);
+
+  // Grouping & Category Filters (Dịch vụ, Khoa phòng, ICD-10, Địa bàn Tỉnh thành)
   const [selectedServiceCategory, setSelectedServiceCategory] = useState<string>('ALL');
+  const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState<string>('ALL');
   const [selectedIcdChapter, setSelectedIcdChapter] = useState<string>('ALL');
   const [selectedCityCode, setSelectedCityCode] = useState<string>('ALL');
   const [isGroupByView, setIsGroupByView] = useState<boolean>(true);
 
-  // VSC Backend Datasets
+  // Master Data Datasets
   const [vscServices, setVscServices] = useState<any[]>([]);
   const [serviceGroups, setServiceGroups] = useState<any[]>([]);
   const [isAddGroupModalOpen, setIsAddGroupModalOpen] = useState<boolean>(false);
@@ -232,8 +454,17 @@ export default function App() {
     sortOrder: 1
   });
   const [vscDrugs, setVscDrugs] = useState<any[]>([]);
-  const [vscRooms, setVscRooms] = useState<any[]>([]);
+  const [vscRooms, setVscRooms] = useState<any[]>(PRESET_ROOMS);
   const [vscStaffs, setVscStaffs] = useState<any[]>([]);
+  const [vscUsers, setVscUsers] = useState<any[]>([]);
+  const [vscDepartments, setVscDepartments] = useState<any[]>(PRESET_DEPARTMENTS);
+  const [isAddDepartmentModalOpen, setIsAddDepartmentModalOpen] = useState<boolean>(false);
+  const [newDepartmentData, setNewDepartmentData] = useState({
+    code: '',
+    name: '',
+    isClinical: true,
+    sortOrder: 1
+  });
   const [vscIcd10, setVscIcd10] = useState<any[]>(PRESET_ICD10);
   const [customDatasetMap, setCustomDatasetMap] = useState<Record<string, any[]>>({});
 
@@ -243,6 +474,7 @@ export default function App() {
   const [filterName, setFilterName] = useState<string>('');
   const [selectedRowId, setSelectedRowId] = useState<string | number>(11);
   const [selectedRows, setSelectedRows] = useState<(string | number)[]>([]);
+  const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState<boolean>(false);
 
   // Detail Drawer state
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -258,6 +490,10 @@ export default function App() {
     setToastMessage({ type, text });
     setTimeout(() => setToastMessage(null), 3000);
   }, []);
+
+  const [lastSavedTime, setLastSavedTime] = useState<string>('09:00');
+  const handleSaveConfigRef = useRef<() => void>(() => {});
+  const handleAddNewRef = useRef<() => void>(() => {});
 
   // Corporate Checkup (Khám Đoàn B2B & Cổng Y tế Cộng đồng Mẫu M3) State
   const [b2bEmployees, setB2bEmployees] = useState<any[]>([
@@ -493,45 +729,52 @@ export default function App() {
     };
   }, [selectedEmp]);
 
-  // Handle Send to Community Health Portal
-  const handleSendToPortal = () => {
+  // Handle Send to Community Health Portal (Live Outbox Retry)
+  const handleSendToPortal = async () => {
     setSyncingPortal(true);
-    setTimeout(() => {
-      setSyncingPortal(false);
+    try {
+      const res = await apiFetch('/api/outbox/retry-failed', { method: 'POST' });
+      const data = res.ok ? await res.json().catch(() => ({})) : {};
       setB2bEmployees(prev =>
-        prev.map(emp => {
-          if (emp.id === selectedEmp.id) {
-            return {
-              ...emp,
-              portalStatus: 'SYNCED',
-              portalReceiptCode: `SYT-HCM-M3-20261123-${Math.floor(10000 + Math.random() * 90000)}`,
-              portalSyncTime: new Date().toLocaleString('vi-VN')
-            };
-          }
-          return emp;
-        })
+        prev.map(emp => emp.id === selectedEmp.id ? {
+          ...emp,
+          portalStatus: 'SYNCED',
+          portalReceiptCode: `TX-M3-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`,
+          portalSyncTime: new Date().toLocaleString('vi-VN')
+        } : emp)
       );
-      alert(`[CỔNG Y TẾ CỘNG ĐỒNG - SỞ Y TẾ TP.HCM]\n✓ Đã liên thông thành công phiếu KSK Mẫu M3 cho: ${selectedEmp.ho_ten}\n✓ CCCD: ${selectedEmp.dinh_danh_ca_nhan}\n✓ Mã tiếp nhận: SYT-HCM-M3-20261123-08557\n✓ Trạng thái: Hợp lệ theo Thông tư 32/2023/TT-BYT`);
-    }, 1000);
+      showToast(`✓ Đã kích hoạt đồng bộ Outbox M3 (${data.processedCount ?? 0} bản ghi đã xử lý).`);
+    } finally {
+      setSyncingPortal(false);
+    }
   };
 
-  // Load Real Data from VSC API
+  // Unified Departments List
+  const allDepartments = useMemo(() => {
+    return vscDepartments.length > 0 ? vscDepartments : PRESET_DEPARTMENTS;
+  }, [vscDepartments]);
+
+  // Load Real Data from API
   const fetchData = useCallback(async () => {
     try {
-      const [srvRes, drgRes, rmRes, stfRes, icdRes, grpRes] = await Promise.all([
+      const [srvRes, drgRes, rmRes, stfRes, icdRes, grpRes, deptRes, usrRes] = await Promise.all([
         fetch('/api/master-data/services'),
         fetch('/api/master-data/drugs'),
         fetch('/api/master-data/rooms'),
         fetch('/api/master-data/staffs'),
         fetch('/api/master-data/icd10'),
-        fetch('/api/master-data/service-groups')
+        fetch('/api/master-data/service-groups'),
+        fetch('/api/master-data/departments'),
+        fetch('/api/master-data/users')
       ]);
 
       if (srvRes.ok) setVscServices(await srvRes.json());
       if (drgRes.ok) setVscDrugs(await drgRes.json());
       if (rmRes.ok) setVscRooms(await rmRes.json());
       if (stfRes.ok) setVscStaffs(await stfRes.json());
+      if (usrRes.ok) setVscUsers(await usrRes.json());
       if (grpRes.ok) setServiceGroups(await grpRes.json());
+      if (deptRes.ok) setVscDepartments(await deptRes.json());
       if (icdRes.ok) {
         const icdJson = await icdRes.json();
         if (Array.isArray(icdJson) && icdJson.length > 0) setVscIcd10(icdJson);
@@ -545,7 +788,7 @@ export default function App() {
     fetchData();
   }, [fetchData]);
 
-  // Keyboard Escape (L1_MODAL_ESCAPE)
+  // Keyboard Escape & Shortcuts (L1_MODAL_ESCAPE)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -553,6 +796,14 @@ export default function App() {
         setDrawerOpen(false);
         setDeleteConfirmItem(null);
         setIsAddGroupModalOpen(false);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        handleAddNewRef.current();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSaveConfigRef.current();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -570,6 +821,25 @@ export default function App() {
     }
   }, [drawerOpen, deleteConfirmItem, isAddGroupModalOpen]);
 
+  // Filtered blocks strictly for activeSystemSection (Danh mục vs Cấu hình)
+  const sectionBlocks = useMemo(() => {
+    return MASTER_BLOCKS.filter(b => b.section === activeSystemSection);
+  }, [activeSystemSection]);
+
+  const filteredBlocks = useMemo(() => {
+    const q = navSearchText.trim().toLowerCase();
+    if (!q) return sectionBlocks;
+    return sectionBlocks.map(block => {
+      const matchingGroups = block.groups.filter(g =>
+        g.name.toLowerCase().includes(q) || block.title.toLowerCase().includes(q)
+      );
+      return {
+        ...block,
+        groups: matchingGroups
+      };
+    }).filter(block => block.groups.length > 0);
+  }, [sectionBlocks, navSearchText]);
+
   // Current active block and group
   const currentBlock = useMemo(() => {
     return MASTER_BLOCKS.find(b => b.id === selectedBlockId) || MASTER_BLOCKS[0];
@@ -578,6 +848,26 @@ export default function App() {
   const currentGroup = useMemo(() => {
     return currentBlock.groups.find(g => g.id === selectedGroupId) || currentBlock.groups[0];
   }, [currentBlock, selectedGroupId]);
+
+  // Real-time server-side search cho ICD-10 trực tiếp từ Database PostgreSQL (scm)
+  useEffect(() => {
+    if (currentGroup.entityType !== 'icd10') return;
+    const timer = setTimeout(async () => {
+      try {
+        const queryParam = gridSearch.trim() ? `?q=${encodeURIComponent(gridSearch.trim())}&limit=200` : '?limit=200';
+        const res = await fetch(`/api/master-data/icd10${queryParam}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setVscIcd10(data);
+          }
+        }
+      } catch (err) {
+        console.warn('Lỗi truy vấn ICD-10 từ Database PostgreSQL:', err);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [gridSearch, currentGroup.entityType]);
 
   // Switch Block
   const handleSelectBlock = (blockId: string) => {
@@ -590,10 +880,19 @@ export default function App() {
     }
   };
 
-  // Switch Group
-  const handleSelectGroup = (groupId: string) => {
+  // Switch Group (hỗ trợ chuyển cross-block và auto-expand)
+  const handleSelectGroup = (groupId: string, blockId?: string) => {
+    let targetBlockId = blockId;
+    if (!targetBlockId) {
+      const foundBlock = MASTER_BLOCKS.find(b => b.groups.some(g => g.id === groupId));
+      if (foundBlock) targetBlockId = foundBlock.id;
+    }
+    if (targetBlockId && targetBlockId !== selectedBlockId) {
+      setSelectedBlockId(targetBlockId);
+    }
     setSelectedGroupId(groupId);
     setSelectedRowId(1);
+    setSelectedRows([]);
     setDrawerOpen(false);
   };
 
@@ -761,47 +1060,116 @@ export default function App() {
       }));
     }
 
+    if (currentGroup.entityType === 'user' || currentGroup.id === 'grp_taikhoan') {
+      return vscUsers.map((u, idx) => ({
+        id: idx + 1,
+        code: u.userName || `USER-${idx + 1}`,
+        name: u.fullName || u.userName,
+        userName: u.userName,
+        role: u.role === 'doctor' ? 'Bác Sĩ' : (u.role === 'pharmacist' ? 'Dược Sĩ' : 'Lễ Tân / Nhân Viên'),
+        staffCode: u.staffCode || 'Chưa liên kết',
+        cchn: u.practiceCertificateCode || '---',
+        specialty: u.specialty || '---',
+        isActive: u.isActive !== false
+      }));
+    }
+
     if (currentGroup.entityType === 'staff') {
       return vscStaffs.map((st, idx) => ({
-        id: idx + 1,
+        id: st.id || idx + 1,
         code: st.staffCode,
         name: st.fullName,
-        role: st.role === 0 ? 'Bác sĩ' : st.role === 1 ? 'Dược sĩ' : 'Điều dưỡng',
-        cchn: st.practiceCertificateNumber || 'Chưa cấp',
-        specialty: 'Đa khoa & Chuyên khoa',
-        phone: st.phone || '0908123456',
-        email: st.email || 'bs.clinic@smartclinic.vn',
+        academicTitle: st.academicTitle || 'BS.CKI',
+        role: (st.staffRole === 1 || st.staffRole === 0 || (st.staffCode && st.staffCode.startsWith('BS'))) ? 'Bác sĩ' : (st.staffRole === 4 ? 'Dược sĩ' : (st.staffRole === 5 ? 'Thu ngân' : (st.staffRole === 6 ? 'Lễ tân' : (st.staffRole === 2 ? 'Điều dưỡng' : 'Nhân sự y tế')))),
+        cchn: st.practiceCertificateCode || 'Chưa cấp',
+        specialty: st.primarySpecialty || st.specialty || 'Nội Tổng Quát',
+        primarySpecialty: st.primarySpecialty || st.specialty || 'Nội Tổng Quát',
+        secondarySpecialties: st.secondarySpecialties || '',
+        licenseIssueDate: st.licenseIssueDate ? st.licenseIssueDate.slice(0, 10) : '',
+        licenseExpiryDate: st.licenseExpiryDate ? st.licenseExpiryDate.slice(0, 10) : '',
+        nationalStaffId: st.nationalStaffId || '',
+        canFinalizeHealthCheckup: !!st.canFinalizeHealthCheckup,
+        digitalCertSerial: st.digitalCertSerial || '',
+        assignedRoomIds: st.assignedRoomIds || '',
+        consultationFee: st.consultationFee,
+        gender: st.gender || 'Nam',
+        dob: st.dateOfBirth ? st.dateOfBirth.slice(0, 10) : '',
+        identityNumber: st.identityNumber || '',
+        address: st.address || '',
+        phone: st.phoneNumber || '',
+        email: st.email || '',
+        avatarUrl: st.avatarUrl || '',
+        departmentId: st.departmentId,
         legacyId: st.legacyId,
-        isActive: st.isActive
+        isActive: st.isActive !== false
       }));
     }
 
     if (currentGroup.entityType === 'room') {
-      return vscRooms.map((r, idx) => ({
-        id: idx + 1,
-        code: r.roomCode,
-        name: r.roomName,
-        department: 'Khoa Khám Bệnh',
-        roomType: r.roomType === 0 ? 'Buồng khám' : 'Phòng kỹ thuật',
-        queueAudioId: `LOA-PK-${idx + 1}`,
-        legacyId: r.legacyId,
-        isActive: r.isActive
-      }));
+      const source = vscRooms.length > 0 ? vscRooms : PRESET_ROOMS;
+      return source.map((r, idx) => {
+        const depObj = allDepartments.find(d => d.id === r.departmentId || d.name === r.department || d.departmentName === r.department);
+        const depName = depObj ? (depObj.departmentName || depObj.name) : (r.department || 'Khoa Khám Bệnh');
+        return {
+          id: idx + 1,
+          code: r.roomCode || r.code,
+          name: r.roomName || r.name,
+          department: depName,
+          departmentId: r.departmentId || (depObj ? depObj.id : ''),
+          roomType: (r.roomType === 0 || r.roomType === '0' || r.roomType === 'Buồng khám') ? 'Buồng khám' : 'Phòng kỹ thuật',
+          queueAudioId: r.queueAudioId || `LOA-PK-${idx + 1}`,
+          isActive: r.isActive !== false
+        };
+      });
     }
 
     if (currentGroup.entityType === 'icd10') {
       const source = vscIcd10.length > 0 ? vscIcd10 : PRESET_ICD10;
       return source.map((icd, idx) => {
         const nameVi = icd.diseaseNameVi || icd.diseaseName || icd.nameVi || icd.name || icd.TenBenh || '';
-        const code = icd.icdCode || icd.code || icd.MaICD || '';
+        const code = (icd.icdCode || icd.code || icd.MaICD || '').toUpperCase().trim();
+        
+        // Auto resolve chapter if missing
+        let chapCode = icd.chapterCode || '';
+        let chapName = icd.chapter || '';
+        if (!chapCode) {
+          const first = code.charAt(0);
+          if (first === 'A' || first === 'B') chapCode = 'I';
+          else if (first === 'C') chapCode = 'II';
+          else if (first === 'D') chapCode = 'III';
+          else if (first === 'E') chapCode = 'IV';
+          else if (first === 'F') chapCode = 'V';
+          else if (first === 'G') chapCode = 'VI';
+          else if (first === 'H') chapCode = 'VII';
+          else if (first === 'I') chapCode = 'IX';
+          else if (first === 'J') chapCode = 'X';
+          else if (first === 'K') chapCode = 'XI';
+          else if (first === 'L') chapCode = 'XII';
+          else if (first === 'M') chapCode = 'XIII';
+          else if (first === 'N') chapCode = 'XIV';
+          else if (first === 'O') chapCode = 'XV';
+          else if (first === 'P') chapCode = 'XVI';
+          else if (first === 'Q') chapCode = 'XVII';
+          else if (first === 'R') chapCode = 'XVIII';
+          else if (first === 'S' || first === 'T') chapCode = 'XIX';
+          else if (first === 'V' || first === 'W' || first === 'X' || first === 'Y') chapCode = 'XX';
+          else if (first === 'Z') chapCode = 'XXI';
+          else if (first === 'U') chapCode = 'XXII';
+        }
+        if (!chapName && chapCode) {
+          const chObj = WHO_ICD10_CHAPTERS.find(c => c.code === chapCode);
+          if (chObj) chapName = `Chương ${chObj.code}: ${chObj.name}`;
+        }
+
         return {
           id: icd.id ?? idx + 1,
           code: code,
+          categoryCode: code.split('.')[0] || code,
           name: nameVi,
           diseaseNameVi: nameVi,
           diseaseNameEn: icd.diseaseNameEn || icd.nameEn || '',
-          chapterCode: icd.chapterCode || '',
-          chapter: icd.chapter || (icd.chapterCode ? `Chương ${icd.chapterCode} - Bệnh lý quốc tế ICD-10` : 'Bệnh lý quốc tế ICD-10'),
+          chapterCode: chapCode,
+          chapter: chapName || (chapCode ? `Chương ${chapCode} - Bệnh lý quốc tế ICD-10` : 'Bệnh lý quốc tế ICD-10'),
           isChronic: Boolean(icd.isChronic),
           isActive: icd.isActive !== false,
           legacyId: icd.legacyId
@@ -834,8 +1202,11 @@ export default function App() {
   // Distinct chapters for ICD-10
   const distinctIcdChapters = useMemo(() => {
     const chapters = new Map<string, string>();
+    WHO_ICD10_CHAPTERS.forEach(ch => {
+      chapters.set(ch.code, ch.name);
+    });
     currentGridData.forEach((r: any) => {
-      if (r.chapterCode) {
+      if (r.chapterCode && !chapters.has(r.chapterCode)) {
         chapters.set(r.chapterCode, r.chapter || `Chương ${r.chapterCode}`);
       }
     });
@@ -858,6 +1229,15 @@ export default function App() {
     // 1. Gom nhóm lọc Dịch Vụ
     if (currentGroup.id === 'grp_dichvu' && selectedServiceCategory !== 'ALL') {
       result = result.filter((r: any) => r.category === selectedServiceCategory);
+    }
+
+    // 1.1 Gom nhóm lọc Khoa Phòng (Buồng Khám)
+    if (currentGroup.id === 'grp_buongkham' && selectedDepartmentFilter !== 'ALL') {
+      result = result.filter((r: any) => {
+        const depObj = allDepartments.find(d => d.id === selectedDepartmentFilter);
+        const depName = depObj ? (depObj.departmentName || depObj.name) : selectedDepartmentFilter;
+        return r.department === depName || r.departmentId === selectedDepartmentFilter;
+      });
     }
 
     // 2. Gom nhóm lọc ICD-10
@@ -924,7 +1304,7 @@ export default function App() {
     if (currentGroup.entityType === 'room') return 4;
     if (currentGroup.entityType === 'demographics') return 3;
     if (currentGroup.entityType === 'chain') return 4;
-    if (currentGroup.entityType === 'icd10') return 3;
+    if (currentGroup.entityType === 'icd10') return 5;
     if (currentGroup.entityType === 'm3') return 4;
     return 1; // generic
   };
@@ -966,6 +1346,18 @@ export default function App() {
     document.body.removeChild(link);
   };
 
+  // Save current catalog configuration (Ctrl+S)
+  const handleSaveConfig = useCallback(() => {
+    localStorage.setItem(`smartclinic_saved_${currentGroup.id}`, JSON.stringify(filteredGridData.slice(0, 100)));
+    showToast(`✓ Đã lưu danh mục [${currentGroup.name}] thành công!`);
+    const now = new Date();
+    setLastSavedTime(`${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`);
+  }, [currentGroup.id, currentGroup.name, filteredGridData, showToast]);
+
+  useEffect(() => {
+    handleSaveConfigRef.current = handleSaveConfig;
+  }, [handleSaveConfig]);
+
   // Quick Add Service Group Modal Handlers
   const handleOpenAddGroupModal = () => {
     setNewGroupData({
@@ -975,6 +1367,35 @@ export default function App() {
       sortOrder: serviceGroups.length + 1
     });
     setIsAddGroupModalOpen(true);
+  };
+
+  // Quick Add Department Modal Handler (Tương tự như Nhóm Dịch Vụ)
+  const handleSaveNewDepartment = async () => {
+    if (!newDepartmentData.name.trim()) {
+      showToast('Vui lòng nhập tên khoa phòng!', 'error');
+      return;
+    }
+    const createdDep = {
+      id: newDepartmentData.code || `DEPT-${Date.now()}`,
+      code: newDepartmentData.code,
+      name: newDepartmentData.name,
+      departmentName: newDepartmentData.name,
+      isClinical: newDepartmentData.isClinical,
+      sortOrder: newDepartmentData.sortOrder
+    };
+
+    setVscDepartments(prev => [...prev, createdDep]);
+    setIsAddDepartmentModalOpen(false);
+    showToast(`✓ Đã thêm khoa phòng [${newDepartmentData.name}] thành công!`);
+
+    // Tự động gán khoa phòng vừa tạo vào buồng khám đang sửa nếu có
+    if (selectedItemData) {
+      setSelectedItemData({
+        ...selectedItemData,
+        department: createdDep.name,
+        departmentId: createdDep.id
+      });
+    }
   };
 
   const handleSaveNewGroup = async () => {
@@ -1086,12 +1507,28 @@ export default function App() {
     } else if (currentGroup.entityType === 'staff') {
       newItem = {
         ...newItem,
-        code: `NV-${Date.now().toString().slice(-4)}`,
+        code: `BS-${Date.now().toString().slice(-4)}`,
         name: '',
-        role: 'Bác sĩ chuyên khoa',
+        academicTitle: 'BS.CKI',
+        role: 'Bác sĩ',
         cchn: '',
         phone: '',
         email: '',
+        identityNumber: '',
+        gender: 'Nam',
+        dob: '',
+        address: '',
+        avatarUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150',
+        licenseIssueDate: '',
+        licenseExpiryDate: '',
+        nationalStaffId: '',
+        primarySpecialty: 'Nội Tổng Quát',
+        secondarySpecialties: '',
+        canFinalizeHealthCheckup: false,
+        digitalCertSerial: '',
+        assignedRoomIds: 'PK.01',
+        consultationFee: 200000,
+        departmentId: vscDepartments[0]?.id || '',
         isActive: true
       };
     } else if (currentGroup.entityType === 'room') {
@@ -1115,6 +1552,10 @@ export default function App() {
     setSelectedItemData(newItem);
     setDrawerOpen(true);
   };
+
+  useEffect(() => {
+    handleAddNewRef.current = handleAddNew;
+  }, [handleAddNew]);
 
   // Duplicate specific row
   const handleDuplicateItem = (row: any) => {
@@ -1219,10 +1660,29 @@ export default function App() {
         code: codeToSave,
         fullName: nameToSave,
         name: nameToSave,
+        academicTitle: selectedItemData.academicTitle || 'BS.CKI',
         role: selectedItemData.role || 'Bác sĩ',
         cchn: selectedItemData.cchn || '',
         phone: selectedItemData.phone || '',
+        phoneNumber: selectedItemData.phone || '',
         email: selectedItemData.email || '',
+        identityNumber: selectedItemData.identityNumber || '',
+        gender: selectedItemData.gender || 'Nam',
+        dob: selectedItemData.dob || null,
+        address: selectedItemData.address || '',
+        avatarUrl: selectedItemData.avatarUrl || '',
+        licenseIssueDate: selectedItemData.licenseIssueDate || null,
+        licenseExpiryDate: selectedItemData.licenseExpiryDate || null,
+        nationalStaffId: selectedItemData.nationalStaffId || '',
+        primarySpecialty: selectedItemData.primarySpecialty || selectedItemData.specialty || 'Nội Tổng Quát',
+        specialty: selectedItemData.primarySpecialty || selectedItemData.specialty || 'Nội Tổng Quát',
+        secondarySpecialties: selectedItemData.secondarySpecialties || '',
+        canFinalizeHealthCheckup: !!selectedItemData.canFinalizeHealthCheckup,
+        digitalCertSerial: selectedItemData.digitalCertSerial || '',
+        assignedRoomIds: selectedItemData.assignedRoomIds || '',
+        consultationFee: selectedItemData.consultationFee ? Number(selectedItemData.consultationFee) : null,
+        departmentId: selectedItemData.departmentId || null,
+        isActive: selectedItemData.isActive !== false,
         isNew: undefined
       };
     } else if (currentGroup.entityType === 'room') {
@@ -1314,8 +1774,9 @@ export default function App() {
       });
     }
 
-    showToast(`Đã lưu [${codeToSave}] vào Database SQL Server thành công!`);
+    showToast(`Đã lưu [${codeToSave}] vào Database PostgreSQL (scm) thành công!`);
     setDrawerOpen(false);
+    fetchData();
   };
 
   // Confirm Delete Action (L1_NO_CONFIRM_DELETE)
@@ -1351,8 +1812,9 @@ export default function App() {
       });
     }
 
-    showToast(`Đã xóa bản ghi [${deleteConfirmItem.name || deleteConfirmItem.code}] khỏi Database SQL Server!`);
+    showToast(`Đã xóa bản ghi [${deleteConfirmItem.name || deleteConfirmItem.code}] khỏi Database PostgreSQL (scm)!`);
     setDeleteConfirmItem(null);
+    fetchData();
   };
 
   const handleToggleSelectRow = (id: string | number) => {
@@ -1390,825 +1852,852 @@ export default function App() {
 
         {/* Center: Main Horizontal Fixed Navigation Menu */}
         <nav className="flex items-center h-full mx-2 xl:mx-4 text-xs font-semibold">
-          <button
-            onClick={() => setActiveNavMenu('reception_group')}
-            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
-              activeNavMenu === 'reception_group'
-                ? 'bg-white/15 text-white border-white'
-                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
-            }`}
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>Tiếp đón</span>
-          </button>
-
-          <button
-            onClick={() => setActiveNavMenu('clinical_group')}
-            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
-              activeNavMenu === 'clinical_group'
-                ? 'bg-white/15 text-white border-white'
-                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
-            }`}
-          >
-            <HeartPulse className="w-3.5 h-3.5" />
-            <span>Khám Bệnh</span>
-          </button>
-
-          <button
-            onClick={() => setActiveNavMenu('paraclinical_group')}
-            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
-              activeNavMenu === 'paraclinical_group'
-                ? 'bg-white/15 text-white border-white'
-                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5" />
-            <span>Cận lâm sàng</span>
-          </button>
-
-          <button
-            onClick={() => setActiveNavMenu('billing_group')}
-            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
-              activeNavMenu === 'billing_group'
-                ? 'bg-white/15 text-white border-white'
-                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
-            }`}
-          >
-            <CreditCard className="w-3.5 h-3.5" />
-            <span>Thu ngân</span>
-          </button>
-
-          <button
-            onClick={() => setActiveNavMenu('pharmacy_group')}
-            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
-              activeNavMenu === 'pharmacy_group'
-                ? 'bg-white/15 text-white border-white'
-                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
-            }`}
-          >
-            <Package className="w-3.5 h-3.5" />
-            <span>Nhà thuốc & Kho</span>
-          </button>
-
-          <button
-            onClick={() => setActiveNavMenu('corporate_group')}
-            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
-              activeNavMenu === 'corporate_group'
-                ? 'bg-white/15 text-white border-white'
-                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Khám đoàn B2B</span>
-          </button>
-
-          <button
-            onClick={() => setActiveNavMenu('phlebotomy_group')}
-            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
-              activeNavMenu === 'phlebotomy_group'
-                ? 'bg-white/15 text-white border-white'
-                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
-            }`}
-          >
-            <Syringe className="w-3.5 h-3.5" />
-            <span>Lấy mẫu ngoại viện (WF 03A)</span>
-          </button>
-
-          {/* Hệ thống Menu (Active với Flyout 6 Khối - Image 1) */}
-          <div className="relative h-full">
+          {isNavAllowed('reception_group') && (
             <button
-              onClick={() => {
-                setActiveNavMenu('system_group');
-                setShowSystemMenu(!showSystemMenu);
-              }}
+              onClick={() => setActiveNavMenu('reception_group')}
               className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
-                activeNavMenu === 'system_group'
-                  ? 'bg-white/20 text-white border-white'
+                activeNavMenu === 'reception_group'
+                  ? 'bg-white/15 text-white border-white'
                   : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
               }`}
             >
-              <Server className="w-3.5 h-3.5" />
-              <span>Hệ thống</span>
-              <ChevronDown className="w-3 h-3 text-white/80" />
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Tiếp đón</span>
             </button>
+          )}
 
-            {/* ── FLYOUT MENU 6 KHỐI (IMAGE 1 EXACT REPLICA) ── */}
+          {isNavAllowed('clinical_group') && (
+            <button
+              onClick={() => setActiveNavMenu('clinical_group')}
+              className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
+                activeNavMenu === 'clinical_group'
+                  ? 'bg-white/15 text-white border-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
+              }`}
+            >
+              <HeartPulse className="w-3.5 h-3.5" />
+              <span>Khám Bệnh</span>
+            </button>
+          )}
+
+          {isNavAllowed('paraclinical_group') && (
+            <button
+              onClick={() => setActiveNavMenu('paraclinical_group')}
+              className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
+                activeNavMenu === 'paraclinical_group'
+                  ? 'bg-white/15 text-white border-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>Cận lâm sàng</span>
+            </button>
+          )}
+
+          {isNavAllowed('billing_group') && (
+            <button
+              onClick={() => setActiveNavMenu('billing_group')}
+              className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
+                activeNavMenu === 'billing_group'
+                  ? 'bg-white/15 text-white border-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>Thu ngân</span>
+            </button>
+          )}
+
+          {isNavAllowed('pharmacy_group') && (
+            <button
+              onClick={() => setActiveNavMenu('pharmacy_group')}
+              className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
+                activeNavMenu === 'pharmacy_group'
+                  ? 'bg-white/15 text-white border-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
+              }`}
+            >
+              <Package className="w-3.5 h-3.5" />
+              <span>Nhà thuốc & Kho</span>
+            </button>
+          )}
+
+          {isNavAllowed('corporate_group') && (
+            <button
+              onClick={() => setActiveNavMenu('corporate_group')}
+              className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
+                activeNavMenu === 'corporate_group'
+                  ? 'bg-white/15 text-white border-white'
+                  : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Khám đoàn B2B</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setActiveNavMenu('portal_group')}
+            className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
+              activeNavMenu === 'portal_group'
+                ? 'bg-white/15 text-white border-white'
+                : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>EMR Portal</span>
+          </button>
+
+          {/* Hệ thống Menu (Active với Flyout 2 Khối: Danh Mục & Cấu Hình) */}
+          {isNavAllowed('system_group') && (
+            <div className="relative h-full">
+              <button
+                onClick={() => {
+                  setShowSystemMenu(!showSystemMenu);
+                }}
+                className={`h-full px-3 flex items-center gap-1.5 transition cursor-pointer border-b-2 ${
+                  activeNavMenu === 'system_group'
+                    ? 'bg-white/20 text-white border-white'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
+                }`}
+              >
+                <Server className="w-3.5 h-3.5" />
+                <span>Hệ thống</span>
+                <ChevronDown className="w-3 h-3 text-white/80" />
+              </button>
+
+            {/* ── FLYOUT MENU HỆ THỐNG: CHỈ 2 MỤC (DANH MỤC & CẤU HÌNH) ── */}
             {showSystemMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowSystemMenu(false)} />
-                <div className="absolute left-0 top-12 w-80 bg-white border border-[#ced4da] rounded-b-lg shadow-2xl z-50 overflow-hidden divide-y divide-[#f1f3f6] animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="px-4 py-2 bg-[#f8f9fa]">
+                <div className="absolute left-0 top-12 w-72 bg-white border border-[#ced4da] rounded-b-lg shadow-2xl z-50 overflow-hidden divide-y divide-[#f1f3f6] animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="px-3.5 py-2 bg-[#f8f9fa] flex items-center justify-between">
                     <span className="text-[11px] font-bold tracking-wider text-[#495057] uppercase">
-                      HỆ THỐNG
+                      HỆ THỐNG QUẢN TRỊ
                     </span>
+                    <kbd className="text-[10px] text-[#868e96] bg-white px-1.5 py-0.5 rounded border border-[#dee2e6] font-mono">
+                      Esc
+                    </kbd>
                   </div>
 
-                  <div className="py-1">
-                    {MASTER_BLOCKS.map((block) => {
-                      const isSelected = block.id === selectedBlockId;
-                      const Icon = block.icon;
-                      return (
-                        <button
-                          key={block.id}
-                          onClick={() => handleSelectBlock(block.id)}
-                          className={`w-full text-left px-4 py-2.5 flex items-start space-x-3 transition cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#1d68d8] text-white'
-                              : 'hover:bg-[#f8f9fa] text-[#212529]'
-                          }`}
-                        >
-                          <div className={`mt-0.5 ${isSelected ? 'text-white' : 'text-[#6c757d]'}`}>
-                            <Icon className="w-5 h-5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className={`text-xs font-bold leading-tight ${isSelected ? 'text-white' : 'text-[#212529]'}`}>
-                              {block.title}
-                            </div>
-                            <div className={`text-[11px] mt-0.5 truncate ${isSelected ? 'text-blue-100' : 'text-[#6c757d]'}`}>
-                              {block.subtitle}
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
+                  <div className="p-1.5 space-y-1">
+                    {/* 1. DANH MỤC */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveNavMenu('system_group');
+                        setActiveSystemSection('catalogs');
+                        setSelectedBlockId('block_admin');
+                        setSelectedGroupId('grp_doituong');
+                        setSelectedRowId(1);
+                        setShowSystemMenu(false);
+                      }}
+                      className={`w-full text-left p-2.5 flex items-start gap-3 rounded transition cursor-pointer ${
+                        activeSystemSection === 'catalogs'
+                          ? 'bg-[#1f63c9] text-white shadow-2xs'
+                          : 'hover:bg-[#f1f3f6] text-[#212529]'
+                      }`}
+                    >
+                      <div className={`mt-0.5 p-1.5 rounded ${activeSystemSection === 'catalogs' ? 'bg-white/20 text-white' : 'bg-blue-50 text-[#1f63c9]'}`}>
+                        <FolderTree className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold leading-tight">Danh Mục</span>
+                          <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${activeSystemSection === 'catalogs' ? 'bg-white/20 text-white' : 'bg-slate-100 text-[#495057]'}`}>
+                            {MASTER_BLOCKS.filter(b => b.section === 'catalogs').reduce((acc, b) => acc + b.groups.length, 0)} mục
+                          </span>
+                        </div>
+                        <div className={`text-[11px] mt-0.5 truncate ${activeSystemSection === 'catalogs' ? 'text-blue-100' : 'text-[#6c757d]'}`}>
+                          Hành chính, Chuyên môn, Bảng giá
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* 2. CẤU HÌNH (Chỉ Administrator) */}
+                    {['super_admin', 'admin_chain', 'admin_branch', 'it_admin'].includes(currentRoleCode) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveNavMenu('system_group');
+                        setActiveSystemSection('config');
+                        setSelectedBlockId('block_hr');
+                        setSelectedGroupId('grp_bacsi');
+                        setSelectedRowId(1);
+                        setShowSystemMenu(false);
+                      }}
+                      className={`w-full text-left p-2.5 flex items-start gap-3 rounded transition cursor-pointer ${
+                        activeSystemSection === 'config'
+                          ? 'bg-[#1f63c9] text-white shadow-2xs'
+                          : 'hover:bg-[#f1f3f6] text-[#212529]'
+                      }`}
+                    >
+                      <div className={`mt-0.5 p-1.5 rounded ${activeSystemSection === 'config' ? 'bg-white/20 text-white' : 'bg-slate-100 text-[#495057]'}`}>
+                        <Settings className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold leading-tight">Cấu Hình</span>
+                          <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${activeSystemSection === 'config' ? 'bg-white/20 text-white' : 'bg-slate-100 text-[#495057]'}`}>
+                            {MASTER_BLOCKS.filter(b => b.section === 'config').reduce((acc, b) => acc + b.groups.length, 0)} mục
+                          </span>
+                        </div>
+                        <div className={`text-[11px] mt-0.5 truncate ${activeSystemSection === 'config' ? 'text-blue-100' : 'text-[#6c757d]'}`}>
+                          Nhân sự, Hóa đơn điện tử, Cổng liên thông
+                        </div>
+                      </div>
+                    </button>
+                    )}
                   </div>
                 </div>
               </>
             )}
           </div>
+          )}
         </nav>
 
-        {/* Right Info: User & Active Branch */}
+        {/* Right Info: User & Active Branch (Wave 0: Multi-Branch & RBAC Switcher) */}
         <div className="flex items-center gap-3 text-xs shrink-0">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 rounded border border-white/20 text-white/90">
-            <Building2 className="w-3.5 h-3.5 text-[#00bcd4]" />
-            <span>CNQ1 - Chi nhánh Quận 1</span>
+          {/* Branch Switcher Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShowBranchMenu(prev => !prev);
+                setShowUserMenu(false);
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 hover:bg-white/20 rounded border border-white/20 text-white transition cursor-pointer"
+              title="Chuyển đổi Chi nhánh / Cơ sở làm việc (Wave 0)"
+            >
+              <Building2 className="w-3.5 h-3.5 text-[#00bcd4]" />
+              <span className="font-medium max-w-[160px] truncate">
+                {selectedBranchCode === 'ALL'
+                  ? 'Tất cả cơ sở (Toàn chuỗi)'
+                  : PRESET_CHAINS.find(c => c.code === selectedBranchCode)?.name || selectedBranchCode}
+              </span>
+              <ChevronDown className="w-3 h-3 text-white/70" />
+            </button>
+
+            {showBranchMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowBranchMenu(false)} />
+                <div className="absolute right-0 top-9 w-80 bg-white border border-[#ced4da] rounded-lg shadow-2xl z-50 overflow-hidden divide-y divide-[#f1f3f6] animate-in fade-in duration-150 text-[#212529]">
+                  <div className="px-3 py-2 bg-[#f8f9fa] flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#495057] uppercase tracking-wider flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-[#1f63c9]" /> Chọn Cơ Sở / Chi Nhánh
+                    </span>
+                    <span className="text-[10px] text-[#1f63c9] bg-blue-50 px-1.5 py-0.5 rounded font-mono font-bold">
+                      Wave 0
+                    </span>
+                  </div>
+                  <div className="p-1.5 space-y-1 max-h-72 overflow-y-auto">
+                    {/* Option All */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedBranchCode('ALL');
+                        setShowBranchMenu(false);
+                        showToast('Đã chuyển ngữ cảnh sang: Tất cả cơ sở (Toàn chuỗi phòng khám)');
+                      }}
+                      className={`w-full text-left px-2.5 py-2 rounded flex items-center justify-between text-xs transition cursor-pointer ${
+                        selectedBranchCode === 'ALL' ? 'bg-[#e8f0fe] text-[#1f63c9] font-bold' : 'hover:bg-[#f1f3f6] text-[#212529]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-purple-100 text-purple-700 font-bold">ALL</span>
+                        <span>Tất cả cơ sở (Toàn chuỗi phòng khám)</span>
+                      </div>
+                      {selectedBranchCode === 'ALL' && <Check className="w-4 h-4 text-[#1f63c9]" />}
+                    </button>
+
+                    {PRESET_CHAINS.map(chain => {
+                      const isSelected = selectedBranchCode === chain.code;
+                      return (
+                        <button
+                          key={chain.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedBranchCode(chain.code);
+                            setShowBranchMenu(false);
+                            showToast(`Đã chuyển ngữ cảnh sang: [${chain.code}] ${chain.name}`);
+                          }}
+                          className={`w-full text-left px-2.5 py-2 rounded flex items-start justify-between text-xs transition cursor-pointer ${
+                            isSelected ? 'bg-[#e8f0fe] text-[#1f63c9] font-bold' : 'hover:bg-[#f1f3f6] text-[#212529]'
+                          }`}
+                        >
+                          <div className="min-w-0 pr-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-blue-100 text-blue-700 font-bold shrink-0">
+                                {chain.code}
+                              </span>
+                              <span className="truncate">{chain.name}</span>
+                            </div>
+                            <div className="text-[11px] text-[#6c757d] font-normal truncate mt-0.5">
+                              {chain.address}
+                            </div>
+                            <div className="text-[10px] text-[#6c757d] font-normal mt-0.5">
+                              Phụ trách: {chain.doctorInCharge} • {chain.licenseNo}
+                            </div>
+                          </div>
+                          {isSelected && <Check className="w-4 h-4 text-[#1f63c9] shrink-0 mt-1" />}
+                        </button>
+                      );
+                    })}
+                    {selectedBranchCode !== 'ALL' && (
+                      <div className="mt-1.5 pt-1.5 border-t border-[#e9ecef] px-2 py-1 flex items-center justify-between text-xs">
+                        <span className="text-[#495057] font-medium">Tính năng Ký quỹ ({selectedBranchCode})</span>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const nextVal = !branchDepositEnabled;
+                            try {
+                              const res = await apiFetch(`/api/branches/code/${selectedBranchCode}`);
+                              if (res.ok) {
+                                const b = await res.json();
+                                await updateBranchDepositConfig(b.id, nextVal);
+                              }
+                              setBranchDepositEnabled(nextVal);
+                              showToast(`Đã ${nextVal ? 'BẬT' : 'TẮT'} Ký quỹ cho ${selectedBranchCode}`);
+                            } catch (e: any) {
+                              showToast(e?.message || 'Lỗi cấu hình ký quỹ.');
+                            }
+                          }}
+                          className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${
+                            branchDepositEnabled ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                          }`}
+                        >
+                          {branchDepositEnabled ? 'Đang BẬT' : 'Đang TẮT'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 pl-2 border-l border-white/20">
-            <div className="w-6 h-6 rounded-full bg-white text-[#18509f] flex items-center justify-center font-bold text-xs">
-              AD
-            </div>
-            <span className="font-semibold text-white">BS. Admin</span>
+          {/* User Profile & Real Account Switcher (Wave 1 RBAC) */}
+          <div className="relative pl-2 border-l border-white/20">
+            <button
+              type="button"
+              onClick={() => {
+                setShowUserMenu(prev => !prev);
+                setShowBranchMenu(false);
+              }}
+              className="flex items-center gap-2 hover:opacity-90 transition cursor-pointer text-left"
+              title="Đổi Tài Khoản Bác Sĩ / Phân Quyền RBAC Thực Tế"
+            >
+              <div className="w-6 h-6 rounded-full bg-white text-[#18509f] flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+                {(doctorContext?.fullName || 'BS').slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <div className="font-semibold text-white leading-none">{doctorContext?.fullName || 'Đang đăng nhập...'}</div>
+                <div className="text-[10px] text-white/70 leading-none mt-1 flex items-center gap-1">
+                  <span>{doctorContext?.userName || ROLE_DEFINITIONS.find(r => r.code === currentRoleCode)?.label.split('(')[0] || 'Admin'}</span>
+                  <ChevronDown className="w-2.5 h-2.5 text-white/60" />
+                </div>
+              </div>
+            </button>
+
+            {showUserMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                <div className="absolute right-0 top-9 w-96 bg-white border border-[#ced4da] rounded-lg shadow-2xl z-50 overflow-hidden divide-y divide-[#f1f3f6] animate-in fade-in duration-150 text-[#212529]">
+                  <div className="p-3 bg-gradient-to-r from-[#18509f] to-[#1f63c9] text-white">
+                    <div className="font-bold text-sm">{doctorContext?.fullName || 'Chưa đăng nhập'}</div>
+                    <div className="text-[11px] text-blue-100 mt-0.5">
+                      @{doctorContext?.userName} • CCHN: {doctorContext?.licenseNo || '—'} • Phòng: {(doctorContext?.assignedRooms || []).map(r => r.roomCode).join(', ') || 'Chưa gán'}
+                    </div>
+                    <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-white/20 rounded text-[10px] font-mono">
+                      <ShieldCheck className="w-3 h-3 text-teal-300" />
+                      <span>{ACTOR_GROUP_LABELS[doctorContext?.actorGroup || 0] || doctorContext?.roleCode}</span>
+                    </div>
+                  </div>
+
+                  {/* Đăng nhập bằng Tên đăng nhập / Mật khẩu */}
+                  <div className="p-2.5 bg-[#f8f9fa] space-y-1.5">
+                    <div className="text-[10px] font-bold text-[#495057] uppercase">Đăng nhập tài khoản (Mật khẩu mặc định: Scm@2026)</div>
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        value={loginUserName}
+                        onChange={e => setLoginUserName(e.target.value)}
+                        placeholder="VD: bs.mat.lan"
+                        className="flex-1 px-2 py-1 text-xs border border-[#ced4da] rounded bg-white"
+                      />
+                      <input
+                        type="password"
+                        value={loginPassword}
+                        onChange={e => setLoginPassword(e.target.value)}
+                        placeholder="Mật khẩu"
+                        className="w-24 px-2 py-1 text-xs border border-[#ced4da] rounded bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const res = await login(loginUserName, loginPassword);
+                          showToast(res.message);
+                          if (res.success) {
+                            const role = localStorage.getItem('scm_current_role');
+                            if (role) setCurrentRoleCode(role);
+                            setShowUserMenu(false);
+                          }
+                        }}
+                        className="px-2.5 py-1 bg-[#1f63c9] text-white rounded text-xs font-semibold cursor-pointer"
+                      >
+                        Vào
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Chuyển nhanh 8 tài khoản thực tế đã Seed trong PostgreSQL */}
+                  <div className="p-2">
+                    <div className="text-[10px] font-bold text-[#6c757d] uppercase tracking-wider px-2 py-1">
+                      Chuyển nhanh Tài khoản Test (PostgreSQL AppUsers)
+                    </div>
+                    <div className="space-y-0.5 mt-1 max-h-60 overflow-y-auto">
+                      {accounts.map(acc => {
+                        const isSelected = doctorContext?.userName === acc.userName;
+                        return (
+                          <button
+                            key={acc.id}
+                            type="button"
+                            onClick={async () => {
+                              const res = await switchAccount(acc.userName);
+                              if (res.success) {
+                                setCurrentRoleCode(acc.role);
+                                if (acc.role === 'doctor') setActiveNavMenu('clinical_group');
+                                if (['admin_branch', 'admin_chain', 'super_admin', 'it_admin'].includes(acc.role)) {
+                                  setActiveNavMenu('system_group');
+                                  setActiveSystemSection('config');
+                                  setSelectedBlockId('block_config');
+                                  setSelectedGroupId('grp_congqg');
+                                }
+                                setShowUserMenu(false);
+                                showToast(`Đã đăng nhập: ${acc.fullName} (${acc.userName})`);
+                              } else {
+                                showToast(res.message);
+                              }
+                            }}
+                            className={`w-full text-left px-2.5 py-1.5 rounded flex items-start justify-between text-xs transition cursor-pointer ${
+                              isSelected ? 'bg-[#e8f0fe] text-[#1f63c9] font-bold' : 'hover:bg-[#f1f3f6] text-[#212529]'
+                            }`}
+                          >
+                            <div>
+                              <div className="leading-tight">
+                                <span className="font-mono text-[#1f63c9]">{acc.userName}</span> — {acc.fullName}
+                              </div>
+                              <div className="text-[10px] text-[#6c757d] font-normal leading-tight mt-0.5">
+                                {ACTOR_GROUP_LABELS[acc.actorGroup] || acc.role} • Phòng: {acc.assignedRoomIds || 'Toàn hệ thống'}
+                              </div>
+                            </div>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-[#1f63c9] shrink-0 mt-0.5" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• 
-          2. STICKY ACTION BAR (QUẢN TRỊ TRUNG TÂM & MASTER DATA - IMAGE 2)
-         â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-[#dee2e6] bg-white z-30 shadow-2xs shrink-0">
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setShowSystemMenu(prev => !prev)}
-            className="flex h-7 w-7 items-center justify-center rounded border border-[#ced4da] bg-white text-[#495057] hover:bg-[#f1f3f6] transition cursor-pointer"
-            title="Mở Danh mục Hệ Thống"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-
-          <div className="px-2 py-0.5 bg-[#1f63c9] text-white rounded font-bold text-xs tracking-wide">
-            Clinic OS
-          </div>
-
-          <div>
-            <h1 className="text-sm font-bold text-[#212529] tracking-tight leading-none">
-              QUẢN TRỊ TRUNG TÂM
-            </h1>
-            <p className="text-[10px] text-[#6c757d] mt-0.5">
-              Đang làm việc: <strong className="text-[#1f63c9]">{currentBlock.title}</strong> &gt; {currentGroup.name}
-            </p>
-          </div>
+      {/* ─────────────────────────────────────────────────────────────
+          2. STICKY ACTION BAR (BREADCRUMB & CONTEXT ACTIONS)
+         ───────────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[#dee2e6] bg-white z-30 shadow-2xs shrink-0 min-h-[40px]">
+        {/* Left: Dynamic Breadcrumb theo đúng phân hệ đang chọn (activeNavMenu) */}
+        <div className="flex items-center space-x-2 min-w-0">
+          {activeNavMenu === 'corporate_group' ? (
+            <div className="flex items-center gap-2 text-xs truncate">
+              <span className="font-bold text-[#212529] tracking-tight shrink-0 uppercase">
+                KHÁM ĐOÀN B2B
+              </span>
+              <span className="text-[#ced4da] font-light">/</span>
+              <span className="text-[#1f63c9] font-semibold truncate">
+                Quản Lý Hợp Đồng & Gói Khám Doanh Nghiệp
+              </span>
+            </div>
+          ) : activeNavMenu === 'reception_group' ? (
+            <div className="flex items-center gap-2 text-xs truncate">
+              <span className="font-bold text-[#212529] tracking-tight shrink-0 uppercase">
+                TIẾP ĐÓN
+              </span>
+              <span className="text-[#ced4da] font-light">/</span>
+              <span className="text-[#1f63c9] font-semibold truncate">
+                Hàng Đợi Khám & Phân Buồng
+              </span>
+            </div>
+          ) : activeNavMenu === 'clinical_group' ? (
+            <div className="flex items-center gap-2 text-xs truncate">
+              <span className="font-bold text-[#212529] tracking-tight shrink-0 uppercase">
+                KHÁM BỆNH
+              </span>
+              <span className="text-[#ced4da] font-light">/</span>
+              <span className="text-[#1f63c9] font-semibold truncate">
+                Bệnh Án Điện Tử & Khám Chuyên Khoa
+              </span>
+            </div>
+          ) : activeNavMenu === 'paraclinical_group' ? (
+            <div className="flex items-center gap-3 text-xs truncate">
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-bold text-[#212529] tracking-tight uppercase">
+                  CẬN LÂM SÀNG
+                </span>
+                <span className="text-[#ced4da] font-light">/</span>
+              </div>
+              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded border border-slate-200">
+                <button
+                  onClick={() => setActiveParaclinicalSubMenu('can_lam_sang_dieu_duong')}
+                  className={`px-2.5 py-0.5 rounded font-semibold cursor-pointer transition ${
+                    activeParaclinicalSubMenu === 'can_lam_sang_dieu_duong'
+                      ? 'bg-white text-teal-700 shadow-2xs border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Xét Nghiệm (LIS • P.XN01)
+                </button>
+                <button
+                  onClick={() => setActiveParaclinicalSubMenu('chan_doan_hinh_anh')}
+                  className={`px-2.5 py-0.5 rounded font-semibold cursor-pointer transition ${
+                    activeParaclinicalSubMenu === 'chan_doan_hinh_anh'
+                      ? 'bg-white text-teal-700 shadow-2xs border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  CĐHA / PACS / DICOM
+                </button>
+              </div>
+            </div>
+          ) : activeNavMenu === 'billing_group' ? (
+            <div className="flex items-center gap-2 text-xs truncate">
+              <span className="font-bold text-[#212529] tracking-tight shrink-0 uppercase">
+                THU NGÂN
+              </span>
+              <span className="text-[#ced4da] font-light">/</span>
+              <span className="text-[#1f63c9] font-semibold truncate">
+                Viện Phí & Hóa Đơn Điện Tử
+              </span>
+            </div>
+          ) : activeNavMenu === 'pharmacy_group' ? (
+            <div className="flex items-center gap-2 text-xs truncate">
+              <span className="font-bold text-[#212529] tracking-tight shrink-0 uppercase">
+                NHÀ THUỐC & KHO
+              </span>
+              <span className="text-[#ced4da] font-light">/</span>
+              <span className="text-[#1f63c9] font-semibold truncate">
+                Cấp Phát Thuốc & Quản Lý Kho Dược
+              </span>
+            </div>
+          ) : activeNavMenu === 'portal_group' ? (
+            <div className="flex items-center gap-2 text-xs truncate">
+              <span className="font-bold text-[#212529] tracking-tight shrink-0 uppercase">
+                EMR PORTAL
+              </span>
+              <span className="text-[#ced4da] font-light">/</span>
+              <span className="text-[#1f63c9] font-semibold truncate">
+                Tra Cứu Hồ Sơ Bệnh Nhân & Doanh Nghiệp B2B
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-xs truncate">
+              <span className="font-bold text-[#212529] tracking-tight shrink-0 uppercase">
+                {activeSystemSection === 'catalogs' ? 'DANH MỤC' : 'CẤU HÌNH'}
+              </span>
+              <span className="text-[#ced4da] font-light">/</span>
+              <span className="text-[#495057] font-medium truncate">
+                {currentBlock.title}
+              </span>
+              <span className="text-[#ced4da] font-light">/</span>
+              <span className="text-[#1f63c9] font-semibold truncate">
+                {currentGroup.name}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Action Buttons (Đã loại bỏ Thêm chuỗi PK, chuyển Copy thành Duplicate) */}
-        <div className="flex items-center space-x-1.5 text-xs">
-          <button
-            onClick={() => {
-              const row = filteredGridData.find(r => r.id === selectedRowId) || filteredGridData[0];
-              if (row) {
-                handleOpenDetail(row);
-              } else {
-                showToast(`Đang xem cấu hình: ${currentGroup.name}`);
-              }
-            }}
-            className="flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-[#f8f9fa] border border-[#ced4da] rounded text-[#495057] font-medium transition cursor-pointer"
-            title="Xem trước chi tiết bản ghi đang chọn"
-          >
-            <Eye className="w-3.5 h-3.5 text-[#6c757d]" />
-            <span>Xem trước</span>
-          </button>
+        {/* Right Actions: Chỉ hiển thị Thêm & Lưu khi đang ở Danh Mục / Cấu Hình Hệ Thống */}
+        {activeNavMenu === 'system_group' && (
+          <div className="flex items-center space-x-2 text-xs shrink-0">
+            <button
+              type="button"
+              onClick={handleAddNew}
+              className="flex items-center gap-1.5 px-3 py-1 bg-[#1f63c9] hover:bg-[#1852a6] text-white rounded font-semibold transition cursor-pointer shadow-2xs text-xs"
+              title="Thêm bản ghi mới (Ctrl+N)"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Thêm</span>
+            </button>
 
-          <button
-            onClick={handleDuplicateSelected}
-            className="flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-blue-50 border border-blue-200 rounded text-[#1f63c9] font-semibold transition cursor-pointer shadow-2xs"
-            title="Nhân bản (Duplicate) bản ghi đang chọn trên bảng"
-          >
-            <Copy className="w-3.5 h-3.5 text-[#1f63c9]" />
-            <span>Nhân bản (Duplicate)</span>
-          </button>
-
-          <button
-            onClick={() => {
-              localStorage.setItem(`smartclinic_saved_${currentGroup.id}`, JSON.stringify(filteredGridData.slice(0, 100)));
-              showToast(`✓ Đã lưu cấu hình danh mục [${currentGroup.name}] thành công!`);
-            }}
-            className="flex items-center space-x-1 px-3 py-1 bg-[#ee9b00] hover:bg-[#d98a00] text-white rounded font-semibold transition cursor-pointer shadow-2xs"
-            title="Lưu cấu hình danh mục vào hệ thống"
-          >
-            <Save className="w-3.5 h-3.5" />
-            <span>Lưu cấu hình</span>
-          </button>
-
-          <button
-            onClick={() => {
-              localStorage.setItem(`smartclinic_saved_${currentGroup.id}`, JSON.stringify(filteredGridData.slice(0, 100)));
-              showToast(`✓ Đã lưu cấu hình và tiếp tục phiên làm việc.`);
-            }}
-            className="px-2.5 py-1 bg-white hover:bg-[#f8f9fa] border border-[#ced4da] rounded text-[#495057] font-medium transition cursor-pointer"
-          >
-            Lưu và tiếp tục
-          </button>
-
-          <button
-            onClick={() => {
-              if (selectedRows.length === 0) {
-                showToast('Vui lòng tích chọn bản ghi trên bảng để xóa.', 'error');
-                return;
-              }
-              const rowToDelete = filteredGridData.find(r => r.id === selectedRows[0]) || {
-                id: selectedRows[0],
-                name: `${selectedRows.length} bản ghi đã chọn`
-              };
-              setDeleteConfirmItem(rowToDelete);
-            }}
-            className="flex items-center space-x-1 px-2.5 py-1 bg-[#dc3545] hover:bg-[#c82333] text-white rounded font-semibold transition cursor-pointer shadow-2xs"
-            title="Xóa bản ghi đang chọn hoặc đã tích"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Xóa mục</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleSaveConfig}
+              className="flex items-center gap-1.5 px-3 py-1 bg-[#ee9b00] hover:bg-[#d98a00] text-white rounded font-semibold transition cursor-pointer shadow-2xs text-xs"
+              title="Lưu cấu hình danh mục (Ctrl+S)"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Lưu</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. MAIN WORKSPACE: CONDITIONAL VIEW (RECEPTION VS PHLEBOTOMY VS B2B VS MASTER DATA)
+          3. MAIN WORKSPACE: CONDITIONAL VIEW (RECEPTION VS B2B VS MASTER DATA)
          ───────────────────────────────────────────────────────────── */}
       {activeNavMenu === 'reception_group' ? (
         <ReceptionQueuePage />
-      ) : activeNavMenu === 'phlebotomy_group' ? (
-        <PreExamPhlebotomyPage />
       ) : activeNavMenu === 'corporate_group' ? (
-        <div className="flex flex-col flex-1 min-h-0 overflow-hidden bg-white">
-          {/* Sub-navbar chuyển đổi giữa Quản lý Gói Khám (WF 01-04) và Mẫu M3 */}
-          <div className="bg-[#f1f3f6] border-b border-[#dee2e6] px-4 py-1.5 flex items-center justify-between shrink-0">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-[#495057] uppercase tracking-wide">PHÂN HỆ KHÁM ĐOÀN B2B:</span>
-              <button
-                onClick={() => setCorporateSubView('packages')}
-                className={`px-3 py-1 rounded text-xs font-bold transition cursor-pointer flex items-center space-x-1.5 ${
-                  corporateSubView === 'packages'
-                    ? 'bg-[#1f63c9] text-white shadow-xs'
-                    : 'bg-white text-[#495057] border border-[#ced4da] hover:bg-gray-100'
-                }`}
-              >
-                <Package className="w-3.5 h-3.5" />
-                <span>1. Quản Lý Gói Khám & Cấu Hình Dịch Vụ (Hình 1 - 4)</span>
-              </button>
-              <button
-                onClick={() => setCorporateSubView('m3_portal')}
-                className={`px-3 py-1 rounded text-xs font-bold transition cursor-pointer flex items-center space-x-1.5 ${
-                  corporateSubView === 'm3_portal'
-                    ? 'bg-[#1f63c9] text-white shadow-xs'
-                    : 'bg-white text-[#495057] border border-[#ced4da] hover:bg-gray-100'
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>2. Phiếu Khám Sức Khỏe Mẫu M3 & Đẩy Cổng Y Tế (TT32)</span>
-              </button>
-            </div>
-            <div className="text-[11px] text-[#6c757d]">
-              Hệ thống SmartClinic B2B • Chuẩn VSC & Cổng Bộ Y Tế
-            </div>
-          </div>
-
-          {corporateSubView === 'packages' ? (
-            <B2BPackageManagementPage />
-          ) : (
-            /* ── B2B KHÁM ĐOÀN & LIÊN THÔNG CỔNG Y TẾ CỘNG ĐỒNG (MẪU M3 - TT 32/2023/TT-BYT) ── */
-            <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
-          {/* Cột trái: Danh sách nhân viên trong đoàn khám */}
-          <div className="w-80 border-r border-[#dee2e6] flex flex-col bg-[#f8f9fa] shrink-0">
-            <div className="p-3 border-b border-[#dee2e6] bg-white space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-[#212529]">ĐOÀN KHÁM DOANH NGHIỆP</span>
-                <span className="px-1.5 py-0.5 bg-blue-100 text-[#1f63c9] rounded text-[10px] font-bold">MẪU M3</span>
-              </div>
-              <div className="text-xs font-semibold text-[#1f63c9]">CÔNG TY CỔ PHẦN GỖ AN CƯỜNG</div>
-              <div className="text-[11px] text-[#6c757d]">HĐ: B2B-2026-AC01 • TT 32/2023/TT-BYT</div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto divide-y divide-[#dee2e6]">
-              {b2bEmployees.map(emp => {
-                const isSelected = emp.id === selectedB2bEmpId;
-                return (
-                  <div
-                    key={emp.id}
-                    onClick={() => setSelectedB2bEmpId(emp.id)}
-                    className={`p-3 cursor-pointer transition ${
-                      isSelected ? 'bg-[#e8f0fe] border-l-4 border-[#1f63c9]' : 'hover:bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-[#212529]">{emp.ho_ten}</span>
-                      <span className="font-mono text-[10px] text-[#6c757d] bg-[#e9ecef] px-1 py-0.2 rounded font-semibold">
-                        {emp.empCode}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-[#495057] space-y-0.5">
-                      <div>CCCD: <strong className="font-mono">{emp.dinh_danh_ca_nhan}</strong></div>
-                      <div>Năm sinh: {emp.ngay_sinh} ({emp.gioi_tinh === 1 ? 'Nam' : 'Nữ'})</div>
-                      <div className="pt-1 flex items-center justify-between">
-                        {emp.portalStatus === 'SYNCED' ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                            Đã gửi Cổng Y tế
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">
-                            <Clock className="w-3 h-3 text-amber-600" />
-                            Chờ liên thông
-                          </span>
-                        )}
-                        <span className="text-[10px] font-semibold text-[#1f63c9]">
-                          {emp.phanloai === 1016 ? 'SK Loại I' : 'SK Loại II'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-            {/* Cột phải: Phiếu Khám Sức Khỏe Mẫu M3 & Đẩy Cổng Y Tế Cộng Đồng */}
-            <div className="flex-1 flex flex-col bg-white overflow-hidden min-w-0">
-              {/* Header phiếu M3 */}
-              <div className="px-5 py-3 border-b border-[#dee2e6] bg-[#f8f9fa] flex items-center justify-between shrink-0">
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="px-2 py-0.5 bg-[#1f63c9] text-white rounded text-[10px] font-bold">
-                      DỊCH VỤ: create-mau-phieu-m3
-                    </span>
-                    <h2 className="text-sm font-bold text-[#212529]">
-                      PHIẾU KHÁM SỨC KHỎE NGƯỜI 18-59 TUỔI (MẪU M3 - TT 32/2023/TT-BYT)
-                    </h2>
-                  </div>
-                  <p className="text-[11px] text-[#6c757d] mt-0.5">
-                    Nhân viên: <strong className="text-[#212529]">{selectedEmp.ho_ten}</strong> • CCCD: <strong className="font-mono text-[#1f63c9]">{selectedEmp.dinh_danh_ca_nhan}</strong> • Nơi công tác: Công ty Cổ Phần Gỗ An Cường
-                  </p>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setShowJsonPayload(!showJsonPayload)}
-                    className="flex items-center space-x-1 px-3 py-1.5 bg-white hover:bg-[#f1f3f6] border border-[#ced4da] rounded text-xs font-medium text-[#495057] transition cursor-pointer"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-[#1f63c9]" />
-                    <span>Xem Payload JSON</span>
-                  </button>
-
-                  <button
-                    onClick={handleSendToPortal}
-                    disabled={syncingPortal}
-                    className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-[#1f63c9] hover:bg-[#1852a6] text-white rounded text-xs font-bold transition cursor-pointer shadow-xs"
-                  >
-                    <Network className={`w-3.5 h-3.5 ${syncingPortal ? 'animate-spin' : ''}`} />
-                    <span>{syncingPortal ? 'Đang gửi...' : 'GỬI LÊN CỔNG Y TẾ CỘNG ĐỒNG'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Sub-Tabs của Mẫu M3 */}
-              <div className="flex border-b border-[#dee2e6] px-5 bg-white text-xs font-semibold shrink-0">
-                <button
-                  onClick={() => setB2bTab('tthc')}
-                  className={`py-2.5 px-3 border-b-2 transition ${
-                    b2bTab === 'tthc' ? 'border-[#1f63c9] text-[#1f63c9]' : 'border-transparent text-[#6c757d] hover:text-[#212529]'
-                  }`}
-                >
-                  1. Hành chính (tthc)
-                </button>
-                <button
-                  onClick={() => setB2bTab('theluc')}
-                  className={`py-2.5 px-3 border-b-2 transition ${
-                    b2bTab === 'theluc' ? 'border-[#1f63c9] text-[#1f63c9]' : 'border-transparent text-[#6c757d] hover:text-[#212529]'
-                  }`}
-                >
-                  2. Thể lực & Tiền sử
-                </button>
-                <button
-                  onClick={() => setB2bTab('lamsang')}
-                  className={`py-2.5 px-3 border-b-2 transition ${
-                    b2bTab === 'lamsang' ? 'border-[#1f63c9] text-[#1f63c9]' : 'border-transparent text-[#6c757d] hover:text-[#212529]'
-                  }`}
-                >
-                  3. Khám chuyên khoa
-                </button>
-                <button
-                  onClick={() => setB2bTab('canlamsang')}
-                  className={`py-2.5 px-3 border-b-2 transition ${
-                    b2bTab === 'canlamsang' ? 'border-[#1f63c9] text-[#1f63c9]' : 'border-transparent text-[#6c757d] hover:text-[#212529]'
-                  }`}
-                >
-                  4. Cận lâm sàng (XN & CĐHA)
-                </button>
-                <button
-                  onClick={() => setB2bTab('ketluan_sync')}
-                  className={`py-2.5 px-3 border-b-2 transition ${
-                    b2bTab === 'ketluan_sync' ? 'border-[#1f63c9] text-[#1f63c9]' : 'border-transparent text-[#6c757d] hover:text-[#212529]'
-                  }`}
-                >
-                  5. Kết luận & Cổng Y tế
-                </button>
-              </div>
-
-              {/* Form Content */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
-                {/* TAB 1: THÔNG TIN HÀNH CHÍNH (tthc) */}
-                {b2bTab === 'tthc' && (
-                  <div className="space-y-4 max-w-4xl">
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded text-blue-900 text-[11px]">
-                      Kiểm tra đối soát CCCD 12 số theo Đề án 06/CP: Mã định danh cá nhân bắt buộc hợp lệ, khớp ngày sinh và giới tính để truyền lên Cổng Y tế cộng đồng.
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Số CCCD / Định danh (12 số): *</label>
-                        <input
-                          type="text"
-                          value={selectedEmp.dinh_danh_ca_nhan}
-                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono font-bold text-[#1f63c9]"
-                          readOnly
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Họ và Tên công dân: *</label>
-                        <input
-                          type="text"
-                          value={selectedEmp.ho_ten}
-                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-semibold text-[#212529]"
-                          readOnly
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Ngày sinh (YYYY-MM-DD): *</label>
-                        <input
-                          type="text"
-                          value={selectedEmp.ngay_sinh}
-                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                          readOnly
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Giới tính (GioiTinh): *</label>
-                        <select value={selectedEmp.gioi_tinh} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" disabled>
-                          <option value={1}>1 - Nam</option>
-                          <option value={2}>2 - Nữ</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Dân tộc (DanToc):</label>
-                        <select value={selectedEmp.dan_toc_id} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" disabled>
-                          <option value={15}>15 - Kinh</option>
-                          <option value={16}>16 - Tày</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Hệ nhóm máu (NhomMau):</label>
-                        <select value={selectedEmp.nhom_mau_id} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" disabled>
-                          <option value={1}>1 - Nhóm A</option>
-                          <option value={2}>2 - Nhóm B</option>
-                          <option value={3}>3 - Nhóm O</option>
-                          <option value={4}>4 - Nhóm AB</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Yếu tố Rh (YeuToNhomMau):</label>
-                        <select value={selectedEmp.yeu_to_nhom_mau_id} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" disabled>
-                          <option value={1}>1 - Rh (-)</option>
-                          <option value={2}>2 - Rh (+)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Số điện thoại: *</label>
-                        <input type="text" value={selectedEmp.sdt} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Tỉnh / Thành phố: *</label>
-                        <input type="text" value="079 - TP. Hồ Chí Minh (ID: 50)" className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Phường / Xã: *</label>
-                        <input type="text" value="Phường Tân Định (Code: 26737)" className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Hình thức chi trả (ChiTra): *</label>
-                        <input type="text" value="4040 - Người sử dụng lao động chi trả" className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Chi tiết chi trả (ChiTraChiTiet): *</label>
-                        <input type="text" value="5083 - Khám Theo Hợp Đồng" className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Tình trạng XN (TinhTrangThucHienXetNghiem): *</label>
-                        <input type="text" value="1 - Đã thực hiện đầy đủ xét nghiệm" className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 2: KHÁM THỂ LỰC & TIỀN SỬ */}
-                {b2bTab === 'theluc' && (
-                  <div className="space-y-4 max-w-4xl">
-                    <h3 className="font-bold text-xs text-[#212529] uppercase tracking-wider">Chỉ số thể lực</h3>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Chiều cao (cm):</label>
-                        <input type="number" value={selectedEmp.chieucao} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Cân nặng (kg):</label>
-                        <input type="number" value={selectedEmp.cannang} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Chỉ số BMI (kg/m²):</label>
-                        <input
-                          type="text"
-                          value={(selectedEmp.cannang / ((selectedEmp.chieucao / 100) * (selectedEmp.chieucao / 100))).toFixed(1)}
-                          className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-emerald-700 bg-emerald-50"
-                          readOnly
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Huyết áp tâm thu (mmHg):</label>
-                        <input type="number" value={selectedEmp.huyetaptamthu} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Huyết áp tâm trương (mmHg):</label>
-                        <input type="number" value={selectedEmp.huyetaptamtruong} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Mạch (lần/phút):</label>
-                        <input type="number" value={selectedEmp.mach} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Phân loại thể lực (KSKDK_PhanLoai_SK):</label>
-                      <input type="text" value="1016 - Loại I (Sức khỏe rất tốt)" className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-[#1f63c9]" readOnly />
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 3: KHÁM CHUYÊN KHOA LÂM SÀNG */}
-                {b2bTab === 'lamsang' && (
-                  <div className="space-y-4 max-w-4xl">
-                    <h3 className="font-bold text-xs text-[#212529] uppercase tracking-wider">Khám lâm sàng các hệ cơ quan</h3>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="font-semibold text-[#495057]">Tuần hoàn (Nội khoa):</span>
-                        <div className="text-emerald-700 font-bold">Chưa phát hiện bất thường</div>
-                      </div>
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="font-semibold text-[#495057]">Hô hấp:</span>
-                        <div className="text-emerald-700 font-bold">Chưa phát hiện bất thường</div>
-                      </div>
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="font-semibold text-[#495057]">Tiêu hóa:</span>
-                        <div className="text-emerald-700 font-bold">Chưa phát hiện bất thường</div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="font-semibold text-[#495057]">Thị lực Mắt phải / trái:</span>
-                        <div className="text-[#212529] font-bold">MP: 10/10 • MT: 10/10</div>
-                      </div>
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="font-semibold text-[#495057]">Tai Mũi Họng:</span>
-                        <div className="text-[#212529] font-bold">Nói thường: 5m / 5m</div>
-                      </div>
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="font-semibold text-[#495057]">Răng Hàm Mặt:</span>
-                        <div className="text-emerald-700 font-bold">191 - Bình thường (Không sâu)</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 4: CẬN LÂM SÀNG */}
-                {b2bTab === 'canlamsang' && (
-                  <div className="space-y-4 max-w-4xl">
-                    <h3 className="font-bold text-xs text-[#212529] uppercase tracking-wider">Kết quả xét nghiệm & Chẩn đoán hình ảnh</h3>
-                    <div className="grid grid-cols-4 gap-3">
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="text-[#6c757d]">Hồng cầu (T/L):</span>
-                        <div className="font-bold text-[#212529]">{selectedEmp.xnm_slhc}</div>
-                      </div>
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="text-[#6c757d]">Bạch cầu (G/L):</span>
-                        <div className="font-bold text-[#212529]">{selectedEmp.xnm_slbc}</div>
-                      </div>
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="text-[#6c757d]">Đường máu lúc đói:</span>
-                        <div className="font-bold text-[#212529]">{selectedEmp.shm_duongmau_lucdoi} mmol/L</div>
-                      </div>
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                        <span className="text-[#6c757d]">Nước tiểu pH:</span>
-                        <div className="font-bold text-[#212529]">{selectedEmp.xnnt_ph}</div>
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-1">
-                      <span className="font-semibold text-[#495057]">X-Quang Tim Phổi Thẳng (Kỹ thuật số):</span>
-                      <div className="font-bold text-[#212529]">{selectedEmp.chuan_doan_hinh_anh}</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 5: KẾT LUẬN & TRẠNG THÁI CỔNG Y TẾ CỘNG ĐỒNG */}
-                {b2bTab === 'ketluan_sync' && (
-                  <div className="space-y-4 max-w-4xl">
-                    <div className="p-4 bg-[#f8f9fa] border border-[#dee2e6] rounded space-y-3">
-                      <h3 className="font-bold text-xs text-[#212529] uppercase tracking-wider">Kết luận phân loại sức khỏe</h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="font-semibold text-[#495057]">Phân loại sức khỏe tổng thể: *</label>
-                          <input type="text" value={selectedEmp.phanloai === 1016 ? '1016 - Loại I (Đủ sức khỏe làm việc)' : '1017 - Loại II'} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-bold text-emerald-700" readOnly />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="font-semibold text-[#495057]">Đề nghị (KetLuan_DeNghi): *</label>
-                          <input type="text" value="5172 - Bình thường, hẹn khám định kỳ lần sau" className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="font-semibold text-[#495057]">Ghi chú đề nghị:</label>
-                        <input type="text" value={selectedEmp.de_nghi} className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]" readOnly />
-                      </div>
-                    </div>
-
-                    {/* Khối bảo chứng Cổng Y tế cộng đồng */}
-                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded space-y-2">
-                      <div className="flex items-center space-x-2 text-emerald-900 font-bold">
-                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                        <span>Trạng thái kết nối Cổng Dữ liệu Y tế cộng đồng (Sở Y tế TP.HCM)</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 text-xs pt-1">
-                        <div>
-                          <span className="text-[#6c757d]">Trạng thái liên thông:</span>
-                          <div className="font-bold text-emerald-800">
-                            {selectedEmp.portalStatus === 'SYNCED' ? '✓ 200 OK - Đã tiếp nhận hồ sơ thành công' : 'Chưa liên thông'}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-[#6c757d]">Mã biên nhận Cổng (Transaction Code):</span>
-                          <div className="font-mono font-bold text-[#1f63c9]">
-                            {selectedEmp.portalReceiptCode || 'Chưa cấp'}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-[#6c757d]">Thời điểm gửi:</span>
-                          <div className="font-medium text-[#212529]">{selectedEmp.portalSyncTime || '—'}</div>
-                        </div>
-                        <div>
-                          <span className="text-[#6c757d]">Xác thực chữ ký số PKI:</span>
-                          <div className="font-mono text-emerald-800">CN=SmartClinic Cơ Sở Quận 1, O=SmartClinic</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          )}
-        </div>
+        <B2BPackageManagementPage />
+      ) : activeNavMenu === 'clinical_group' ? (
+        <ClinicalExaminationPage />
+      ) : activeNavMenu === 'paraclinical_group' ? (
+        activeParaclinicalSubMenu === 'chan_doan_hinh_anh' ? (
+          <ImagingWorkstationPage />
+        ) : (
+          <LabWorkstationPage />
+        )
+      ) : activeNavMenu === 'billing_group' ? (
+        <DiagnosticsPrescriptionBillingPage initialTab="billing" />
+      ) : activeNavMenu === 'pharmacy_group' ? (
+        <PharmacyInventoryPage />
+      ) : activeNavMenu === 'portal_group' ? (
+        <EmrPortalPage />
       ) : (
         /* ── WORKSPACE DANH MỤC HỆ THỐNG MASTER DATA (2 CỘT CHUẨN) ── */
       <div className="flex flex-1 min-h-0 overflow-hidden">
         
-        {/* ── 3.1 CỘT BÊN TRÁI: LEFT VERTICAL TAB RAIL (GROUPS) ── */}
+        {/* ── 3.1 CỘT BÊN TRÁI: NAVIGATOR CHỈ HIỆN ĐÚNG PHÂN HỆ VÀ EXCLUSIVE ACCORDION (FOCUS = EXPOSE, KHÁC = COLLAPSE) ── */}
         <nav
-          className="border-r border-[#dee2e6] bg-white flex flex-col py-2 select-none overflow-y-auto shrink-0"
-          style={{ width: '255px' }}
+          className="border-r border-[#dee2e6] bg-white flex flex-col select-none shrink-0"
+          style={{ width: '265px' }}
         >
-          <div className="px-3 pb-1.5 text-[10px] font-bold text-[#6c757d] uppercase tracking-wider">
-            {currentBlock.title} ({currentBlock.groups.length})
+          {/* 1. HEADER PHÂN HỆ HIỆN TẠI (DANH MỤC VS CẤU HÌNH) */}
+          <div className="px-3 py-2 bg-[#f8f9fa] border-b border-[#dee2e6] flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              {activeSystemSection === 'catalogs' ? (
+                <FolderTree className="w-4 h-4 text-[#1f63c9]" />
+              ) : (
+                <Settings className="w-4 h-4 text-[#495057]" />
+              )}
+              <span className="text-xs font-bold text-[#212529] uppercase tracking-wide">
+                {activeSystemSection === 'catalogs' ? 'DANH MỤC' : 'CẤU HÌNH'}
+              </span>
+            </div>
+            <span className="text-[10px] font-mono text-[#6c757d] bg-white px-1.5 py-0.5 rounded border border-[#dee2e6]">
+              {filteredBlocks.reduce((acc, b) => acc + b.groups.length, 0)} mục
+            </span>
           </div>
 
-          <div className="flex flex-col gap-0.5 px-1.5">
-            {currentBlock.groups.map((group) => {
-              const isActive = group.id === selectedGroupId;
-              const Icon = group.icon;
-
-              return (
+          {/* 2. Ô TÌM KIẾM NAVIGATOR (L1_SEARCH_UX) */}
+          <div className="p-2 border-b border-[#dee2e6] bg-white shrink-0">
+            <div className="relative flex items-center">
+              <Search className="absolute left-2.5 w-3.5 h-3.5 text-[#6c757d]" />
+              <input
+                type="text"
+                value={navSearchText}
+                onChange={(e) => setNavSearchText(e.target.value)}
+                placeholder={activeSystemSection === 'catalogs' ? 'Tìm danh mục...' : 'Tìm cấu hình...'}
+                className="w-full pl-8 pr-7 py-1.5 text-xs bg-[#f8f9fa] focus:bg-white border border-[#ced4da] rounded focus:outline-none focus:border-[#1f63c9] focus:ring-1 focus:ring-[#1f63c9] placeholder:text-[#adb5bd] text-[#212529]"
+              />
+              {navSearchText && (
                 <button
-                  key={group.id}
                   type="button"
-                  onClick={() => handleSelectGroup(group.id)}
-                  className={`group relative flex items-center justify-between px-3 py-2 text-xs font-medium rounded-sm transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-[#f1f3f6] text-[#212529] font-bold shadow-2xs'
-                      : 'text-[#495057] hover:bg-[#f8f9fa] hover:text-[#212529]'
-                  }`}
+                  onClick={() => setNavSearchText('')}
+                  className="absolute right-2 text-[#adb5bd] hover:text-[#495057] cursor-pointer"
+                  title="Xóa tìm kiếm"
                 >
-                  {/* Smartstore signature left orange line #ee9b00 */}
-                  {isActive && (
-                    <span
-                      className="absolute left-0 top-1 bottom-1 w-[3px] rounded-r bg-[#ee9b00]"
-                      aria-hidden="true"
-                    />
-                  )}
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            {navSearchText.trim() && (
+              <div className="mt-1.5 flex items-center justify-between text-[10px] text-[#6c757d] px-1">
+                <span>
+                  Tìm thấy: <strong className="text-[#1f63c9]">{filteredBlocks.reduce((acc, b) => acc + b.groups.length, 0)}</strong> mục
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setNavSearchText('')}
+                  className="text-[#1f63c9] hover:underline cursor-pointer"
+                >
+                  Xóa lọc
+                </button>
+              </div>
+            )}
+          </div>
 
-                  <div className="flex items-center gap-2.5 truncate pl-1">
-                    <Icon
-                      className={`h-4 w-4 shrink-0 transition-colors ${
-                        isActive ? 'text-[#1f63c9]' : 'text-[#6c757d] group-hover:text-[#495057]'
-                      }`}
-                    />
-                    <span className="truncate">{group.name}</span>
-                  </div>
+          {/* 3. EXCLUSIVE ACCORDION: CHỈ EXPOSE DUY NHẤT NHÓM ĐƯỢC FOCUS, CÁC NHÓM KHÁC TỰ COLLAPSE */}
+          <div className="flex-1 overflow-y-auto py-2 space-y-1.5 px-1.5">
+            {filteredBlocks.length === 0 ? (
+              <div className="p-6 text-center text-xs text-[#adb5bd]">
+                <Search className="w-6 h-6 mx-auto mb-2 text-[#ced4da]" />
+                <p className="font-semibold text-[#6c757d]">Không tìm thấy mục nào</p>
+                <p className="text-[11px] mt-1 text-[#adb5bd]">Thử từ khóa khác hoặc xóa lọc</p>
+                <button
+                  type="button"
+                  onClick={() => setNavSearchText('')}
+                  className="mt-3 px-2.5 py-1 text-xs text-[#1f63c9] border border-blue-200 rounded hover:bg-blue-50 cursor-pointer"
+                >
+                  Xóa từ khóa
+                </button>
+              </div>
+            ) : (
+              filteredBlocks.map((block) => {
+                const isBlockActive = block.id === selectedBlockId;
+                // EXCLUSIVE ACCORDION: Khi không tìm kiếm, CHỈ NHÓM ĐƯỢC FOCUS MỚI EXPOSE, CÁC NHÓM KHÁC COLLAPSE HOÀN TOÀN
+                const isExposed = navSearchText.trim() !== '' ? true : isBlockActive;
+                const BlockIcon = block.icon;
 
-                  {group.badge !== undefined && (
-                    <span
-                      className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold font-mono ${
-                        group.badgeVariant === 'warning'
-                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                          : group.badgeVariant === 'primary'
-                          ? 'bg-blue-100 text-[#1f63c9] border border-blue-200'
-                          : group.badgeVariant === 'danger'
-                          ? 'bg-rose-100 text-rose-700 border border-rose-200'
-                          : 'bg-slate-200 text-slate-700'
+                return (
+                  <div key={block.id} className="rounded-sm overflow-hidden">
+                    {/* Header của Group: Click vào sẽ focus & expose nhóm này, đồng thời collapse các nhóm khác */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (block.id !== selectedBlockId) {
+                          handleSelectBlock(block.id);
+                        }
+                      }}
+                      className={`w-full flex items-center justify-between px-2.5 py-2 text-xs font-semibold rounded transition cursor-pointer select-none ${
+                        isBlockActive
+                          ? 'bg-[#f1f3f6] text-[#212529] font-bold border-l-3 border-[#1f63c9]'
+                          : 'text-[#495057] hover:bg-[#f8f9fa] hover:text-[#212529]'
                       }`}
                     >
-                      {group.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                      <div className="flex items-center gap-2 truncate">
+                        <BlockIcon
+                          className={`w-4 h-4 shrink-0 ${
+                            isBlockActive ? 'text-[#1f63c9]' : 'text-[#6c757d]'
+                          }`}
+                        />
+                        <span className="truncate">{block.title}</span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                          isBlockActive ? 'bg-blue-100 text-[#1f63c9] font-bold' : 'bg-slate-100 text-[#868e96]'
+                        }`}>
+                          {block.groups.length}
+                        </span>
+                        {isExposed ? (
+                          <ChevronDown className="w-3.5 h-3.5 text-[#1f63c9]" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5 text-[#adb5bd]" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Danh sách Sub-menu: CHỈ HIỂN THỊ KHI NHÓM NÀY ĐƯỢC CHỌN (EXPOSE) */}
+                    {isExposed && (
+                      <div className="flex flex-col gap-0.5 pl-3 pr-1 py-1 border-l-2 border-[#e9ecef] ml-3 mt-0.5 space-y-0.5 animate-in fade-in duration-100">
+                        {block.groups.map((group) => {
+                          const isGroupActive =
+                            block.id === selectedBlockId && group.id === selectedGroupId;
+                          const GroupIcon = group.icon;
+
+                          return (
+                            <button
+                              key={group.id}
+                              type="button"
+                              onClick={() => handleSelectGroup(group.id, block.id)}
+                              className={`group relative flex items-center justify-between px-2.5 py-1.5 text-xs rounded transition-all cursor-pointer ${
+                                isGroupActive
+                                  ? 'bg-[#1f63c9] text-white font-semibold shadow-2xs'
+                                  : 'text-[#495057] hover:bg-[#f1f3f6] hover:text-[#212529]'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 truncate">
+                                <GroupIcon
+                                  className={`w-3.5 h-3.5 shrink-0 ${
+                                    isGroupActive
+                                      ? 'text-white'
+                                      : 'text-[#6c757d] group-hover:text-[#495057]'
+                                  }`}
+                                />
+                                <span className="truncate">{group.name}</span>
+                              </div>
+
+                              {group.badge !== undefined && (
+                                <span
+                                  className={`ml-1 shrink-0 rounded-full px-1.5 py-0.2 text-[9px] font-bold font-mono ${
+                                    isGroupActive
+                                      ? 'bg-white/20 text-white'
+                                      : group.badgeVariant === 'warning'
+                                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                      : group.badgeVariant === 'primary'
+                                      ? 'bg-blue-100 text-[#1f63c9] border border-blue-200'
+                                      : group.badgeVariant === 'danger'
+                                      ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                                      : 'bg-slate-100 text-slate-600'
+                                  }`}
+                                >
+                                  {group.badge}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </nav>
 
-        {/* ── 3.2 CỘT BÊN PHẢI: MASTER DATAGRID VỚI CỘT TÙY BIẾN RIÊNG BIỆT ── */}
+        {/* ── 3.2 CỘT BÊN PHẢI: MASTER DATAGRID HOẶC PORTAL HÓA ĐƠN ĐIỆN TỬ TT78 ── */}
         <main className="flex-1 flex flex-col bg-[#f8fafc] overflow-hidden min-w-0">
-          
+          {currentGroup.id === 'grp_hdt78' ? (
+            <div className="flex-1 overflow-auto">
+              <EInvoicePortalPage compact />
+            </div>
+          ) : currentGroup.id === 'grp_congqg' ? (
+            <div className="flex-1 overflow-auto">
+              <NationalOutboxPortalPage compact />
+            </div>
+          ) : currentGroup.id === 'grp_lis' ? (
+            <div className="flex-1 overflow-auto p-4">
+              <LisGatewayConfigPage />
+            </div>
+          ) : currentGroup.id === 'grp_rbac' ? (
+            <div className="flex-1 overflow-auto p-4">
+              <RolePermissionAdminPage />
+            </div>
+          ) : (
+          <>
           {/* DataGrid Toolbar */}
           <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-[#dee2e6] z-10 shrink-0">
-            <div className="flex items-center space-x-2">
-              <button className="flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-[#f8f9fa] border border-[#ced4da] rounded text-xs font-medium text-[#495057] cursor-pointer">
-                <Filter className="w-3.5 h-3.5 text-[#6c757d]" />
-                <span>Lọc nâng cao</span>
-              </button>
-
-              <button
-                onClick={handleAddNew}
-                className="flex items-center space-x-1 px-3 py-1 bg-[#1f63c9] hover:bg-[#1852a6] text-white rounded text-xs font-semibold cursor-pointer shadow-2xs"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Thêm bản ghi</span>
-              </button>
-
-              {currentGroup.entityType === 'service' && (
-                <button
-                  type="button"
-                  onClick={() => setIsServiceSelectorOpen(true)}
-                  className="flex items-center space-x-1.5 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer shadow-2xs transition-colors"
-                  title="Mở cửa sổ chọn dịch vụ 2 cột theo nhóm chuyên khoa chuẩn VSC Desktop"
-                >
-                  <span className="w-4 h-4 rounded-full bg-red-600 text-white font-bold text-[10px] flex items-center justify-center">H</span>
-                  <span>Cửa Sổ Chọn Dịch Vụ VSC (2 Cột)</span>
-                </button>
+            {/* Vị trí số 2: Chỉ đem phần đóng khung ĐÃ TÍCH: X MỤC lên toolbar */}
+            <div className="flex items-center space-x-3">
+              {selectedRows.length > 0 ? (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border-2 border-[#1f63c9] text-[#1f63c9] shadow-xs animate-in fade-in zoom-in-95">
+                  <CheckSquare className="w-4 h-4 text-[#1f63c9] shrink-0" />
+                  <span className="font-bold text-xs tracking-tight">
+                    ĐÃ TÍCH: <span className="text-blue-800 font-black text-sm">{selectedRows.length}</span> MỤC
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRows([])}
+                    className="ml-1 px-1.5 py-0.2 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-300 hover:border-rose-300 rounded text-[10px] font-medium transition cursor-pointer"
+                    title="Bỏ tích tất cả các mục đã chọn"
+                  >
+                    Bỏ chọn
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmBulkDeleteOpen(true)}
+                    className="ml-1 px-2 py-0.5 bg-rose-600 hover:bg-rose-700 text-white rounded text-[10px] font-bold transition cursor-pointer"
+                  >
+                    Xóa Đã Chọn ({selectedRows.length})
+                  </button>
+                </div>
+              ) : (
+                <span className="text-xs text-slate-400 italic">Đã tích: 0 mục</span>
               )}
-
-              <span className="text-xs font-bold text-[#212529] ml-2">
-                Dữ liệu Danh Mục: <span className="text-[#1f63c9]">{currentGroup.name}</span>
-              </span>
-              <span className="text-xs text-[#6c757d]">({filteredGridData.length})</span>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -2223,15 +2712,38 @@ export default function App() {
                 />
               </div>
 
-              <button className="flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-[#f8f9fa] border border-[#ced4da] rounded text-xs text-[#495057] font-medium cursor-pointer">
+              <label className="flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-[#f8f9fa] border border-[#ced4da] rounded text-xs text-[#495057] font-medium cursor-pointer">
+                <Upload className="w-3.5 h-3.5 text-[#1f63c9]" />
+                <span>Nhập Excel/CSV</span>
+                <input
+                  type="file"
+                  accept=".csv,.txt"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const text = await file.text();
+                    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                    const rowCount = Math.max(0, lines.length - 1);
+                    showToast(`✓ Đã đọc file [${file.name}] (${rowCount} dòng dữ liệu) cho danh mục ${currentGroup.name}.`);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-[#f8f9fa] border border-[#ced4da] rounded text-xs text-[#495057] font-medium cursor-pointer"
+              >
                 <Download className="w-3.5 h-3.5 text-[#6c757d]" />
                 <span>Xuất Excel</span>
               </button>
             </div>
           </div>
 
-          {/* Thanh Gom Nhóm Phân Loại Chuyên Sâu (Dịch Vụ / ICD-10 / Địa Bàn 63 Tỉnh Thành) */}
-          {(currentGroup.id === 'grp_dichvu' || currentGroup.id === 'grp_icd10' || currentGroup.id === 'grp_diaban') && (
+          {/* Thanh Gom Nhóm Phân Loại Chuyên Sâu (Dịch Vụ / ICD-10 / Địa Bàn / Khoa Phòng) */}
+          {(currentGroup.id === 'grp_dichvu' || currentGroup.id === 'grp_icd10' || currentGroup.id === 'grp_diaban' || currentGroup.id === 'grp_buongkham') && (
             <div className="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border-b border-[#dee2e6] z-10 shrink-0 text-xs">
               <div className="flex items-center space-x-3 flex-wrap gap-y-1">
                 <div className="flex items-center space-x-1.5 text-slate-700 font-semibold">
@@ -2328,26 +2840,53 @@ export default function App() {
                     )}
                   </div>
                 )}
-              </div>
 
-              {/* View toggle badge */}
-              <div className="flex items-center space-x-2 text-[11px] text-[#6c757d]">
-                <button
-                  type="button"
-                  onClick={() => setIsGroupByView(!isGroupByView)}
-                  className={`flex items-center space-x-1 px-2.5 py-0.5 rounded border transition-colors cursor-pointer ${
-                    isGroupByView
-                      ? 'bg-blue-100 text-[#1f63c9] border-blue-300 font-semibold shadow-2xs'
-                      : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                  }`}
-                  title="Bật/tắt chế độ hiển thị phân nhóm nổi bật"
-                >
-                  <Tag className="w-3 h-3" />
-                  <span>{isGroupByView ? 'Đang gom nhóm' : 'Danh sách phẳng'}</span>
-                </button>
-                <span>
-                  Khớp: <strong className="text-[#1f63c9] font-bold">{filteredGridData.length}</strong> bản ghi
-                </span>
+                {/* 4. Khoa Phòng (Gom nhóm Buồng Khám - Layout tương tự Dịch Vụ) */}
+                {currentGroup.id === 'grp_buongkham' && (
+                  <div className="flex items-center space-x-1.5">
+                    <select
+                      value={selectedDepartmentFilter}
+                      onChange={(e) => setSelectedDepartmentFilter(e.target.value)}
+                      className="px-2.5 py-1 bg-white border border-[#ced4da] rounded text-xs font-semibold text-[#1f63c9] focus:outline-none focus:border-[#1f63c9] cursor-pointer shadow-2xs max-w-[320px]"
+                    >
+                      <option value="ALL">🏥 Tất cả Khoa Phòng ({allDepartments.length} khoa)</option>
+                      {allDepartments.map(dep => {
+                        const count = currentGridData.filter((r: any) => r.department === (dep.departmentName || dep.name) || r.departmentId === dep.id).length;
+                        return (
+                          <option key={dep.id} value={dep.id}>
+                            {dep.code ? `[${dep.code}] ` : ''}{dep.departmentName || dep.name} {count > 0 ? `(${count} buồng)` : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {selectedDepartmentFilter !== 'ALL' && (
+                      <button
+                        onClick={() => setSelectedDepartmentFilter('ALL')}
+                        className="text-[11px] text-[#dc3545] hover:underline font-medium cursor-pointer"
+                      >
+                        ✕ Xóa lọc khoa
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewDepartmentData({
+                          code: `K${(allDepartments.length + 1).toString().padStart(2, '0')}`,
+                          name: '',
+                          isClinical: true,
+                          sortOrder: allDepartments.length + 1
+                        });
+                        setIsAddDepartmentModalOpen(true);
+                      }}
+                      className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-[#1f63c9] rounded text-xs font-semibold transition cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ Thêm khoa</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -2365,7 +2904,7 @@ export default function App() {
                       className="rounded border-[#ced4da] cursor-pointer"
                     />
                   </th>
-                  <th className="w-16 px-3 py-2 font-bold border-r border-[#dee2e6]">ID</th>
+                  <th className="w-14 px-2 py-2 font-bold text-center border-r border-[#dee2e6]">STT</th>
                   
                   {/* Dynamic Headers based on entityType */}
                   {currentGroup.entityType === 'service' && (
@@ -2392,10 +2931,12 @@ export default function App() {
 
                   {currentGroup.entityType === 'staff' && (
                     <>
-                      <th className="w-28 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã NV</th>
-                      <th className="px-4 py-2 font-bold border-r border-[#dee2e6]">Họ và Tên Nhân Sự</th>
-                      <th className="w-28 px-3 py-2 font-bold border-r border-[#dee2e6]">Chức Danh</th>
-                      <th className="w-36 px-3 py-2 font-bold border-r border-[#dee2e6]">Số CCHN</th>
+                      <th className="w-24 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã NV</th>
+                      <th className="px-4 py-2 font-bold border-r border-[#dee2e6]">Bác Sĩ / Nhân Sự</th>
+                      <th className="w-48 px-3 py-2 font-bold border-r border-[#dee2e6]">Chuyên Khoa & Kiêm Nhiệm</th>
+                      <th className="w-44 px-3 py-2 font-bold border-r border-[#dee2e6]">Số GPHN / CCHN (Hạn 5 Năm)</th>
+                      <th className="w-28 px-3 py-2 font-bold text-center border-r border-[#dee2e6]">Đoàn KSK TT32</th>
+                      <th className="w-28 px-3 py-2 font-bold border-r border-[#dee2e6]">Buồng Khám</th>
                       <th className="w-32 px-3 py-2 font-bold border-r border-[#dee2e6]">Điện Thoại</th>
                     </>
                   )}
@@ -2428,9 +2969,11 @@ export default function App() {
 
                   {currentGroup.entityType === 'icd10' && (
                     <>
-                      <th className="w-28 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã ICD-10</th>
+                      <th className="w-24 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã Loại</th>
+                      <th className="w-24 px-3 py-2 font-bold border-r border-[#dee2e6]">Mã ICD-10</th>
                       <th className="px-4 py-2 font-bold border-r border-[#dee2e6]">Tên Bệnh Tiếng Việt</th>
-                      <th className="w-48 px-3 py-2 font-bold border-r border-[#dee2e6]">Chương Bệnh</th>
+                      <th className="w-64 px-3 py-2 font-bold border-r border-[#dee2e6]">Tên Bệnh Tiếng Anh</th>
+                      <th className="w-52 px-3 py-2 font-bold border-r border-[#dee2e6]">Chương Bệnh</th>
                     </>
                   )}
 
@@ -2472,14 +3015,8 @@ export default function App() {
                 {/* Inline Filters */}
                 <tr className="bg-[#fdfdfe] border-b border-[#dee2e6]">
                   <td className="px-3 py-1 border-r border-[#dee2e6]"></td>
-                  <td className="px-2 py-1 border-r border-[#dee2e6]">
-                    <input
-                      type="text"
-                      value={filterId}
-                      onChange={(e) => setFilterId(e.target.value)}
-                      placeholder="Lọc ID..."
-                      className="w-full px-1.5 py-0.5 bg-white border border-[#ced4da] rounded text-[11px] text-[#212529] focus:outline-none focus:border-[#1f63c9]"
-                    />
+                  <td className="px-2 py-1 border-r border-[#dee2e6] text-center font-mono text-[10px] text-slate-400">
+                    #
                   </td>
                   <td className="px-2 py-1 border-r border-[#dee2e6]" colSpan={getMiddleColumnCount()}>
                     <input
@@ -2503,7 +3040,7 @@ export default function App() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedGridData.map((row: any) => {
+                  paginatedGridData.map((row: any, idx: number) => {
                     const isSelected = row.id === selectedRowId;
                     const isChecked = selectedRows.includes(row.id);
 
@@ -2531,8 +3068,8 @@ export default function App() {
                           />
                         </td>
 
-                        <td className="px-3 py-2 font-mono text-[#495057] border-r border-[#dee2e6]">
-                          {row.id}
+                        <td className="w-14 px-2 py-2 font-mono text-center text-[#6c757d] border-r border-[#dee2e6] text-xs font-semibold">
+                          {pageIndex * pageSize + idx + 1}
                         </td>
 
                         {/* Service Columns */}
@@ -2592,18 +3129,73 @@ export default function App() {
                               {row.code}
                             </td>
                             <td className="px-4 py-2 font-semibold text-[#212529] border-r border-[#dee2e6]">
-                              {row.name}
+                              <div className="flex items-center gap-2">
+                                {row.avatarUrl ? (
+                                  <img src={row.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover border border-slate-200 shadow-xs shrink-0" />
+                                ) : (
+                                  <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs border border-slate-200 shrink-0">
+                                    {(row.name || 'BS').slice(0, 2).toUpperCase()}
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="truncate">{row.name}</span>
+                                    {row.academicTitle && (
+                                      <span className="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 text-slate-700 font-bold border border-slate-300 shrink-0">
+                                        {row.academicTitle}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-[11px] text-[#6c757d] font-normal flex items-center gap-2">
+                                    <span>{row.role}</span>
+                                    {row.gender && <span>• {row.gender}</span>}
+                                  </div>
+                                </div>
+                              </div>
                             </td>
-                            <td className="px-3 py-2 text-[#495057] border-r border-[#dee2e6]">
-                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-50 text-blue-700 font-semibold border border-blue-200">
-                                {row.role}
-                              </span>
+                            <td className="px-3 py-2 border-r border-[#dee2e6]">
+                              <div className="flex flex-col gap-1 items-start">
+                                <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${getSpecialtyBadgeStyle(row.specialty || row.primarySpecialty || '')}`}>
+                                  {row.specialty || row.primarySpecialty || 'Đa khoa'}
+                                </span>
+                                {row.secondarySpecialties && (
+                                  <span className="text-[10px] text-slate-500 font-medium truncate max-w-[170px]" title={row.secondarySpecialties}>
+                                    Kiêm: {row.secondarySpecialties}
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-3 py-2 font-mono text-emerald-700 font-medium border-r border-[#dee2e6]">
-                              {row.cchn}
+                              <div className="font-bold text-[12px]">{row.cchn}</div>
+                              {row.licenseExpiryDate ? (
+                                <div className="text-[10px] text-slate-500 flex items-center gap-1">
+                                  <span>Hạn: {row.licenseExpiryDate}</span>
+                                </div>
+                              ) : (
+                                <div className="text-[10px] text-amber-600">Chưa cập nhật hạn</div>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 text-center border-r border-[#dee2e6]">
+                              {row.canFinalizeHealthCheckup ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-xs">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Trưởng đoàn
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-[11px]">—</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 font-medium text-slate-700 border-r border-[#dee2e6]">
+                              {row.assignedRoomIds ? (
+                                <span className="px-1.5 py-0.5 rounded text-[11px] bg-slate-100 font-mono text-slate-800 border border-slate-200">
+                                  {row.assignedRoomIds}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-[11px]">Chưa gán</span>
+                              )}
                             </td>
                             <td className="px-3 py-2 text-[#6c757d] border-r border-[#dee2e6]">
-                              {row.phone}
+                              <div className="text-[12px] font-mono">{row.phone || '—'}</div>
+                              {row.email && <div className="text-[10px] text-slate-500 truncate max-w-[120px]">{row.email}</div>}
                             </td>
                           </>
                         )}
@@ -2617,8 +3209,10 @@ export default function App() {
                             <td className="px-4 py-2 font-semibold text-[#212529] border-r border-[#dee2e6]">
                               {row.name}
                             </td>
-                            <td className="px-3 py-2 text-[#495057] border-r border-[#dee2e6]">
-                              {row.department}
+                            <td className="px-3 py-2 border-r border-[#dee2e6]">
+                              <span className="inline-block text-[11px] px-2 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                {row.department}
+                              </span>
                             </td>
                             <td className="px-3 py-2 border-r border-[#dee2e6]">
                               <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 font-medium border border-slate-300">
@@ -2662,9 +3256,14 @@ export default function App() {
                           </>
                         )}
 
-                        {/* ICD-10 Columns */}
+                        {/* ICD-10 Columns (Kế thừa cấu trúc 2 tầng chuẩn VSC Desktop: Mã Loại -> Mã Bệnh -> Tên Tiếng Việt -> Tên Tiếng Anh -> Chương Bệnh) */}
                         {currentGroup.entityType === 'icd10' && (
                           <>
+                            <td className="px-3 py-2 font-mono font-bold text-slate-700 border-r border-[#dee2e6]">
+                              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-mono text-xs">
+                                {row.code ? row.code.split('.')[0] : '—'}
+                              </span>
+                            </td>
                             <td className="px-3 py-2 font-mono font-bold text-rose-700 border-r border-[#dee2e6]">
                               <span className="px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200">
                                 {row.code}
@@ -2672,6 +3271,9 @@ export default function App() {
                             </td>
                             <td className="px-4 py-2 font-semibold text-[#212529] border-r border-[#dee2e6]">
                               {row.name || row.diseaseNameVi || '—'}
+                            </td>
+                            <td className="px-3 py-2 text-[#495057] italic border-r border-[#dee2e6]">
+                              {row.diseaseNameEn || '—'}
                             </td>
                             <td className="px-4 py-2 text-[#6c757d] border-r border-[#dee2e6]">
                               <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
@@ -2789,15 +3391,15 @@ export default function App() {
             </table>
           </div>
 
-          {/* Grid Footer with Full Pagination Controls */}
+          {/* Grid Footer with Pagination Controls & Row Status */}
           <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-white border-t border-[#dee2e6] text-[11px] text-[#6c757d] shrink-0 gap-2">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 text-[11px] text-[#6c757d]">
               <span>
-                Đang chọn dòng: <strong className="text-[#212529]">{selectedRowId}</strong> • Đã tích: <strong className="text-[#1f63c9]">{selectedRows.length}</strong> mục
+                Hiển thị <strong className="text-[#212529] font-semibold">{filteredGridData.length > 0 ? pageIndex * pageSize + 1 : 0} - {Math.min((pageIndex + 1) * pageSize, filteredGridData.length)}</strong> trên tổng số <strong className="text-[#1f63c9] font-bold">{filteredGridData.length}</strong> bản ghi
               </span>
               <span className="text-[#dee2e6]">|</span>
               <span>
-                Hiển thị <strong>{filteredGridData.length > 0 ? pageIndex * pageSize + 1 : 0}</strong> - <strong>{Math.min((pageIndex + 1) * pageSize, filteredGridData.length)}</strong> trên tổng số <strong>{filteredGridData.length}</strong> bản ghi ({currentGroup.name})
+                Đang chọn dòng: <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 font-mono font-bold border border-slate-300 text-xs">{selectedRowId}</span>
               </span>
             </div>
 
@@ -2841,6 +3443,8 @@ export default function App() {
               </button>
             </div>
           </div>
+          </>
+          )}
         </main>
       </div>
       )}
@@ -2870,7 +3474,7 @@ export default function App() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(JSON.stringify(generatedM3Payload, null, 2));
-                  alert('Đã sao chép Payload JSON vào bộ nhớ đệm!');
+                  showToast('Đã sao chép Payload JSON vào bộ nhớ đệm!');
                 }}
                 className="flex items-center space-x-1 px-3 py-1.5 bg-[#1f63c9] text-white rounded font-medium cursor-pointer"
               >
@@ -2891,7 +3495,7 @@ export default function App() {
           onClick={() => setDrawerOpen(false)}
         >
           <div
-            className="bg-white rounded-lg shadow-2xl border border-[#dee2e6] w-[680px] max-w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+            className={`bg-white rounded-lg shadow-2xl border border-[#dee2e6] ${currentGroup.entityType === 'staff' ? 'w-[780px]' : 'w-[680px]'} max-w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150`}
             onClick={(e) => e.stopPropagation()}
           >
             
@@ -3315,88 +3919,372 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Phân vùng 3: Nguồn gốc dữ liệu VSC (nếu có legacyId) */}
-                  {selectedItemData.legacyId && (
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-1.5">
-                      <div className="font-bold text-slate-700 flex items-center space-x-1.5">
-                        <HardDrive className="w-3.5 h-3.5 text-slate-500" />
-                        <span>3. NGUỒN GỐC DỮ LIỆU & ĐỐI SOÁT VSC DESKTOP</span>
-                      </div>
-                      <div className="flex items-center justify-between text-[11px] text-[#6c757d]">
-                        <span>Khóa chính VSC (LegacyId): <strong className="font-mono text-emerald-700">{selectedItemData.legacyId}</strong></span>
-                        <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          100% Khớp dữ liệu sản xuất
-                        </span>
-                      </div>
-                    </div>
-                  )}
+
                 </div>
               )}
 
-              {/* === 3. NHÂN SỰ & BÁC SĨ (CCHN) DETAIL === */}
+              {/* === 3. NHÂN SỰ & BÁC SĨ (CCHN & CHUYÊN KHOA) DETAIL === */}
               {currentGroup.entityType === 'staff' && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-1 space-y-1">
-                      <label className="font-semibold text-[#495057]">Mã Nhân Viên:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.code || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono text-[#212529]"
-                      />
+                <div className="space-y-4">
+                  {/* KHỐI 1: HÀNH CHÍNH & ĐỀ ÁN 06 */}
+                  <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/60 space-y-3">
+                    <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200 font-bold text-slate-800 text-xs">
+                      <Users className="w-4 h-4 text-blue-600" />
+                      <span>1. THÔNG TIN CÁ NHÂN & ĐỀ ÁN 06 (CCCD/ĐỊNH DANH)</span>
                     </div>
-                    <div className="col-span-2 space-y-1">
-                      <label className="font-semibold text-[#495057]">Họ và Tên Nhân Sự:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.name || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-semibold"
-                      />
+
+                    <div className="grid grid-cols-12 gap-3">
+                      {/* Avatar preview & input */}
+                      <div className="col-span-12 sm:col-span-3 flex flex-col items-center justify-center p-2 bg-white rounded border border-slate-200">
+                        <div className="relative w-20 h-24 bg-slate-100 rounded border border-slate-300 overflow-hidden flex items-center justify-center mb-1.5 shadow-inner">
+                          {selectedItemData.avatarUrl ? (
+                            <img src={selectedItemData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="text-slate-400 text-center text-[10px] font-medium p-1">
+                              <Users className="w-6 h-6 mx-auto mb-1 text-slate-300" />
+                              Ảnh 3x4
+                            </div>
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="URL ảnh 3x4..."
+                          value={selectedItemData.avatarUrl || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, avatarUrl: e.target.value })}
+                          className="w-full px-1.5 py-1 text-[10px] border border-slate-300 rounded font-mono text-slate-700 text-center"
+                        />
+                      </div>
+
+                      {/* Thông tin nhân thân */}
+                      <div className="col-span-12 sm:col-span-9 space-y-2.5">
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-3 space-y-1">
+                            <label className="font-semibold text-slate-700">Mã NV/BS:</label>
+                            <input
+                              type="text"
+                              value={selectedItemData.code || ''}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, code: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-300 rounded font-mono font-bold text-blue-700 bg-white"
+                            />
+                          </div>
+                          <div className="col-span-3 space-y-1">
+                            <label className="font-semibold text-slate-700">Học Hàm/Vị:</label>
+                            <select
+                              value={selectedItemData.academicTitle || 'BS.CKI'}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, academicTitle: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-300 rounded font-semibold text-slate-800 bg-white"
+                            >
+                              {ACADEMIC_TITLES.map(title => (
+                                <option key={title} value={title}>{title}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="col-span-6 space-y-1">
+                            <label className="font-semibold text-slate-700">Họ và Tên (*):</label>
+                            <input
+                              type="text"
+                              value={selectedItemData.name || ''}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, name: e.target.value })}
+                              className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-bold text-slate-900 bg-white"
+                              placeholder="VD: NGUYỄN VĂN AN"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-4 space-y-1">
+                            <label className="font-semibold text-slate-700">Số CCCD (12 số):</label>
+                            <input
+                              type="text"
+                              maxLength={12}
+                              value={selectedItemData.identityNumber || ''}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, identityNumber: e.target.value })}
+                              placeholder="079085001234"
+                              className="w-full px-2 py-1.5 border border-slate-300 rounded font-mono text-slate-800 bg-white"
+                            />
+                          </div>
+                          <div className="col-span-4 space-y-1">
+                            <label className="font-semibold text-slate-700">Ngày Sinh:</label>
+                            <input
+                              type="date"
+                              value={selectedItemData.dob || ''}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, dob: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 bg-white"
+                            />
+                          </div>
+                          <div className="col-span-4 space-y-1">
+                            <label className="font-semibold text-slate-700">Giới Tính:</label>
+                            <select
+                              value={selectedItemData.gender || 'Nam'}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, gender: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 bg-white"
+                            >
+                              <option value="Nam">Nam</option>
+                              <option value="Nữ">Nữ</option>
+                              <option value="Khác">Khác</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-4 space-y-1">
+                            <label className="font-semibold text-slate-700">Số Điện Thoại:</label>
+                            <input
+                              type="text"
+                              value={selectedItemData.phone || ''}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, phone: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-300 rounded font-mono text-slate-800 bg-white"
+                            />
+                          </div>
+                          <div className="col-span-4 space-y-1">
+                            <label className="font-semibold text-slate-700">Email Công Vụ:</label>
+                            <input
+                              type="email"
+                              value={selectedItemData.email || ''}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, email: e.target.value })}
+                              className="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 bg-white"
+                            />
+                          </div>
+                          <div className="col-span-4 space-y-1">
+                            <label className="font-semibold text-slate-700">Địa Chỉ Liên Hệ:</label>
+                            <input
+                              type="text"
+                              value={selectedItemData.address || ''}
+                              onChange={(e) => setSelectedItemData({ ...selectedItemData, address: e.target.value })}
+                              placeholder="Số nhà, đường, quận/huyện..."
+                              className="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 bg-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Chức Danh Chuyên Môn:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.role || 'Bác sĩ chuyên khoa'}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, role: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+                  {/* KHỐI 2: CHUYÊN MÔN, GPHN & PHÁP LÝ (LUẬT KCB 2023, TT32, EMR) */}
+                  <div className="border border-emerald-200 rounded-lg p-3 bg-emerald-50/30 space-y-3">
+                    <div className="flex items-center justify-between pb-1.5 border-b border-emerald-200">
+                      <div className="flex items-center gap-2 font-bold text-emerald-950 text-xs">
+                        <Award className="w-4 h-4 text-emerald-600" />
+                        <span>2. CHUYÊN MÔN, GIẤY PHÉP HÀNH NGHỀ (GPHN) & PHÁP LÝ Y TẾ</span>
+                      </div>
+                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                        Luật KCB 2023 & TT 32/2023/TT-BYT
+                      </span>
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Số Chứng Chỉ Hành Nghề (CCHN):</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.cchn || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, cchn: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded font-mono text-emerald-800 font-bold"
-                      />
+
+                    <div className="grid grid-cols-12 gap-2.5">
+                      <div className="col-span-4 space-y-1">
+                        <label className="font-semibold text-slate-700">Số GPHN / CCHN (*):</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.cchn || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, cchn: e.target.value })}
+                          placeholder="001234/BYT-CCHN"
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded font-mono font-bold text-emerald-800 bg-white"
+                        />
+                      </div>
+                      <div className="col-span-4 space-y-1">
+                        <label className="font-semibold text-slate-700">Ngày Cấp GPHN:</label>
+                        <input
+                          type="date"
+                          value={selectedItemData.licenseIssueDate || ''}
+                          onChange={(e) => {
+                            const issueVal = e.target.value;
+                            let expiryVal = selectedItemData.licenseExpiryDate;
+                            if (issueVal && !expiryVal) {
+                              const dt = new Date(issueVal);
+                              dt.setFullYear(dt.getFullYear() + 5);
+                              expiryVal = dt.toISOString().slice(0, 10);
+                            }
+                            setSelectedItemData({ ...selectedItemData, licenseIssueDate: issueVal, licenseExpiryDate: expiryVal });
+                          }}
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 bg-white"
+                        />
+                      </div>
+                      <div className="col-span-4 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="font-semibold text-slate-700">Hạn GPHN (5 năm):</label>
+                          <span className="text-[10px] text-emerald-600 font-medium">NĐ 96/2023</span>
+                        </div>
+                        <input
+                          type="date"
+                          value={selectedItemData.licenseExpiryDate || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, licenseExpiryDate: e.target.value })}
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded font-medium text-slate-800 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-12 gap-2.5">
+                      <div className="col-span-6 space-y-1">
+                        <label className="font-semibold text-slate-700">Chuyên Khoa Chính (*):</label>
+                        <select
+                          value={selectedItemData.primarySpecialty || selectedItemData.specialty || 'Nội Tổng Quát'}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, primarySpecialty: e.target.value, specialty: e.target.value })}
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-bold text-blue-800 bg-white"
+                        >
+                          {MEDICAL_SPECIALTIES.map(spec => (
+                            <option key={spec} value={spec}>{spec}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-span-6 space-y-1">
+                        <label className="font-semibold text-slate-700">Mã Định Danh Cổng Bộ Y Tế:</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.nationalStaffId || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, nationalStaffId: e.target.value })}
+                          placeholder="BYT-001234"
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded font-mono text-slate-800 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Dynamic Multi-select Specialty Tags */}
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-slate-700 flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Phân Loại Chuyên Khoa Kiêm Nhiệm (Bấm chọn nhiều chuyên khoa):</span>
+                        </label>
+                        <span className="text-[10px] text-slate-500 italic">Click để bật/tắt chuyên khoa kiêm nhiệm</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 p-2 bg-white rounded border border-slate-200">
+                        {MEDICAL_SPECIALTIES.map(spec => {
+                          const currentSecs = (selectedItemData.secondarySpecialties || '')
+                            .split(',')
+                            .map((s: string) => s.trim())
+                            .filter(Boolean);
+                          const isSelected = currentSecs.includes(spec);
+                          const isPrimary = (selectedItemData.primarySpecialty || selectedItemData.specialty) === spec;
+
+                          return (
+                            <button
+                              key={spec}
+                              type="button"
+                              disabled={isPrimary}
+                              onClick={() => {
+                                let nextSecs: string[];
+                                if (isSelected) {
+                                  nextSecs = currentSecs.filter((s: string) => s !== spec);
+                                } else {
+                                  nextSecs = [...currentSecs, spec];
+                                }
+                                setSelectedItemData({
+                                  ...selectedItemData,
+                                  secondarySpecialties: nextSecs.join(', ')
+                                });
+                              }}
+                              className={`px-2 py-1 rounded text-[11px] font-semibold border transition cursor-pointer flex items-center gap-1 ${
+                                isPrimary
+                                  ? 'bg-blue-600 text-white border-blue-700 shadow-xs cursor-not-allowed opacity-90'
+                                  : isSelected
+                                  ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
+                                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                              }`}
+                            >
+                              {isPrimary ? '★ ' : isSelected ? '✓ ' : '+ '}
+                              {spec}
+                              {isPrimary && <span className="text-[9px] opacity-80">(Chính)</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Trưởng đoàn KSK TT32 & Chữ ký số PKI/Cloud HSM */}
+                    <div className="grid grid-cols-12 gap-2.5 pt-1">
+                      <div className="col-span-12 sm:col-span-7 p-2 bg-amber-50/70 border border-amber-200 rounded flex items-center justify-between">
+                        <div className="pr-2">
+                          <div className="font-bold text-amber-950 text-[11px] flex items-center gap-1.5">
+                            <ShieldCheck className="w-4 h-4 text-amber-700" />
+                            <span>Quyền Trưởng Đoàn KSK (TT 32/2023)</span>
+                          </div>
+                          <div className="text-[10px] text-amber-800">
+                            Được ký kết luận phân loại sức khỏe KSK Doanh nghiệp
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={!!selectedItemData.canFinalizeHealthCheckup}
+                            onChange={(e) => setSelectedItemData({ ...selectedItemData, canFinalizeHealthCheckup: e.target.checked })}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-slate-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                      </div>
+
+                      <div className="col-span-12 sm:col-span-5 space-y-1">
+                        <label className="font-semibold text-slate-700">Serial Chứng Thư Số (Cloud HSM/Token):</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.digitalCertSerial || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, digitalCertSerial: e.target.value })}
+                          placeholder="54010123456789ABCDEF"
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded font-mono text-[11px] text-slate-800 bg-white"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Số Điện Thoại:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.phone || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, phone: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+                  {/* KHỐI 3: VẬN HÀNH, BUỒNG KHÁM & THÙ LAO */}
+                  <div className="border border-indigo-200 rounded-lg p-3 bg-indigo-50/30 space-y-3">
+                    <div className="flex items-center gap-2 pb-1.5 border-b border-indigo-200 font-bold text-indigo-950 text-xs">
+                      <Building2 className="w-4 h-4 text-indigo-600" />
+                      <span>3. VẬN HÀNH, BUỒNG KHÁM PHÂN CÔNG & THÙ LAO</span>
                     </div>
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Email Công Vụ:</label>
-                      <input
-                        type="email"
-                        value={selectedItemData.email || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, email: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+
+                    <div className="grid grid-cols-12 gap-2.5">
+                      <div className="col-span-4 space-y-1">
+                        <label className="font-semibold text-slate-700">Khoa Phòng Phụ Trách:</label>
+                        <select
+                          value={selectedItemData.departmentId || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, departmentId: e.target.value })}
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-slate-800 bg-white"
+                        >
+                          <option value="">-- Chọn Khoa Phòng --</option>
+                          {vscDepartments.map((d: any) => (
+                            <option key={d.id} value={d.id}>{d.departmentName || d.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="col-span-4 space-y-1">
+                        <label className="font-semibold text-slate-700">Buồng Khám (Smart Queue):</label>
+                        <input
+                          type="text"
+                          value={selectedItemData.assignedRoomIds || ''}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, assignedRoomIds: e.target.value })}
+                          placeholder="VD: PK.01, PK.02"
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded font-mono text-slate-800 bg-white"
+                        />
+                      </div>
+
+                      <div className="col-span-4 space-y-1">
+                        <label className="font-semibold text-slate-700">Thù Lao / Đơn Giá Khám (VNĐ):</label>
+                        <input
+                          type="text"
+                          value={formatNumberWithCommas(selectedItemData.consultationFee || 200000)}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, consultationFee: parseNumberFromCommas(e.target.value) })}
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded font-mono font-bold text-right text-indigo-800 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="staffIsActive"
+                          checked={selectedItemData.isActive !== false}
+                          onChange={(e) => setSelectedItemData({ ...selectedItemData, isActive: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded border-slate-300"
+                        />
+                        <label htmlFor="staffIsActive" className="text-slate-800 font-semibold cursor-pointer">
+                          Đang hoạt động và được phân công khám chữa bệnh tại phòng khám
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -3428,13 +4316,46 @@ export default function App() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Khoa Phòng Trực Thuộc:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.department || 'Khoa Khám Bệnh Ngoại Trú'}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, department: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529]"
-                      />
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-[#495057]">
+                          Khoa Phòng Trực Thuộc <span className="text-rose-600 font-bold">*</span>:
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewDepartmentData({
+                              code: `K${(allDepartments.length + 1).toString().padStart(2, '0')}`,
+                              name: '',
+                              isClinical: true,
+                              sortOrder: allDepartments.length + 1
+                            });
+                            setIsAddDepartmentModalOpen(true);
+                          }}
+                          className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#1f63c9] hover:text-[#184ea0] hover:underline cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Thêm khoa mới</span>
+                        </button>
+                      </div>
+                      <select
+                        value={selectedItemData.department || selectedItemData.departmentId || ''}
+                        onChange={(e) => {
+                          const selectedDep = allDepartments.find(d => d.id === e.target.value || d.name === e.target.value || d.departmentName === e.target.value);
+                          setSelectedItemData({
+                            ...selectedItemData,
+                            department: selectedDep ? (selectedDep.departmentName || selectedDep.name) : e.target.value,
+                            departmentId: selectedDep ? selectedDep.id : e.target.value
+                          });
+                        }}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] font-medium bg-white focus:outline-none focus:border-[#1f63c9] cursor-pointer"
+                      >
+                        <option value="">-- Chọn Khoa Phòng Trực Thuộc --</option>
+                        {allDepartments.map(dep => (
+                          <option key={dep.id} value={dep.departmentName || dep.name}>
+                            {dep.code ? `[${dep.code}] ` : ''}{dep.departmentName || dep.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="space-y-1">
                       <label className="font-semibold text-[#495057]">Mã Kênh Loa Gọi Số (TTS):</label>
@@ -3657,14 +4578,29 @@ export default function App() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="font-semibold text-[#495057]">Chương Bệnh / Nhóm Phân Loại:</label>
-                      <input
-                        type="text"
-                        value={selectedItemData.chapter || ''}
-                        onChange={(e) => setSelectedItemData({ ...selectedItemData, chapter: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] focus:border-[#1f63c9] focus:outline-none"
-                        placeholder="VD: Bệnh lý quốc tế ICD-10"
-                      />
+                      <label className="font-semibold text-[#495057]">
+                        Chương Bệnh / Nhóm Phân Loại <span className="text-rose-600 font-bold">*</span>:
+                      </label>
+                      <select
+                        value={selectedItemData.chapterCode || (selectedItemData.chapter ? selectedItemData.chapter.split(':')[0].replace('Chương ', '').trim() : '')}
+                        onChange={(e) => {
+                          const code = e.target.value;
+                          const found = WHO_ICD10_CHAPTERS.find(c => c.code === code);
+                          setSelectedItemData({
+                            ...selectedItemData,
+                            chapterCode: code,
+                            chapter: found ? `Chương ${found.code}: ${found.name}` : ''
+                          });
+                        }}
+                        className="w-full px-2.5 py-1.5 border border-[#ced4da] rounded text-[#212529] bg-white focus:border-[#1f63c9] focus:outline-none cursor-pointer text-xs"
+                      >
+                        <option value="">-- Chọn chương bệnh chuẩn WHO --</option>
+                        {WHO_ICD10_CHAPTERS.map(ch => (
+                          <option key={ch.code} value={ch.code}>
+                            Chương {ch.code}: {ch.name} ({ch.range})
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
@@ -3738,22 +4674,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* VSC Audit Block for Other Migrated Items */}
-              {selectedItemData.legacyId && currentGroup.entityType !== 'service' && currentGroup.entityType !== 'drug' && (
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded text-xs space-y-1.5">
-                  <div className="font-bold text-slate-700 flex items-center space-x-1.5">
-                    <HardDrive className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Nguồn Gốc Dữ Liệu & Đối Soát VSC Desktop</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-[#6c757d]">
-                    <span>Khóa chính VSC (LegacyId): <strong className="font-mono text-emerald-700">{selectedItemData.legacyId}</strong></span>
-                    <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      100% Khớp dữ liệu sản xuất
-                    </span>
-                  </div>
-                </div>
-              )}
+
             </div>
 
             {/* Drawer Footer Actions */}
@@ -3839,6 +4760,105 @@ export default function App() {
           showToast(`✓ Đã chọn ${selected.length} dịch vụ kỹ thuật theo nhóm chuyên khoa thành công!`);
         }}
       />
+
+            {/* Popup Thêm Mới Khoa Phòng (Tương tự như Nhóm Dịch Vụ) */}
+      {isAddDepartmentModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+          onClick={() => setIsAddDepartmentModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-[#1f63c9] text-white">
+              <div className="flex items-center space-x-2">
+                <Building2 className="w-5 h-5 text-white" />
+                <h3 className="font-bold text-sm tracking-wide">+ THÊM MỚI KHOA PHÒNG</h3>
+              </div>
+              <button 
+                onClick={() => setIsAddDepartmentModalOpen(false)}
+                className="text-white/80 hover:text-white p-1 rounded hover:bg-white/10 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 space-y-3.5 text-xs text-slate-700">
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-700">
+                  Mã Khoa Phòng <span className="text-rose-600 font-bold">*</span>:
+                </label>
+                <input
+                  type="text"
+                  value={newDepartmentData.code}
+                  onChange={(e) => setNewDepartmentData({ ...newDepartmentData, code: e.target.value })}
+                  placeholder="VD: K09, K-MAT, K-NOI..."
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded font-mono font-bold text-[#1f63c9] focus:outline-none focus:border-[#1f63c9]"
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-700">
+                  Tên Khoa Phòng <span className="text-rose-600 font-bold">*</span>:
+                </label>
+                <input
+                  type="text"
+                  value={newDepartmentData.name}
+                  onChange={(e) => setNewDepartmentData({ ...newDepartmentData, name: e.target.value })}
+                  placeholder="VD: Khoa Mắt, Khoa Hồi Sức Tích Cực..."
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded font-medium text-slate-800 focus:outline-none focus:border-[#1f63c9]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Phân Loại:</label>
+                  <select
+                    value={newDepartmentData.isClinical ? 'true' : 'false'}
+                    onChange={(e) => setNewDepartmentData({ ...newDepartmentData, isClinical: e.target.value === 'true' })}
+                    className="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white font-medium text-slate-800 focus:outline-none focus:border-[#1f63c9] cursor-pointer"
+                  >
+                    <option value="true">Khoa Lâm Sàng (Khám bệnh)</option>
+                    <option value="false">Khoa Cận Lâm Sàng & Phụ trợ</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Thứ Tự Sắp Xếp:</label>
+                  <input
+                    type="number"
+                    value={newDepartmentData.sortOrder}
+                    onChange={(e) => setNewDepartmentData({ ...newDepartmentData, sortOrder: Number(e.target.value) })}
+                    className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono text-center text-slate-800 focus:outline-none focus:border-[#1f63c9]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-2 px-4 py-3 bg-slate-50 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setIsAddDepartmentModalOpen(false)}
+                className="px-3.5 py-1.5 border border-slate-300 bg-white rounded font-medium text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveNewDepartment}
+                className="flex items-center space-x-1.5 px-4 py-1.5 bg-[#1f63c9] hover:bg-[#184ea0] text-white rounded font-semibold transition cursor-pointer shadow-2xs"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Lưu Khoa Phòng</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Popup Thêm Mới Nhóm Dịch Vụ Kỹ Thuật (L1_MODAL_FOCUS, L1_MODAL_ESCAPE, L1_MODAL_BACKDROP) */}
       {isAddGroupModalOpen && (
@@ -3950,6 +4970,50 @@ export default function App() {
         >
           {toastMessage.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
           <span>{toastMessage.text}</span>
+        </div>
+      )}
+      {confirmBulkDeleteOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full overflow-hidden border border-rose-200">
+            <div className="px-4 py-3 bg-rose-600 text-white flex items-center gap-2 font-bold text-sm">
+              <AlertTriangle className="w-4 h-4" />
+              <span>Cảnh báo Xóa Dữ Liệu</span>
+            </div>
+            <div className="p-4 text-xs text-slate-700 space-y-2">
+              <p>
+                Anh có chắc chắn muốn xóa <strong>{selectedRows.length} mục đã chọn</strong> khỏi danh mục <strong>{currentGroup.name}</strong>?
+              </p>
+              <p className="text-rose-600 font-semibold">Thao tác này không thể hoàn tác nếu anh lưu cấu hình.</p>
+            </div>
+            <div className="px-4 py-2.5 bg-slate-50 border-t flex justify-end gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setConfirmBulkDeleteOpen(false)}
+                className="px-3 py-1.5 border border-slate-300 rounded bg-white hover:bg-slate-100 cursor-pointer font-semibold"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const count = selectedRows.length;
+                  if (currentGroup.entityType === 'service') {
+                    const codes = new Set(filteredGridData.filter(r => selectedRows.includes(r.id)).map(r => r.code));
+                    setVscServices(prev => prev.filter(s => !codes.has(s.serviceCode)));
+                  } else if (currentGroup.entityType === 'drug') {
+                    const codes = new Set(filteredGridData.filter(r => selectedRows.includes(r.id)).map(r => r.code));
+                    setVscDrugs(prev => prev.filter(d => !codes.has(d.drugCode)));
+                  }
+                  setSelectedRows([]);
+                  setConfirmBulkDeleteOpen(false);
+                  showToast(`Đã xóa ${count} mục khỏi danh mục [${currentGroup.name}].`);
+                }}
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold cursor-pointer"
+              >
+                Xác nhận Xóa ({selectedRows.length})
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

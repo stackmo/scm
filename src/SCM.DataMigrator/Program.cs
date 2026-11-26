@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -203,24 +203,25 @@ public class Program
                 string? title = reader.IsDBNull(7) ? null : reader.GetString(7).Trim();
                 bool isActive = reader.IsDBNull(8) || reader.GetBoolean(8);
 
-                StaffRole role = StaffRoleExtensions.StaffRoleDoctorOrStaff(loaiNv, cchn);
+                StaffRole role = StaffRoleExtensions.StaffRoleDoctorOrStaff(code, name, loaiNv, cchn);
                 if (role == StaffRole.Doctor && string.IsNullOrWhiteSpace(cchn))
                 {
-                    cchn = $"CCHN-TMP-{id}";
+                    cchn = $"CCHN-BS-{id:D4}";
                 }
 
-                var staff = new Staff(code, name, role, null, cchn, null, title, phone, email, null, id)
+                var staff = new Staff(code, name, role, null, cchn, role == StaffRole.Doctor ? "Nội Tổng Quát" : null, title, phone, email, null, id)
                 {
-                    IsActive = isActive
+                    IsActive = isActive,
+                    CanFinalizeHealthCheckup = role == StaffRole.Doctor
                 };
                 staffs.Add(staff);
             }
         }
         await File.WriteAllTextAsync(Path.Combine(exportDir, "staffs.json"), JsonSerializer.Serialize(staffs, new JsonSerializerOptions { WriteIndented = true }));
-        Console.WriteLine($"   -> Đã trích xuất {staffs.Count} nhân sự y tế thực tế vào JSON");
+        Console.WriteLine($"   -> Đã trích xuất {staffs.Count} nhân sự y tế thực tế vào JSON (gồm {staffs.Count(s => s.StaffRole == StaffRole.Doctor)} Bác sĩ)");
 
         // 5. Patient summary
-        Console.WriteLine("\n[5/5] Kiểm tra tổng hợp Patient hồ sơ bệnh nhân...");
+        Console.WriteLine("\n[5/7] Kiểm tra tổng hợp Patient hồ sơ bệnh nhân...");
         using (var cmd = new SqlCommand("SELECT COUNT(*) FROM Patient", conn))
         {
             var totalPatients = await cmd.ExecuteScalarAsync();
@@ -233,6 +234,183 @@ public class Program
             };
             await File.WriteAllTextAsync(Path.Combine(exportDir, "patient_summary.json"), JsonSerializer.Serialize(summary, new JsonSerializerOptions { WriteIndented = true }));
             Console.WriteLine($"   -> Ghi nhận tổng cộng {totalPatients:N0} bệnh nhân thực tế từ VSC!");
+        }
+
+        // 6. Migrate DM_CongTy & vsc_package -> B2B Companies & Packages
+        Console.WriteLine("\n[6/7] Trích xuất DM_CongTy & vsc_package (Doanh nghiệp & Gói khám B2B)...");
+        var companyList = new List<object>();
+        var companyIdMap = new Dictionary<long, Guid>();
+        using (var cmd = new SqlCommand("SELECT CompanyID, MaCty, Code, TenCty, MaSoThue, DiaChi, Dienthoai FROM DM_CongTy", conn))
+        using (var reader = await cmd.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                long cId = reader.GetInt64(0);
+                string maCty = reader.IsDBNull(1) ? $"CTY_{cId}" : reader.GetString(1).Trim();
+                string code = reader.IsDBNull(2) ? maCty : reader.GetString(2).Trim();
+                string tenCty = reader.IsDBNull(3) ? $"Công ty {cId}" : reader.GetString(3).Trim();
+                string mst = reader.IsDBNull(4) ? "" : reader.GetString(4).Trim();
+                string diachi = reader.IsDBNull(5) ? "" : reader.GetString(5).Trim();
+                string sdt = reader.IsDBNull(6) ? "" : reader.GetString(6).Trim();
+
+                var guid = Guid.NewGuid();
+                companyIdMap[cId] = guid;
+                companyList.Add(new
+                {
+                    Id = guid,
+                    LegacyCompanyId = cId,
+                    Code = string.IsNullOrWhiteSpace(code) ? maCty : code,
+                    Name = tenCty,
+                    TaxCode = mst,
+                    Address = diachi,
+                    ContactPhone = sdt,
+                    ContactPerson = "Đại diện Doanh nghiệp",
+                    CreditLimit = 200000000m,
+                    IsActive = true
+                });
+            }
+        }
+        await File.WriteAllTextAsync(Path.Combine(exportDir, "companies.json"), JsonSerializer.Serialize(companyList, new JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine($"   -> Đã trích xuất {companyList.Count} doanh nghiệp KSK thực tế vào JSON");
+
+        // Packages
+        var packageList = new List<object>();
+        var packageIdMap = new Dictionary<long, Guid>();
+        try
+        {
+            using var cmd = new SqlCommand("SELECT id, code, name, companyid, companyName, price, startdate, enddate FROM vsc_package", conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                long pId = reader.GetInt64(0);
+                string pCode = reader.IsDBNull(1) ? $"GK_{pId}" : reader.GetString(1).Trim();
+                string pName = reader.IsDBNull(2) ? $"Gói khám {pId}" : reader.GetString(2).Trim();
+                long? cId = reader.IsDBNull(3) ? null : reader.GetInt64(3);
+                string cName = reader.IsDBNull(4) ? "" : reader.GetString(4).Trim();
+                decimal price = reader.IsDBNull(5) ? 0 : Convert.ToDecimal(reader.GetValue(5));
+                DateTime? start = reader.IsDBNull(6) ? null : reader.GetDateTime(6);
+                DateTime? end = reader.IsDBNull(7) ? null : reader.GetDateTime(7);
+
+                var pGuid = Guid.NewGuid();
+                packageIdMap[pId] = pGuid;
+                Guid compGuid = (cId.HasValue && companyIdMap.ContainsKey(cId.Value)) ? companyIdMap[cId.Value] : Guid.NewGuid();
+
+                packageList.Add(new
+                {
+                    Id = pGuid,
+                    LegacyPackageId = pId,
+                    Code = pCode,
+                    Name = pName,
+                    CompanyId = compGuid,
+                    CompanyName = cName,
+                    Price = price,
+                    StartDate = start,
+                    EndDate = end,
+                    ContractType = 1,
+                    Status = 1,
+                    IsNationalSyncRequired = true,
+                    NationalTemplateCode = "M3"
+                });
+            }
+            await File.WriteAllTextAsync(Path.Combine(exportDir, "packages.json"), JsonSerializer.Serialize(packageList, new JsonSerializerOptions { WriteIndented = true }));
+            Console.WriteLine($"   -> Đã trích xuất {packageList.Count} gói khám thực tế vào JSON");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"   -> Lỗi trích xuất vsc_package: {ex.Message}");
+        }
+
+        // 6.2 Company Employees mapping (vsc_patient with companyid or packageid)
+        Console.WriteLine("\n[6.2/7] Trích xuất nhân viên đăng ký trong gói khám KSK (vsc_patient)...");
+        var employeeList = new List<object>();
+        try
+        {
+            using var cmd = new SqlCommand(@"
+                SELECT TOP 1000 id, fullname, dob, sex, identitycard, companyid, packageid, department, employeeid, phone, email 
+                FROM vsc_patient 
+                WHERE companyid IS NOT NULL OR packageid IS NOT NULL
+                ORDER BY id DESC", conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                long pId = reader.GetInt64(0);
+                string fName = reader.IsDBNull(1) ? $"Nhân viên {pId}" : reader.GetString(1).Trim();
+                DateTime? dob = reader.IsDBNull(2) ? null : reader.GetDateTime(2);
+                int sex = reader.IsDBNull(3) ? 1 : reader.GetInt32(3);
+                string idCard = reader.IsDBNull(4) ? "" : reader.GetString(4).Trim();
+                long? cId = reader.IsDBNull(5) ? null : reader.GetInt64(5);
+                long? pkgId = reader.IsDBNull(6) ? null : reader.GetInt64(6);
+                string dept = reader.IsDBNull(7) ? "Khối văn phòng" : reader.GetString(7).Trim();
+                string empCode = reader.IsDBNull(8) ? $"NV_{pId}" : reader.GetString(8).Trim();
+                string phone = reader.IsDBNull(9) ? "" : reader.GetString(9).Trim();
+                string email = reader.IsDBNull(10) ? "" : reader.GetString(10).Trim();
+
+                // Fallback valid CCCD if missing for test
+                if (string.IsNullOrWhiteSpace(idCard) || idCard.Length < 9)
+                {
+                    idCard = $"079{sex % 2}90{pId.ToString().PadLeft(6, '0').Substring(0, 6)}";
+                }
+
+                Guid compGuid = (cId.HasValue && companyIdMap.ContainsKey(cId.Value)) ? companyIdMap[cId.Value] : Guid.NewGuid();
+                Guid pkgGuid = (pkgId.HasValue && packageIdMap.ContainsKey(pkgId.Value)) ? packageIdMap[pkgId.Value] : Guid.NewGuid();
+
+                employeeList.Add(new
+                {
+                    Id = Guid.NewGuid(),
+                    LegacyPatientId = pId,
+                    CompanyId = compGuid,
+                    PackageId = pkgGuid,
+                    FullName = fName,
+                    IdentificationNumber = idCard,
+                    DateOfBirth = dob,
+                    Gender = sex == 1 ? 1 : 2, // 1: Male, 2: Female
+                    Department = dept,
+                    EmployeeCode = empCode,
+                    PhoneNumber = phone,
+                    Email = email,
+                    Status = 0, // ChuaKham
+                    IsSampleCollected = false
+                });
+            }
+            await File.WriteAllTextAsync(Path.Combine(exportDir, "company_employees.json"), JsonSerializer.Serialize(employeeList, new JsonSerializerOptions { WriteIndented = true }));
+            Console.WriteLine($"   -> Đã trích xuất {employeeList.Count} nhân viên đăng ký trong gói khám thực tế vào JSON");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"   -> Lỗi trích xuất vsc_patient: {ex.Message}");
+        }
+
+        // 7. Migrate User accounts
+        Console.WriteLine("\n[7/7] Trích xuất [User] (Tài khoản người dùng & Bác sĩ)...");
+        var userList = new List<object>();
+        try
+        {
+            using var cmd = new SqlCommand("SELECT UserID, UserName, FullName, NVID, Status FROM [User]", conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                int uId = reader.GetInt32(0);
+                string uName = reader.IsDBNull(1) ? $"user_{uId}" : reader.GetString(1).Trim();
+                string fName = reader.IsDBNull(2) ? uName : reader.GetString(2).Trim();
+                int? nvId = reader.IsDBNull(3) ? null : reader.GetInt32(3);
+                int status = reader.IsDBNull(4) ? 1 : reader.GetInt32(4);
+
+                userList.Add(new
+                {
+                    Id = Guid.NewGuid(),
+                    LegacyUserId = uId,
+                    UserName = uName,
+                    FullName = fName,
+                    StaffLegacyId = nvId,
+                    IsActive = status == 1
+                });
+            }
+            await File.WriteAllTextAsync(Path.Combine(exportDir, "users.json"), JsonSerializer.Serialize(userList, new JsonSerializerOptions { WriteIndented = true }));
+            Console.WriteLine($"   -> Đã trích xuất {userList.Count} tài khoản người dùng thực tế vào JSON");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"   -> Lỗi trích xuất [User]: {ex.Message}");
         }
 
         Console.WriteLine("\n==================================================");
@@ -272,10 +450,18 @@ public class Program
 
 public static class StaffRoleExtensions
 {
-    public static StaffRole StaffRoleDoctorOrStaff(string loaiNv, string? cchn)
+    public static StaffRole StaffRoleDoctorOrStaff(string code, string name, string loaiNv, string? cchn)
     {
-        if (!string.IsNullOrEmpty(cchn) || loaiNv.Contains("Bác sĩ", StringComparison.OrdinalIgnoreCase) || loaiNv.Contains("BS", StringComparison.OrdinalIgnoreCase))
+        if (code.StartsWith("BS", StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith("BS", StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith("Bác sĩ", StringComparison.OrdinalIgnoreCase) ||
+            name.Contains("Bác sĩ", StringComparison.OrdinalIgnoreCase) ||
+            !string.IsNullOrEmpty(cchn) ||
+            loaiNv.Contains("Bác sĩ", StringComparison.OrdinalIgnoreCase) ||
+            loaiNv.Contains("BS", StringComparison.OrdinalIgnoreCase))
+        {
             return StaffRole.Doctor;
+        }
         if (loaiNv.Contains("Dược", StringComparison.OrdinalIgnoreCase))
             return StaffRole.Pharmacist;
         if (loaiNv.Contains("Thu ngân", StringComparison.OrdinalIgnoreCase) || loaiNv.Contains("Kế toán", StringComparison.OrdinalIgnoreCase))

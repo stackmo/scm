@@ -19,6 +19,10 @@ public class QueueAssignment
     public Guid? DoctorStaffId { get; set; }
     public string? DoctorStaffName { get; set; }
     public string? Notes { get; set; }
+    public int CallAttemptCount { get; set; } = 0;
+    public DateTime? SentToClsAt { get; set; }
+    public DateTime? ReturnedFromClsAt { get; set; }
+    public bool PriorityRecall { get; set; } = false;
 
     public QueueAssignment() { }
 
@@ -51,12 +55,43 @@ public class QueueAssignment
         CalledAt = DateTime.UtcNow;
     }
 
+    public void Recall(Guid? doctorId = null, string? doctorName = null)
+    {
+        CallAttemptCount++;
+        CalledAt = DateTime.UtcNow;
+        DoctorStaffId = doctorId ?? DoctorStaffId;
+        DoctorStaffName = doctorName ?? DoctorStaffName;
+        Status = AssignmentStatus.InConsultation;
+    }
+
+    public void MarkPendingCls(string? notes = null)
+    {
+        if (Status != AssignmentStatus.InConsultation)
+            throw new InvalidOperationException("Chỉ có thể chuyển đi làm CLS khi bệnh nhân đang trong lượt khám tại buồng.");
+
+        Status = AssignmentStatus.PendingCls;
+        SentToClsAt = DateTime.UtcNow;
+        if (!string.IsNullOrWhiteSpace(notes))
+        {
+            Notes = string.IsNullOrWhiteSpace(Notes) ? $"Chuyển CLS: {notes}" : $"{Notes} | Chuyển CLS: {notes}";
+        }
+    }
+
+    public void MarkReturnedFromCls()
+    {
+        if (Status != AssignmentStatus.PendingCls) return;
+        Status = AssignmentStatus.Waiting;
+        ReturnedFromClsAt = DateTime.UtcNow;
+        PriorityRecall = true;
+    }
+
     public void StartConsultation(Guid? doctorId = null, string? doctorName = null)
     {
         Status = AssignmentStatus.InConsultation;
         DoctorStaffId = doctorId ?? DoctorStaffId;
         DoctorStaffName = doctorName ?? DoctorStaffName;
-        CalledAt ??= DateTime.UtcNow;
+        CallAttemptCount++;
+        CalledAt = DateTime.UtcNow;
     }
 
     public void Complete(string? notes = null)

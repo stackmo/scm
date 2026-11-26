@@ -1,0 +1,402 @@
+[
+  {
+    "Id": "b250d749-6651-4b9d-8b1d-0fdec7be9978",
+    "LegacyUserId": 1,
+    "UserName": "Quangtest",
+    "FullName": "Nguy\u1EC5n Nh\u1EADt Quang",
+    "StaffLegacyId": 1,
+    "IsActive": true
+  },
+  {
+    "Id": "ec20d2a1-d6f6-41a6-a539-8021a9bf9f3c",
+    "LegacyUserId": 9,
+    "UserName": "Huynh_Thi_Ngoc_Loan",
+    "FullName": "Hu\u1EF3nh Th\u1ECB Ng\u1ECDc Loan",
+    "StaffLegacyId": 26,
+    "IsActive": true
+  },
+  {
+    "Id": "b473425b-d774-4bf5-a4de-1e46687a5554",
+    "LegacyUserId": 10,
+    "UserName": "Nguyen_Nhat_Quang",
+    "FullName": "Nguy\u1EC5n Nh\u1EADt Quang",
+    "StaffLegacyId": 107,
+    "IsActive": false
+  },
+  {
+    "Id": "2900db81-6b31-4e8e-abec-1702515ed0a4",
+    "LegacyUserId": 11,
+    "UserName": "Le_tan_01",
+    "FullName": "L\u1EC5 t\u00E2n 01",
+    "StaffLegacyId": 108,
+    "IsActive": false
+  },
+  {
+    "Id": "d0841603-dd75-4c2c-877b-d1d2c903ed95",
+    "LegacyUserId": 12,
+    "UserName": "TK. NGUYEN_THI_DA_THAO",
+    "FullName": "NGUY\u1EC4N TH\u1ECA D\u1EA0 TH\u1EA2O",
+    "StaffLegacyId": 109,
+    "IsActive": true
+  },
+  {
+    "Id": "b8eb878a-f818-4543-ac8e-7d51c5593d8d",
+    "LegacyUserId": 13,
+    "UserName": "test",
+    "FullName": "test",
+    "StaffLegacyId": 110,
+    "IsActive": false
+  },
+  {
+    "Id": "19ec341c-91bd-4e1d-8876-ea6b61900d7d",
+    "LegacyUserId": 14,
+    "UserName": "BS. BS_TRAN_PHAM_QUANG_THUAN",
+    "FullName": "BS TR\u1EA6N PH\u1EA0M QUANG THU\u1EACN",
+    "StaffLegacyId": 27,
+    "IsActive": true
+  },
+  {
+    "Id": "0eb46304-71c7-4a57-b6c7-dcad8bbed415",
+    "LegacyUserId": 16,
+    "UserName": "Nguyen_Thi_Thu_Huong",
+    "FullName": "Nguy\u1EC5n Th\u1ECB Thu H\u01B0\u01A1ng",
+    "StaffLegacyId": 112,
+    "IsActive": true
+  },
+  {
+    "Id": "f9dd90aa-f23a-45a3-941a-0be8c5ecde4e",
+    "LegacyUserId": 17,
+    "UserName": "KT. Tran_Dinh_Anh_Thy",
+    "FullName": "Tr\u1EA7n \u0110\u00ECnh Anh Thy",
+    "StaffLegacyId": 113,
+    "IsActive": true
+  },
+  {
+    "Id": "426f7219-f650-4bbb-86ca-281cf20d6200",
+    "LegacyUserId": 18,
+    "UserName": "BS. BS._PHU_KHOA",
+    "FullName": "BS. PHU KHOA",
+    "StaffLegacyId": 114,
+    "IsActive": false
+  },
+  {
+    "Id": "855f8fb1-ca90-461e-ab2e-7c31a6f53324",
+    "LegacyUserId": 19,
+    "UserName": "DUOC. Nguyen_Thi_Anh_Ha",
+    "FullName": "Nguy\u1EC5n Th\u1ECB \u00C1nh H\u00E0",
+    "StaffLegacyId": 115,
+    "IsActive": true
+  },
+  {
+    "Id": "456dbbcf-899b-44af-b036-658dd746e69b",
+    "LegacyUserId": 20,
+    "UserName": "DD. Trinh_Kieu_Bich_Nga",
+    "FullName": "Tr\u1ECBnh Ki\u1EC1u B\u00EDch Nga",
+    "StaffLegacyId": 116,
+    "IsActive": true
+  },
+  {
+    "Id": "1cae6aee-8c42-4aee-baa2-95f1118ec3ee",
+    "LegacyUserId": 21,
+    "UserName": "DUOC. Le_Thi_Thanh_Hieu",
+    "FullName": "L\u00EA Th\u1ECB Thanh Hi\u1EBFu",
+    "StaffLegacyId": 117,
+    "IsActive": true
+  },
+  {
+    "Id": "534ac86f-a686-412d-abaf-dca32eedc529",
+    "LegacyUserId": 22,
+    "UserName": "KT. Nguyen_Thi_Bich_Ngoc",
+    "FullName": "Nguy\u1EC5n Th\u1ECB B\u00EDch Ng\u1ECDc",
+    "StaffLegacyId": 118,
+    "IsActive": true
+  },
+  {
+    "Id": "f0d22aa8-8a05-42a1-8c31-39b29de15029",
+    "LegacyUserId": 23,
+    "UserName": "DUOC. Nguyen_Thi_Bao_Trang",
+    "FullName": "Nguy\u1EC5n Th\u1ECB B\u1EA3o Trang",
+    "StaffLegacyId": 119,
+    "IsActive": true
+  },
+  {
+    "Id": "611060c8-f720-4916-92dc-3e0950c691bd",
+    "LegacyUserId": 24,
+    "UserName": "BS. BS._CKI_NGUYEN_NHAT_THANH",
+    "FullName": "BS. CKI NGUY\u1EC4N NH\u1EACT THANH",
+    "StaffLegacyId": 90,
+    "IsActive": false
+  },
+  {
+    "Id": "e6a58bcd-b058-4e53-94b2-9f15b7ef97e3",
+    "LegacyUserId": 25,
+    "UserName": "BS. NGUYEN_NHAT_THANH",
+    "FullName": "BS. CKI NGUY\u1EC4N NH\u1EACT THANH",
+    "StaffLegacyId": 90,
+    "IsActive": true
+  },
+  {
+    "Id": "4ab00e56-b6ca-47b4-8a5c-30c4f345f3cf",
+    "LegacyUserId": 26,
+    "UserName": "Admin. Duong_Thi_Ngoc_Hien",
+    "FullName": "D\u01B0\u01A1ng Th\u1ECB Ng\u1ECDc Hi\u1EC1n",
+    "StaffLegacyId": 121,
+    "IsActive": true
+  },
+  {
+    "Id": "da60dbfb-031e-41ed-ad2d-945676f5d7f2",
+    "LegacyUserId": 27,
+    "UserName": "Administrator",
+    "FullName": "Administrator",
+    "StaffLegacyId": 122,
+    "IsActive": true
+  },
+  {
+    "Id": "98a1ea25-af8f-41b1-ad36-9c8381d69690",
+    "LegacyUserId": 28,
+    "UserName": "Tran_Thi_Thuy_Hang",
+    "FullName": "Tr\u1EA7n Th\u1ECB Th\u00FAy H\u1EB1ng",
+    "StaffLegacyId": 123,
+    "IsActive": true
+  },
+  {
+    "Id": "9a92e9a9-6765-4eae-b6cd-47619b555acb",
+    "LegacyUserId": 29,
+    "UserName": "Tran_Thi_Y_Chau",
+    "FullName": "Tr\u1EA7n Th\u1ECB \u00DD Ch\u00E2u",
+    "StaffLegacyId": 124,
+    "IsActive": true
+  },
+  {
+    "Id": "8768a6d4-0754-4a0a-80ef-39e7439de39e",
+    "LegacyUserId": 30,
+    "UserName": "Pham_Thi_Cam_Van",
+    "FullName": "Ph\u1EA1m Th\u1ECB C\u1EA9m V\u00E2n",
+    "StaffLegacyId": 126,
+    "IsActive": true
+  },
+  {
+    "Id": "ea2dab39-9f7d-4dc5-963d-81527b8cdd44",
+    "LegacyUserId": 31,
+    "UserName": "Bui_Thi_Bich",
+    "FullName": "B\u00F9i Th\u1ECB B\u00EDch",
+    "StaffLegacyId": 127,
+    "IsActive": true
+  },
+  {
+    "Id": "eac24a75-2179-42f7-9a60-a97fc84c662a",
+    "LegacyUserId": 32,
+    "UserName": "BS_DUONG_LE_CHI",
+    "FullName": "BS D\u01AF\u01A0NG L\u1EC6 CHI",
+    "StaffLegacyId": 33,
+    "IsActive": true
+  },
+  {
+    "Id": "5fcb4633-98ce-4584-b0b5-e07473490b57",
+    "LegacyUserId": 33,
+    "UserName": "BS.TRAN_TUY_PHUONG",
+    "FullName": "BS. TR\u1EA6N T\u00DAY PH\u01AF\u1EE2NG",
+    "StaffLegacyId": 130,
+    "IsActive": true
+  },
+  {
+    "Id": "11e748e0-1f25-480c-b713-a3fd0ba17e90",
+    "LegacyUserId": 34,
+    "UserName": "BS.CKII.VU_MANH_CUONG",
+    "FullName": "BS.CKII.V\u0168 M\u1EA0NH C\u01AF\u1EDCNG",
+    "StaffLegacyId": 131,
+    "IsActive": true
+  },
+  {
+    "Id": "3ba60ac2-9f2a-49e3-af96-08cb93a20cb3",
+    "LegacyUserId": 35,
+    "UserName": "La_Tan_Tai",
+    "FullName": "La T\u1EA5n T\u00E0i",
+    "StaffLegacyId": 132,
+    "IsActive": true
+  },
+  {
+    "Id": "d3b1e44e-13b0-4e46-950b-626439ccecf2",
+    "LegacyUserId": 36,
+    "UserName": "BS.CKI_NGUYEN_THI_NGOC_YEN",
+    "FullName": "BS.CKI NGUY\u1EC4N TH\u1ECA NG\u1ECCC Y\u1EBEN",
+    "StaffLegacyId": 28,
+    "IsActive": true
+  },
+  {
+    "Id": "d4911724-ee80-4b1c-b29c-88c01a58538d",
+    "LegacyUserId": 37,
+    "UserName": "LE_LINH_PHUONG",
+    "FullName": "L\u00CA LINH PH\u01AF\u01A0NG",
+    "StaffLegacyId": 133,
+    "IsActive": true
+  },
+  {
+    "Id": "3e09284a-9959-49ae-be09-321c4b4644b4",
+    "LegacyUserId": 38,
+    "UserName": "Le_Thuy_An",
+    "FullName": "L\u00EA Th\u00F9y An",
+    "StaffLegacyId": 134,
+    "IsActive": true
+  },
+  {
+    "Id": "f3e7f743-92a4-413f-8f27-d03660832fb1",
+    "LegacyUserId": 39,
+    "UserName": "test",
+    "FullName": "test",
+    "StaffLegacyId": 110,
+    "IsActive": true
+  },
+  {
+    "Id": "5f103821-e8d0-45d7-80ae-f1a543823797",
+    "LegacyUserId": 40,
+    "UserName": "Pham_Van_Phuong",
+    "FullName": "Ph\u1EA1m V\u0103n Ph\u01B0\u01A1ng",
+    "StaffLegacyId": 137,
+    "IsActive": true
+  },
+  {
+    "Id": "91f324f5-70b1-4107-9686-41672ae80090",
+    "LegacyUserId": 41,
+    "UserName": "Tran_Thi_Ngoc_Quy",
+    "FullName": "Tr\u1EA7n Th\u1ECB Ng\u1ECDc Qu\u00FD",
+    "StaffLegacyId": 138,
+    "IsActive": false
+  },
+  {
+    "Id": "5dd3e1ac-efba-4e07-9af6-ea6d425bb684",
+    "LegacyUserId": 42,
+    "UserName": "Tran_Thi_Ngoc_Qui",
+    "FullName": "Tr\u1EA7n Th\u1ECB Ng\u1ECDc Qu\u00ED",
+    "StaffLegacyId": 138,
+    "IsActive": true
+  },
+  {
+    "Id": "0faf2c54-56bb-4bef-86b6-d17b9944cc9a",
+    "LegacyUserId": 43,
+    "UserName": "Tran_thi_thu_hoa",
+    "FullName": "Tr\u1EA7n th\u1ECB thu h\u00F2a",
+    "StaffLegacyId": 139,
+    "IsActive": true
+  },
+  {
+    "Id": "99d48424-f1a9-4c0e-bb1b-74d0ebd12a61",
+    "LegacyUserId": 44,
+    "UserName": "Nguyen_Thai_Hoa",
+    "FullName": "Nguy\u1EC5n Th\u00E1i H\u00F2a",
+    "StaffLegacyId": 140,
+    "IsActive": true
+  },
+  {
+    "Id": "60b5c6aa-e536-423f-96bf-f9ad587527ff",
+    "LegacyUserId": 45,
+    "UserName": "Huynh_Thi_Ngoan",
+    "FullName": "Hu\u1EF3nh Th\u1ECB Ngoan",
+    "StaffLegacyId": 142,
+    "IsActive": true
+  },
+  {
+    "Id": "0d453bfa-35f3-4c0a-9960-a5a0efceeb0b",
+    "LegacyUserId": 46,
+    "UserName": "Mai_Thi_Thu_Thao",
+    "FullName": "Mai Th\u1ECB Thu Th\u1EA3o",
+    "StaffLegacyId": 143,
+    "IsActive": true
+  },
+  {
+    "Id": "50f67f86-ecc9-4cc9-80d0-47a55eaf6778",
+    "LegacyUserId": 47,
+    "UserName": "Tran_Ha_Hoai_Thuong",
+    "FullName": "Tr\u1EA7n H\u00E0 Ho\u00E0i Th\u01B0\u01A1ng",
+    "StaffLegacyId": 144,
+    "IsActive": true
+  },
+  {
+    "Id": "064b4913-b55a-4f9b-9761-6e313cb7cf8e",
+    "LegacyUserId": 48,
+    "UserName": "VU_THANG",
+    "FullName": "V\u0168 TH\u1EAENG",
+    "StaffLegacyId": 146,
+    "IsActive": true
+  },
+  {
+    "Id": "c7156477-7808-45f5-909f-b27263e3b530",
+    "LegacyUserId": 49,
+    "UserName": "ChanhHM",
+    "FullName": "",
+    "StaffLegacyId": 0,
+    "IsActive": true
+  },
+  {
+    "Id": "bcf982b9-c1f4-43a7-8d26-feaeeda94bca",
+    "LegacyUserId": 50,
+    "UserName": "NGUYEN_THI_HONG_TRANG",
+    "FullName": "NGUY\u1EC4N TH\u1ECA H\u1ED2NG TRANG",
+    "StaffLegacyId": 147,
+    "IsActive": true
+  },
+  {
+    "Id": "b266b7c9-4a66-4ba9-bb2b-7b4d8e9f0969",
+    "LegacyUserId": 51,
+    "UserName": "BS._NGUYEN_VAN_PHU",
+    "FullName": "BS. NGUY\u1EC4N V\u0102N PH\u00DA",
+    "StaffLegacyId": 148,
+    "IsActive": true
+  },
+  {
+    "Id": "abcbefa9-61d2-4a60-a149-6cb124440b3b",
+    "LegacyUserId": 52,
+    "UserName": "BS._DOAN_MINH_PHUONG",
+    "FullName": "BS. \u0110O\u00C0N MINH PH\u01AF\u01A0NG",
+    "StaffLegacyId": 149,
+    "IsActive": true
+  },
+  {
+    "Id": "e1fbb571-a111-44d7-b319-965775843042",
+    "LegacyUserId": 53,
+    "UserName": "Bach_Thi_Lan_Huong",
+    "FullName": "B\u1EA1ch Th\u1ECB Lan H\u01B0\u01A1ng",
+    "StaffLegacyId": 152,
+    "IsActive": true
+  },
+  {
+    "Id": "31bc3aa6-d55c-405d-8772-95d46cb27924",
+    "LegacyUserId": 54,
+    "UserName": "HA_THI_MINH_NGOC",
+    "FullName": "H\u00C0 TH\u1ECA MINH NG\u1ECCC",
+    "StaffLegacyId": 1155,
+    "IsActive": true
+  },
+  {
+    "Id": "d6b17786-088e-4860-9ab0-6a51918cecd3",
+    "LegacyUserId": 55,
+    "UserName": "BS_NGUYEN_THI_THU_THAO",
+    "FullName": "BS NGUY\u1EC4N TH\u1ECA THU TH\u1EA2O",
+    "StaffLegacyId": 154,
+    "IsActive": true
+  },
+  {
+    "Id": "30c48dfb-1a0e-463a-b6ff-e0873fad4a83",
+    "LegacyUserId": 56,
+    "UserName": "NGUYEN_PHUONG_UYEN",
+    "FullName": "NGUY\u1EC4N PH\u01AF\u01A0NG UY\u00CAN",
+    "StaffLegacyId": 1156,
+    "IsActive": true
+  },
+  {
+    "Id": "41d9905b-4593-41ca-988e-1b8c819526c8",
+    "LegacyUserId": 57,
+    "UserName": "LU_XAN_LUAN",
+    "FullName": "L\u01AF X\u00C1N LU\u00C2N",
+    "StaffLegacyId": 1157,
+    "IsActive": true
+  },
+  {
+    "Id": "1c337d67-4dca-4f98-984d-4a5e5b6b5c42",
+    "LegacyUserId": 58,
+    "UserName": "admin",
+    "FullName": "Qu\u1EA3n tr\u1ECB vi\u00EAn h\u1EC7 th\u1ED1ng",
+    "StaffLegacyId": null,
+    "IsActive": true
+  }
+]

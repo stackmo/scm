@@ -17,6 +17,7 @@ export interface ServiceItem {
   isPackage?: boolean;
   bundledServiceIds?: string[]; // Danh sách ID các dịch vụ con bên trong
   packageDescription?: string;
+  legacyId?: number;
 }
 
 export const MASTER_SERVICES_CATALOG: ServiceItem[] = [

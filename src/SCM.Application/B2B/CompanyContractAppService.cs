@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using SCM.Application.Contracts.B2B;
 using SCM.Application.Contracts.B2B.Dtos;
 using SCM.Domain.B2B;
+using SCM.Domain.Branches;
 using SCM.Domain.Shared;
+using SCM.Domain.Shared.Enums;
 using SCM.Domain.Shared.Exceptions;
 using SCM.EntityFrameworkCore;
 
@@ -11,10 +13,12 @@ namespace SCM.Application.B2B;
 public class CompanyContractAppService : ICompanyContractAppService
 {
     private readonly SCMDbContext _context;
+    private readonly ICurrentBranch _currentBranch;
 
-    public CompanyContractAppService(SCMDbContext context)
+    public CompanyContractAppService(SCMDbContext context, ICurrentBranch? currentBranch = null)
     {
         _context = context;
+        _currentBranch = currentBranch ?? new NullCurrentBranch();
     }
 
     public async Task<CompanyContractDto> GetAsync(Guid id)
@@ -65,6 +69,12 @@ public class CompanyContractAppService : ICompanyContractAppService
             status: input.Status
         );
 
+        if (_currentBranch.Id.HasValue && _currentBranch.Id.Value != Guid.Empty)
+        {
+            contract.BranchId = _currentBranch.Id.Value;
+            contract.BranchCode = _currentBranch.Code ?? string.Empty;
+        }
+
         _context.CompanyContracts.Add(contract);
         await _context.SaveChangesAsync();
 
@@ -80,6 +90,13 @@ public class CompanyContractAppService : ICompanyContractAppService
 
         if (contract == null)
             throw new BusinessException(SCMErrorCodes.ContractNotFound, $"Không tìm thấy hợp đồng có Id = {id}.");
+
+        if (contract.Status == ContractStatus.Signed || contract.Status == ContractStatus.Executing)
+        {
+            throw new BusinessException(
+                SCMErrorCodes.ContractImmutabilityViolation,
+                "Hợp đồng đã ở trạng thái hiệu lực (Signed/Executing), bị đóng băng (Immutable) không được sửa đổi trực tiếp. Bổ sung nhân sự hoặc điều khoản phải lập Phụ lục hợp đồng.");
+        }
 
         var contractNumber = input.ContractNumber.Trim();
         if (contract.ContractNumber != contractNumber)
@@ -106,11 +123,49 @@ public class CompanyContractAppService : ICompanyContractAppService
         return MapToDto(contract);
     }
 
+    public async Task<CompanyContractDto> ApproveContractAsync(Guid contractId)
+    {
+        var contract = await _context.CompanyContracts
+            .Include(x => x.Company)
+            .Include(x => x.Packages)
+                .ThenInclude(p => p.Services)
+            .FirstOrDefaultAsync(x => x.Id == contractId);
+
+        if (contract == null)
+            throw new BusinessException(SCMErrorCodes.ContractNotFound, $"Không tìm thấy hợp đồng có Id = {contractId}.");
+
+        // Validate FloorPriceGuard across all package services
+        foreach (var package in contract.Packages)
+        {
+            foreach (var service in package.Services)
+            {
+                if (service.DealPrice < service.FloorPrice && !service.IsSpecialApproved)
+                {
+                    throw new BusinessException(
+                        SCMErrorCodes.FloorPriceViolation,
+                        $"Dịch vụ '{service.ServiceName}' trong gói '{package.Name}' có giá thỏa thuận ({service.DealPrice:N0}đ) thấp hơn giá sàn quy định ({service.FloorPrice:N0}đ).");
+                }
+            }
+        }
+
+        contract.Status = ContractStatus.Signed;
+        await _context.SaveChangesAsync();
+
+        return MapToDto(contract);
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var contract = await _context.CompanyContracts.FirstOrDefaultAsync(x => x.Id == id);
         if (contract == null)
             throw new BusinessException(SCMErrorCodes.ContractNotFound, $"Không tìm thấy hợp đồng có Id = {id}.");
+
+        if (contract.Status == ContractStatus.Signed || contract.Status == ContractStatus.Executing)
+        {
+            throw new BusinessException(
+                SCMErrorCodes.ContractImmutabilityViolation,
+                "Hợp đồng đã ký kết/có hiệu lực không được phép xóa.");
+        }
 
         _context.CompanyContracts.Remove(contract);
         await _context.SaveChangesAsync();

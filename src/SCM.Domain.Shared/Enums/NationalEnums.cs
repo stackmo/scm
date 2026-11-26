@@ -3,7 +3,8 @@ namespace SCM.Domain.Shared.Enums;
 public enum GatewayType
 {
     CongYTeM3 = 1,
-    CongDonThuoc = 2
+    CongDonThuoc = 2,
+    EInvoice = 3
 }
 
 public enum NationalApprovedStatus

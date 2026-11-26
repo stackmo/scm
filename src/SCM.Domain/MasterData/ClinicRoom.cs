@@ -1,3 +1,4 @@
+using SCM.Domain.Branches;
 using SCM.Domain.Shared;
 using SCM.Domain.Shared.Enums;
 
@@ -6,10 +7,12 @@ namespace SCM.Domain.MasterData;
 public class Department
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid? BranchId { get; set; } // null = Khoa dùng chung toàn chuỗi (Headquarters), non-null = Khoa riêng của chi nhánh
     public string DepartmentCode { get; set; } = string.Empty;
     public string DepartmentName { get; set; } = string.Empty;
     public bool IsClinical { get; set; } = true;
     public int SortOrder { get; set; }
+    public string? MinistryDepartmentCode { get; set; } // Mã khoa chuẩn Bộ Y Tế theo QĐ 130 (K01, K02...)
     public bool IsActive { get; set; } = true;
     public int? LegacyId { get; set; }
 
@@ -17,13 +20,15 @@ public class Department
 
     public Department() { }
 
-    public Department(string code, string name, bool isClinical = true, int sortOrder = 0, int? legacyId = null)
+    public Department(string code, string name, bool isClinical = true, int sortOrder = 0, int? legacyId = null, string? ministryDepartmentCode = null, Guid? branchId = null)
     {
         DepartmentCode = code;
         DepartmentName = name;
         IsClinical = isClinical;
         SortOrder = sortOrder;
         LegacyId = legacyId;
+        MinistryDepartmentCode = ministryDepartmentCode;
+        BranchId = branchId;
         IsActive = true;
     }
 }
@@ -31,6 +36,8 @@ public class Department
 public class ClinicRoom
 {
     public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid? BranchId { get; set; } // null = Buồng khám mẫu, non-null = Buồng khám vật lý tại cơ sở cụ thể
+    public Branch? Branch { get; set; }
     public string RoomCode { get; set; } = string.Empty;
     public string RoomName { get; set; } = string.Empty;
     public Guid DepartmentId { get; set; }
@@ -53,7 +60,8 @@ public class ClinicRoom
         decimal standardExamFee = 0,
         int currentCapacity = 10,
         int maxQueueLimit = 20,
-        int? legacyId = null)
+        int? legacyId = null,
+        Guid? branchId = null)
     {
         RoomCode = roomCode;
         RoomName = roomName;
@@ -63,6 +71,7 @@ public class ClinicRoom
         CurrentCapacity = currentCapacity;
         MaxQueueLimit = maxQueueLimit;
         LegacyId = legacyId;
+        BranchId = branchId;
         IsActive = true;
     }
 }

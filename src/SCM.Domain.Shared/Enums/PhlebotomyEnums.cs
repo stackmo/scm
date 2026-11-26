@@ -12,10 +12,16 @@ public enum TubeType
 public enum TubeStatus
 {
     Prepared = 0,
-    Collected = 1,
-    Transporting = 2,
-    Received = 3,
-    Rejected = 4
+    Planned = 0, // C-3.3 alias
+    Printed = 10, // C-3.3: Tem đã in dán ống trước ngày lấy mẫu
+    Collected = 1, // Đã lấy mẫu tại hiện trường
+    Transporting = 2, // Đang trên đường vận chuyển
+    InTransit = 2, // C-3.3 alias
+    Received = 3, // Lab trung tâm đã tiếp nhận
+    ReceivedLab = 3, // C-3.3 alias
+    RunningLis = 5, // Đang ly tâm / nạp máy phân tích LIS
+    Resulted = 6, // Đã có kết quả xét nghiệm hoàn tất
+    Rejected = 4 // Mẫu bị từ chối (vỡ, đông dây, tiêu huyết)
 }
 
 public enum BatchStatus

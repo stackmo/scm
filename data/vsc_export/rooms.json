@@ -1,9 +1,11 @@
 [
   {
-    "Id": "1a832bdf-6429-4153-bf56-58c8b21feb03",
+    "Id": "7de520e6-b922-4ff1-ac91-f1b749069583",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K01",
     "RoomName": "Khoa kh\u00E1m b\u1EC7nh",
-    "DepartmentId": "12c0f22f-1a01-4cee-8669-2cf3c089cb68",
+    "DepartmentId": "df0e9bf7-81c1-4e23-a297-bc557ea85474",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -14,10 +16,12 @@
     "LegacyId": 1
   },
   {
-    "Id": "81cfeb24-8398-4dd4-8c66-fc673433337d",
+    "Id": "01897b2e-3e2f-480c-8635-64d31454bd7c",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K02",
     "RoomName": "Khoa H\u1ED3i s\u1EE9c c\u1EA5p c\u1EE9u",
-    "DepartmentId": "af26f7e6-0356-462c-a59c-1b779ec70bab",
+    "DepartmentId": "0c24c507-7967-4589-b881-09ea67906bd7",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -28,10 +32,12 @@
     "LegacyId": 2
   },
   {
-    "Id": "7e56da98-795e-4fce-bc41-fb4e779f9ed1",
+    "Id": "8611dc9b-20ab-4f8b-97de-be3257723130",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K03",
     "RoomName": "Khoa N\u1ED9i t\u1ED5ng h\u1EE3p",
-    "DepartmentId": "3db577c4-4512-4111-97e8-a30f7bd71a06",
+    "DepartmentId": "88757255-d7b1-45b6-a3d4-5230eba1b5de",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -42,10 +48,12 @@
     "LegacyId": 3
   },
   {
-    "Id": "473e2c72-1753-49e4-acc1-9a6d91a94e5b",
+    "Id": "afa8a709-7e19-405f-9af6-708bb1bcb56d",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K04",
     "RoomName": "Khoa N\u1ED9i tim m\u1EA1ch",
-    "DepartmentId": "6f6b7613-616f-4a9b-88aa-31ee8719fd15",
+    "DepartmentId": "69f6b394-89c6-4280-a2dd-14f8a7eb76a2",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -56,10 +64,12 @@
     "LegacyId": 4
   },
   {
-    "Id": "5e489d7e-11ce-4b83-b937-38c3aadb0ed4",
+    "Id": "d61bcb4e-75cc-4355-9715-bced2c2b678a",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K05",
     "RoomName": "Khoa N\u1ED9i ti\u00EAu ho\u00E1",
-    "DepartmentId": "76613b9e-9de1-4fd4-884d-ee8ad2586b06",
+    "DepartmentId": "a5c07e32-2fe7-4706-b2c7-599a643be585",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -70,10 +80,12 @@
     "LegacyId": 5
   },
   {
-    "Id": "1fb4564d-952c-4710-87b6-5a87e6411f4f",
+    "Id": "83c2f4cf-2b66-452e-8848-49b5cf542982",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K06",
     "RoomName": "Khoa N\u1ED9i c\u01A1 \u2013 x\u01B0\u01A1ng - kh\u1EDBp",
-    "DepartmentId": "336de7ad-6be2-4331-af35-641ca8f46d62",
+    "DepartmentId": "2be93a89-48fc-4bb1-bd88-f27f7c3602b8",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -84,10 +96,12 @@
     "LegacyId": 6
   },
   {
-    "Id": "2cff7fa6-ceb7-4102-8430-5ff9a3e58d3e",
+    "Id": "d4efce6f-172d-4829-9e4e-c586dba4ce88",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K07",
     "RoomName": "Khoa N\u1ED9i th\u1EADn - ti\u1EBFt ni\u1EC7u",
-    "DepartmentId": "94ef02bd-f279-45a6-9a27-fd63f583d1a3",
+    "DepartmentId": "cb9e15da-9da3-4d10-ba86-0104532c4e7c",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -98,10 +112,12 @@
     "LegacyId": 7
   },
   {
-    "Id": "b458c653-1321-404f-a22b-4e8659b2cc6d",
+    "Id": "2924e1ca-3950-49b1-9773-9b8276030ca9",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K08",
     "RoomName": "Khoa N\u1ED9i ti\u1EBFt",
-    "DepartmentId": "b660d6f0-0825-4da2-97e5-80dcf05e8b3e",
+    "DepartmentId": "bd909519-da06-461c-8162-ac586bfcc4b0",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -112,10 +128,12 @@
     "LegacyId": 8
   },
   {
-    "Id": "409329b5-5247-4411-acc3-70bfee774dc4",
+    "Id": "826af0a0-9317-433c-a3f4-624bc076340b",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K09",
     "RoomName": "Khoa d\u1ECB \u1EE9ng",
-    "DepartmentId": "fb35381b-8130-4458-a2dc-6f6c32bfaa3d",
+    "DepartmentId": "5bec6d11-4d6a-43f1-b5c6-b04632a85890",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -126,10 +144,12 @@
     "LegacyId": 9
   },
   {
-    "Id": "6e36787e-2812-4867-ba6f-05c263e8a169",
+    "Id": "25015046-0ee9-4e29-b346-f54107f025f0",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K10",
     "RoomName": "Khoa huy\u1EBFt h\u1ECDc l\u00E2m s\u00E0ng",
-    "DepartmentId": "c2bc6667-456e-49b8-95bd-c206f2ee6cb6",
+    "DepartmentId": "a8a9511c-5b25-43cf-9ea9-e62bfe9a3f5d",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -140,10 +160,12 @@
     "LegacyId": 10
   },
   {
-    "Id": "749835f2-732a-49b0-8d7d-1f9dba65acf8",
+    "Id": "e4d4909a-7800-4b06-8b65-edf6f361643e",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K11",
     "RoomName": "Khoa truy\u1EC1n nhi\u1EC5m",
-    "DepartmentId": "df5ee4d8-27be-46e2-b2c7-edec21127bcb",
+    "DepartmentId": "8c854eea-3af7-4fc5-a44e-380e7db75022",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -154,10 +176,12 @@
     "LegacyId": 11
   },
   {
-    "Id": "03b4ad38-8bbe-485c-b48e-831c6050163b",
+    "Id": "94c4ab62-71ca-4f59-8eac-ef14a508ece5",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K12",
     "RoomName": "Khoa Lao",
-    "DepartmentId": "20b46c6a-91c1-4d5c-8d9d-fa618fa9bcde",
+    "DepartmentId": "3691982f-b54d-45bf-892c-c25c37448851",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -168,10 +192,12 @@
     "LegacyId": 12
   },
   {
-    "Id": "12ebecf1-6349-4091-b0bf-9b7bf376c9eb",
+    "Id": "faf463a3-9357-4a23-a6a6-762e0d8d3b92",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K13",
     "RoomName": "Khoa da li\u1EC5u",
-    "DepartmentId": "b82c497e-c091-4a5b-a6ca-8ddab8fb0b08",
+    "DepartmentId": "802d30e6-8825-4b1e-9e98-3b370eb6ac6b",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -182,10 +208,12 @@
     "LegacyId": 13
   },
   {
-    "Id": "382c2774-8d16-4445-ab3b-fedcef7988b0",
+    "Id": "d9b1319c-bdff-4e9c-b9dd-10ae72735e5f",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K14",
     "RoomName": "Khoa th\u1EA7n kinh",
-    "DepartmentId": "6885b0c3-8d37-4bc6-b229-13b09b5ec3ae",
+    "DepartmentId": "848a5e38-51f3-4bf1-aad4-d304a1511501",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -196,10 +224,12 @@
     "LegacyId": 14
   },
   {
-    "Id": "8826002d-0348-4a36-94b4-624e2b0a19ec",
+    "Id": "292072b4-6acd-4013-99ca-9f1389f851ab",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K15",
     "RoomName": "Khoa T\u00E2m th\u1EA7n",
-    "DepartmentId": "9c2eb59f-9769-46ed-8cd3-c09e206fbafa",
+    "DepartmentId": "632605e6-95ab-4985-8c72-e84a55fd92a2",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -210,10 +240,12 @@
     "LegacyId": 15
   },
   {
-    "Id": "051f635b-e97c-4430-8000-04ddf25a54d6",
+    "Id": "b7f8e3e6-4bc5-4374-9d7b-6051a76b68cd",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K16",
     "RoomName": "Khoa Y h\u1ECDc c\u1ED5 truy\u1EC1n",
-    "DepartmentId": "00fabe75-76b5-4bf9-a02e-461e80a20ee8",
+    "DepartmentId": "551e821b-5fa7-4b49-a799-8cf18b8ab42b",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -224,10 +256,12 @@
     "LegacyId": 16
   },
   {
-    "Id": "f5c9ea41-ba4e-4c2a-896a-0fcd966fe10b",
+    "Id": "865984bd-a12a-4e26-8c55-47b7fed62d30",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K17",
     "RoomName": "Khoa L\u00E3o h\u1ECDc",
-    "DepartmentId": "bcbc9957-9085-4684-b6a9-d8f478c96223",
+    "DepartmentId": "8ab12ed9-3c92-4afd-8323-c2cbb390bbeb",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -238,10 +272,12 @@
     "LegacyId": 17
   },
   {
-    "Id": "3cf88dfd-0d08-4279-8633-b56e5aa11667",
+    "Id": "bd3d098d-e503-45a4-9351-17c4a070d6f6",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K18",
     "RoomName": "Khoa Nhi",
-    "DepartmentId": "3390e79a-bef3-41d4-bd43-c56db3318490",
+    "DepartmentId": "69e319c7-0da9-4e5a-9998-6017e4bc70b8",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -252,10 +288,12 @@
     "LegacyId": 18
   },
   {
-    "Id": "4d1f939a-627a-4206-8a42-ffbcd5be6de8",
+    "Id": "ef7df882-1f1a-4ce5-8505-7a9345cc2724",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K19",
     "RoomName": "Khoa Ngo\u1EA1i t\u1ED5ng h\u1EE3p",
-    "DepartmentId": "7b904394-3027-494f-b3b4-797ac3929ed1",
+    "DepartmentId": "b2136cba-7ffb-46a2-b4f1-2a55a79d6bcb",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -266,10 +304,12 @@
     "LegacyId": 19
   },
   {
-    "Id": "27353766-1a66-49c7-b72d-ed889ad56bfe",
+    "Id": "00733f02-a831-4770-b9d2-1d179990ab88",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K20",
     "RoomName": "Khoa Ngo\u1EA1i th\u1EA7n kinh",
-    "DepartmentId": "cdf6c447-490c-49ad-a548-eb13ea572fa6",
+    "DepartmentId": "bab2024e-8657-4053-a1ba-48592e32bf8e",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -280,10 +320,12 @@
     "LegacyId": 20
   },
   {
-    "Id": "a64765ab-4d5f-4c57-b781-2c2a65f5ce65",
+    "Id": "3730b609-6fad-4b3e-9cd0-7ef2537d3cbf",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K21",
     "RoomName": "Khoa Ngo\u1EA1i l\u1ED3ng ng\u1EF1c",
-    "DepartmentId": "a039ff14-19f9-4d61-bdff-7ba17a734a66",
+    "DepartmentId": "992f65ec-e3e9-4964-acb3-13e3aa795a0e",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -294,10 +336,12 @@
     "LegacyId": 21
   },
   {
-    "Id": "70ecee27-f869-4608-98d3-a4232ca0e672",
+    "Id": "d4064a75-d77a-4299-b38e-208e14812ed3",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K22",
     "RoomName": "Khoa Ngo\u1EA1i ti\u00EAu ho\u00E1",
-    "DepartmentId": "06fec0ac-84bf-46c8-9f88-1dcc00ad6e21",
+    "DepartmentId": "1a7d541d-152c-4522-bbe9-224df50ed68b",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -308,10 +352,12 @@
     "LegacyId": 22
   },
   {
-    "Id": "368b5024-3a16-41d9-909b-997f44715c2c",
+    "Id": "dec6625f-132a-4956-acbe-652bea60bea9",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K23",
     "RoomName": "Khoa Ngo\u1EA1i th\u1EADn \u2013 ti\u1EBFt ni\u1EC7u",
-    "DepartmentId": "05d2cbbb-92ef-40aa-b0b0-311ba4a4a29f",
+    "DepartmentId": "13203638-5448-43e8-b66e-d45d11e7520a",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -322,10 +368,12 @@
     "LegacyId": 23
   },
   {
-    "Id": "bc5bf881-9d43-4eaf-a297-47a134c3f85c",
+    "Id": "64d5b664-d350-4ceb-85ba-90b2c6f11188",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K24",
     "RoomName": "Khoa Ch\u1EA5n th\u01B0\u01A1ng ch\u1EC9nh h\u00ECnh",
-    "DepartmentId": "f81b8caa-bfeb-4d7f-b7de-3404b3b92342",
+    "DepartmentId": "57034f3c-21aa-4671-951e-c3e15e893e9b",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -336,10 +384,12 @@
     "LegacyId": 24
   },
   {
-    "Id": "b3c49532-f93c-4201-bdf2-854203a77e45",
+    "Id": "88b3fbac-d866-4a08-948d-e8cdb582ef7d",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K25",
     "RoomName": "Khoa B\u1ECFng",
-    "DepartmentId": "f2c120aa-bd86-4eba-8d79-c88810d4091e",
+    "DepartmentId": "6f3da147-d9f9-4ff7-b9b0-be8df55ab7e0",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -350,10 +400,12 @@
     "LegacyId": 25
   },
   {
-    "Id": "eaba93a2-a0c8-40b8-9eed-2cc61472c03d",
+    "Id": "b2184c82-9fa0-49cb-8506-07ef127d4f37",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K26",
     "RoomName": "Khoa Ph\u1EABu thu\u1EADt \u2013 G\u00E2y m\u00EA h\u1ED3i s\u1EE9c",
-    "DepartmentId": "c7ac4d4f-49bc-4dac-a83e-7467cf557d86",
+    "DepartmentId": "f5e9383a-92a1-4798-bbc8-e72270876e58",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -364,10 +416,12 @@
     "LegacyId": 26
   },
   {
-    "Id": "3908abdf-9e41-4b44-a858-aed4fbfbfc4c",
+    "Id": "10646209-e2af-4bf6-8c24-9031e225b7db",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K27",
     "RoomName": "Khoa Ph\u1EE5 s\u1EA3n",
-    "DepartmentId": "6003b52a-ab8b-48b1-a798-c4503cf0b6ac",
+    "DepartmentId": "9fa2a536-51b4-49cf-8154-c8f07f49307c",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -378,10 +432,12 @@
     "LegacyId": 27
   },
   {
-    "Id": "ac365e83-5991-4144-bdaf-19d9e15691db",
+    "Id": "c288a1fb-20c7-438c-889d-756ec884691c",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K28",
     "RoomName": "Khoa Tai \u2013 M\u0169i - H\u1ECDng",
-    "DepartmentId": "13f5aea8-c9ac-43c7-97e9-6b561f526cd5",
+    "DepartmentId": "86035af4-dd22-48ae-a893-26a0b0903745",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -392,10 +448,12 @@
     "LegacyId": 28
   },
   {
-    "Id": "29d4adf0-0bb5-4d8b-ab8c-d401ce8815f5",
+    "Id": "bca18b4c-b90b-4d8c-9f88-96d890c0b70d",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K29",
     "RoomName": "Khoa R\u0103ng \u2013 H\u00E0m - M\u1EB7t",
-    "DepartmentId": "d3094b68-b270-4f50-9fde-062d6f299fbb",
+    "DepartmentId": "7c48b12f-b6d5-4aff-accd-ea9f63336084",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -406,10 +464,12 @@
     "LegacyId": 29
   },
   {
-    "Id": "7e134f9f-6cb4-4b21-8d50-18e23688361d",
+    "Id": "093d4712-da4f-4256-b7f6-3131a61dbe15",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K30",
     "RoomName": "Khoa M\u1EAFt",
-    "DepartmentId": "f92c6443-2fab-44ac-a47f-ebf82851d0ca",
+    "DepartmentId": "787fe9ff-4b58-405f-8a5e-4bcfa6accbc3",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -420,10 +480,12 @@
     "LegacyId": 30
   },
   {
-    "Id": "f0a99be8-8054-4eb2-8844-b92be878ad8c",
+    "Id": "273b4721-b987-47fb-a612-f608dbb8af97",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K31",
     "RoomName": "Khoa v\u1EADt l\u00FD tr\u1ECB li\u1EC7u - Ph\u1EE5c h\u1ED3i ch\u1EE9c n\u0103ng",
-    "DepartmentId": "d3c34e51-5549-4c80-ba3b-526aa273f386",
+    "DepartmentId": "b30b4c2d-70a0-494f-a3de-d3c5c525715d",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -434,10 +496,12 @@
     "LegacyId": 31
   },
   {
-    "Id": "643cb69a-8a5c-432a-a170-3445963a95da",
+    "Id": "f90983bf-55e5-4927-826e-b9bf0aa727a3",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K32",
     "RoomName": "Khoa Y h\u1ECDc h\u1EA1t nh\u00E2n",
-    "DepartmentId": "e9a85e00-2688-44eb-b0c3-b52b8040d437",
+    "DepartmentId": "f88b7533-1f71-4e4a-9340-9e3f94193649",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -448,10 +512,12 @@
     "LegacyId": 32
   },
   {
-    "Id": "6864c33b-eef5-49bd-a147-1f4521266ac4",
+    "Id": "88ba8d25-4f3d-4c73-b63b-9f879e3faba7",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K33",
     "RoomName": "Khoa Ung b\u01B0\u1EDBu (\u0111i\u1EC1u tr\u1ECB tia x\u1EA1)",
-    "DepartmentId": "8e593d29-c6b3-430f-8ede-c9ad4a7190b2",
+    "DepartmentId": "e6cc9099-d429-4845-a05d-5abbdc417353",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -462,10 +528,12 @@
     "LegacyId": 33
   },
   {
-    "Id": "a6ea626f-c441-4e93-a540-1a57705e516c",
+    "Id": "f073e007-2f45-4d98-89bd-412536986c09",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K34",
     "RoomName": "Khoa Truy\u1EC1n m\u00E1u",
-    "DepartmentId": "a1cbf24b-c545-44d3-b83c-6f5b08555bb7",
+    "DepartmentId": "67ec770e-d1d1-4542-b3ea-090309b53e45",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -476,10 +544,12 @@
     "LegacyId": 34
   },
   {
-    "Id": "843a28f1-53ec-4960-8f4f-d437556ce8cb",
+    "Id": "f51bc039-5efa-4879-b63c-b4b73e950471",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K35",
     "RoomName": "Khoa L\u1ECDc m\u00E1u (th\u1EADn nh\u00E2n \u0111\u1EA1o)",
-    "DepartmentId": "2343821c-182d-4347-8d55-073d7f283cd5",
+    "DepartmentId": "cb240e8d-5e52-47c9-8b13-b90972e56fe3",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -490,10 +560,12 @@
     "LegacyId": 35
   },
   {
-    "Id": "e0b8c4bf-232d-4235-a09d-4d85ce42b97a",
+    "Id": "f2a8365c-5317-46fb-938c-e71212fee1b4",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K36",
     "RoomName": "Khoa Huy\u1EBFt h\u1ECDc",
-    "DepartmentId": "8cd6cdad-2fdb-4f4f-8274-9e3997a40122",
+    "DepartmentId": "0754db23-d545-4702-bc03-e1a296d02c41",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -504,10 +576,12 @@
     "LegacyId": 36
   },
   {
-    "Id": "453b8df2-97b8-47cd-a323-7400acc5e347",
+    "Id": "b83cafc2-b688-485e-86e6-8c312149419e",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K37",
     "RoomName": "Khoa ho\u00E1 sinh",
-    "DepartmentId": "e35d6551-546e-4abe-8315-573a610ad91b",
+    "DepartmentId": "a6322106-ee44-4af4-84e8-50d2e3c1a3d5",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -518,10 +592,12 @@
     "LegacyId": 37
   },
   {
-    "Id": "9f9cfcd0-acbc-43f7-9c82-94117420873b",
+    "Id": "34617bc9-ebdf-43e1-a8fc-55d00ff84437",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K38",
     "RoomName": "Khoa Vi sinh",
-    "DepartmentId": "70542434-a6eb-4634-8857-d51e8f73cac5",
+    "DepartmentId": "c2e96e09-bd4d-4956-ae46-307305b3a2b0",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -532,10 +608,12 @@
     "LegacyId": 38
   },
   {
-    "Id": "273c760d-b7f1-4f35-8f00-96553bf03c94",
+    "Id": "4704714b-bbe2-4081-8638-6d8a6ff51350",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K39",
     "RoomName": "Khoa Ch\u1EA9n \u0111o\u00E1n h\u00ECnh \u1EA3nh",
-    "DepartmentId": "a7207133-89f1-4366-b6e8-5c34f9cf5c7c",
+    "DepartmentId": "f65200eb-e604-42ee-a696-9e5272945a17",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -546,10 +624,12 @@
     "LegacyId": 39
   },
   {
-    "Id": "78c4a4bb-ce3e-4ede-909e-68fe67415e36",
+    "Id": "ee95f667-b74b-4fed-ab3b-e64fce193b05",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K40",
     "RoomName": "Khoa Th\u0103m d\u00F2 ch\u1EE9c n\u0103ng",
-    "DepartmentId": "7f2e209b-b41e-42c4-bbbc-79ab36d3ac18",
+    "DepartmentId": "e4cc0c05-0b74-4d1d-ae99-94eaa2e07dec",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -560,10 +640,12 @@
     "LegacyId": 40
   },
   {
-    "Id": "09c9d34b-90e9-4e37-be67-2d2d9dd6b265",
+    "Id": "532e20bf-dafd-4f88-8bda-1ae8c264bd3f",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K41",
     "RoomName": "Khoa N\u1ED9i soi",
-    "DepartmentId": "929b2f3e-081c-4e22-be71-ae9df679fd49",
+    "DepartmentId": "338cd43f-67f2-4587-b9dc-5070b056631f",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -574,10 +656,12 @@
     "LegacyId": 41
   },
   {
-    "Id": "88b76dd7-904c-4255-adcc-dbaf5bfbab8d",
+    "Id": "e3d2989c-6b3c-4468-b51c-c7eb6d1c0fb0",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K42",
     "RoomName": "Khoa gi\u1EA3i ph\u1EABu b\u1EC7nh",
-    "DepartmentId": "d4f81dfe-25af-4918-92f6-e30629d8f6e1",
+    "DepartmentId": "1fe9dfc2-2a90-4992-ab26-95f9c08be84f",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -588,10 +672,12 @@
     "LegacyId": 42
   },
   {
-    "Id": "60c0f412-bc45-45da-bbd1-d4f6dc4b0a9d",
+    "Id": "04d8471a-fe65-4d72-b2c3-8c230517f266",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K43",
     "RoomName": "Khoa Ch\u1ED1ng nhi\u1EC5m khu\u1EA9n",
-    "DepartmentId": "7523573a-a992-440f-8236-104defb84dad",
+    "DepartmentId": "a2cf05ae-ff40-4f69-943f-77dc0b2c377e",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -602,10 +688,12 @@
     "LegacyId": 43
   },
   {
-    "Id": "ab2b8732-0e79-43ed-9c33-b5fab3183c80",
+    "Id": "4b172621-d340-4ae4-8b08-d5d89f1425eb",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K44",
     "RoomName": "Khoa D\u01B0\u1EE3c",
-    "DepartmentId": "20992ebc-ffb2-48c7-89ce-b375d5cb4ae9",
+    "DepartmentId": "095b239e-ae2e-4479-8f7f-bb6a9d2ddd33",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -616,10 +704,12 @@
     "LegacyId": 44
   },
   {
-    "Id": "93def689-138b-466d-b3aa-2219635d9d7b",
+    "Id": "5f8ed9e6-d2bd-4a9d-b793-0c24e5fc8188",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K45",
     "RoomName": "Khoa Dinh d\u01B0\u1EE1ng",
-    "DepartmentId": "e22ba275-8bfc-4d5b-95ce-372916424a69",
+    "DepartmentId": "9fc6f225-ea89-4246-bae3-cad6db3c88be",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -630,10 +720,12 @@
     "LegacyId": 45
   },
   {
-    "Id": "ac805c9a-175c-42a6-a82d-d0885c0bf451",
+    "Id": "35dece1e-46db-43d4-8f79-ad89c50c0b5e",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K46",
     "RoomName": "Khoa Sinh h\u1ECDc ph\u00E2n t\u1EED",
-    "DepartmentId": "e2397dab-e6f8-4788-91bc-6a7a1c24cf7b",
+    "DepartmentId": "848cb97b-ca32-46f1-bb11-7aea087b7b11",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,
@@ -644,10 +736,12 @@
     "LegacyId": 46
   },
   {
-    "Id": "15971fba-75aa-4d55-bad0-5b4c9e1805e6",
+    "Id": "c4be80e1-c944-4e2f-9b8a-a90e2cb2dc5d",
+    "BranchId": null,
+    "Branch": null,
     "RoomCode": "K47",
     "RoomName": "Khoa X\u00E9t nghi\u1EC7m",
-    "DepartmentId": "d8f95619-5de9-4771-adc7-fa6c8991b72f",
+    "DepartmentId": "37cbf366-414a-4b57-a35b-d46ac73aab92",
     "Department": null,
     "RoomType": 1,
     "DefaultDoctorId": null,

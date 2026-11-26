@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   UserPlus,
   QrCode,
@@ -9,6 +9,7 @@ import {
   Volume2,
   ArrowRight,
   ShieldAlert,
+  ChevronLeft,
   ChevronRight,
   RefreshCw,
   Search,
@@ -24,8 +25,15 @@ import {
   Check,
   X,
   Radio,
-  Monitor
+  Monitor,
+  FileText,
+  Tag,
+  Plus,
+  AlertCircle,
+  FileSignature
 } from 'lucide-react';
+import { PatientSignaturePadModal } from '../components/consent/PatientSignaturePadModal';
+import { PatientFormType } from '../services/consentApi';
 import {
   QueueTicket,
   QueueAssignment,
@@ -34,8 +42,15 @@ import {
   ReceptionStreamType,
   TicketStatus,
   AssignmentStatus,
-  RoomType
+  RoomType,
+  ReceptionRosterItem
 } from '../types/queueing';
+import {
+  queueApiService,
+  BranchContractItem,
+  MasterMedicalServiceItem,
+  B2bPackageSummaryItem
+} from '../services/queueApi';
 
 // Sample Initial Mock Rooms
 const INITIAL_ROOMS: ClinicRoomLoad[] = [
@@ -420,9 +435,311 @@ const INITIAL_TICKETS: QueueTicket[] = [
   }
 ];
 
+const SAMPLE_ROSTER: ReceptionRosterItem[] = [
+  // --- ĐỢT KHÁM TẬP ĐOÀN VIETTEL (ctr-002) ---
+  {
+    id: 'emp-vtl-001',
+    employeeId: 'emp-vtl-001',
+    ticketId: null,
+    ticketNumber: null,
+    isPriority: false,
+    fileNum: 'VTL-8821',
+    fullName: 'HOÀNG VĂN ĐỨC',
+    dateOfBirth: '1986-04-18',
+    birthYear: 1986,
+    genderString: 'Nam',
+    department: 'Viettel Solutions - Khối CNTT',
+    hasBloodTaken: false,
+    examTypeString: 'Gói Khám',
+    examDate: null,
+    statusString: 'Chưa tiếp nhận',
+    isCheckedIn: false,
+    cccd: '001086012345',
+    phoneNumber: '0981234567',
+    contractId: 'ctr-002',
+    contractName: 'Khám Định Kỳ Tập Đoàn Viettel',
+    packageId: 'pkg-001',
+    packageName: 'Gói Khám Tiêu Chuẩn Doanh Nghiệp'
+  },
+  {
+    id: 'emp-vtl-002',
+    employeeId: 'emp-vtl-002',
+    ticketId: null,
+    ticketNumber: null,
+    isPriority: false,
+    fileNum: 'VTL-8822',
+    fullName: 'ĐỖ THỊ THU HẰNG',
+    dateOfBirth: '1992-09-24',
+    birthYear: 1992,
+    genderString: 'Nữ',
+    department: 'Trung Tâm An Ninh Mạng Viettel',
+    hasBloodTaken: true,
+    examTypeString: 'Gói Khám',
+    examDate: null,
+    statusString: 'Chưa tiếp nhận',
+    isCheckedIn: false,
+    cccd: '001192098765',
+    phoneNumber: '0987654321',
+    contractId: 'ctr-002',
+    contractName: 'Khám Định Kỳ Tập Đoàn Viettel',
+    packageId: 'pkg-001',
+    packageName: 'Gói Khám Tiêu Chuẩn Doanh Nghiệp'
+  },
+  {
+    id: 'emp-vtl-003',
+    employeeId: 'emp-vtl-003',
+    ticketId: null,
+    ticketNumber: null,
+    isPriority: true,
+    fileNum: 'VTL-VIP01',
+    fullName: 'LÊ QUỐC BẢO',
+    dateOfBirth: '1980-02-10',
+    birthYear: 1980,
+    genderString: 'Nam',
+    department: 'Ban Tổng Giám Đốc Viettel',
+    hasBloodTaken: true,
+    examTypeString: 'Gói Khám',
+    examDate: null,
+    statusString: 'Chưa tiếp nhận',
+    isCheckedIn: false,
+    cccd: '001080005566',
+    phoneNumber: '0909998888',
+    contractId: 'ctr-002',
+    contractName: 'Khám Định Kỳ Tập Đoàn Viettel',
+    packageId: 'pkg-002',
+    packageName: 'Gói Khám VIP Lãnh Đạo'
+  },
+  {
+    id: 'emp-vtl-004',
+    employeeId: 'emp-vtl-004',
+    ticketId: null,
+    ticketNumber: null,
+    isPriority: false,
+    fileNum: 'VTL-8824',
+    fullName: 'PHẠM THÙY LINH',
+    dateOfBirth: '1997-11-30',
+    birthYear: 1997,
+    genderString: 'Nữ',
+    department: 'Phòng Kế Hoạch Đầu Tư Viettel',
+    hasBloodTaken: false,
+    examTypeString: 'Gói Khám',
+    examDate: null,
+    statusString: 'Chưa tiếp nhận',
+    isCheckedIn: false,
+    cccd: '001197065432',
+    phoneNumber: '0977112233',
+    contractId: 'ctr-002',
+    contractName: 'Khám Định Kỳ Tập Đoàn Viettel',
+    packageId: 'pkg-001',
+    packageName: 'Gói Khám Tiêu Chuẩn Doanh Nghiệp'
+  },
+  {
+    id: 'emp-vtl-005',
+    employeeId: 'emp-vtl-005',
+    ticketId: 't-vtl-005',
+    ticketNumber: 'B001',
+    isPriority: false,
+    fileNum: 'VTL-8825',
+    fullName: 'BÙI THẾ ANH',
+    dateOfBirth: '1989-07-22',
+    birthYear: 1989,
+    genderString: 'Nam',
+    department: 'Khối Vận Hành Khai Thác Mạng Viettel',
+    hasBloodTaken: true,
+    examTypeString: 'Gói Khám',
+    examDate: '2026-11-24T08:15:00',
+    statusString: 'Đã tiếp nhận',
+    isCheckedIn: true,
+    cccd: '001089054321',
+    phoneNumber: '0918889999',
+    contractId: 'ctr-002',
+    contractName: 'Khám Định Kỳ Tập Đoàn Viettel',
+    packageId: 'pkg-001',
+    packageName: 'Gói Khám Tiêu Chuẩn Doanh Nghiệp'
+  },
+
+  // --- ĐỢT KHÁM FPT SOFTWARE (ctr-001) ---
+  {
+    id: 'emp-001',
+    employeeId: 'emp-001',
+    ticketId: 't-001',
+    ticketNumber: 'A001',
+    isPriority: false,
+    fileNum: 'FPT-10491',
+    fullName: 'NGUYỄN VĂN AN',
+    dateOfBirth: '1990-05-12',
+    birthYear: 1990,
+    genderString: 'Nam',
+    department: 'Khối Kỹ Thuật & Phần Mềm',
+    hasBloodTaken: true,
+    examTypeString: 'Gói Khám',
+    examDate: '2026-11-24T07:45:00',
+    statusString: 'Đã tiếp nhận',
+    isCheckedIn: true,
+    cccd: '001090012345',
+    phoneNumber: '0912345678',
+    contractId: 'ctr-001',
+    contractName: 'Đợt Khám Sức Khỏe CBNV 2026 (FPT Software)',
+    packageId: 'pkg-001',
+    packageName: 'Gói Khám Tiêu Chuẩn Doanh Nghiệp'
+  },
+  {
+    id: 'emp-002',
+    employeeId: 'emp-002',
+    ticketId: null,
+    ticketNumber: null,
+    isPriority: false,
+    fileNum: 'FPT-10492',
+    fullName: 'TRẦN THỊ MAI',
+    dateOfBirth: '1995-10-20',
+    birthYear: 1995,
+    genderString: 'Nữ',
+    department: 'Ban Tài Chính Kế Toán',
+    hasBloodTaken: false,
+    examTypeString: 'Gói Khám',
+    examDate: null,
+    statusString: 'Chưa tiếp nhận',
+    isCheckedIn: false,
+    cccd: '001195098765',
+    phoneNumber: '0987654321',
+    contractId: 'ctr-001',
+    contractName: 'Đợt Khám Sức Khỏe CBNV 2026 (FPT Software)',
+    packageId: 'pkg-001',
+    packageName: 'Gói Khám Tiêu Chuẩn Doanh Nghiệp'
+  },
+  {
+    id: 'emp-003',
+    employeeId: 'emp-003',
+    ticketId: null,
+    ticketNumber: null,
+    isPriority: true,
+    fileNum: 'FPT-10834',
+    fullName: 'LÊ HOÀNG NAM',
+    dateOfBirth: '1982-03-15',
+    birthYear: 1982,
+    genderString: 'Nam',
+    department: 'Ban Giám Đốc Khối',
+    hasBloodTaken: true,
+    examTypeString: 'Gói Khám',
+    examDate: null,
+    statusString: 'Chưa tiếp nhận',
+    isCheckedIn: false,
+    cccd: '001082001122',
+    phoneNumber: '0903123456',
+    contractId: 'ctr-001',
+    contractName: 'Đợt Khám Sức Khỏe CBNV 2026 (FPT Software)',
+    packageId: 'pkg-002',
+    packageName: 'Gói Khám VIP Lãnh Đạo'
+  },
+  {
+    id: 'emp-004',
+    employeeId: 'emp-004',
+    ticketId: null,
+    ticketNumber: null,
+    isPriority: false,
+    fileNum: 'FPT-11209',
+    fullName: 'PHẠM MINH TUẤN',
+    dateOfBirth: '1998-12-05',
+    birthYear: 1998,
+    genderString: 'Nam',
+    department: 'Trung Tâm AI & Cloud',
+    hasBloodTaken: false,
+    examTypeString: 'Gói Khám',
+    examDate: null,
+    statusString: 'Chưa tiếp nhận',
+    isCheckedIn: false,
+    cccd: '001098045678',
+    phoneNumber: '0934567890',
+    contractId: 'ctr-001',
+    contractName: 'Đợt Khám Sức Khỏe CBNV 2026 (FPT Software)',
+    packageId: 'pkg-001',
+    packageName: 'Gói Khám Tiêu Chuẩn Doanh Nghiệp'
+  },
+  {
+    id: 'emp-005',
+    employeeId: 'emp-005',
+    ticketId: null,
+    ticketNumber: null,
+    isPriority: false,
+    fileNum: 'FPT-11567',
+    fullName: 'VŨ THỊ HƯƠNG',
+    dateOfBirth: '1993-08-14',
+    birthYear: 1993,
+    genderString: 'Nữ',
+    department: 'Phòng Nhân Sự HR',
+    hasBloodTaken: false,
+    examTypeString: 'Gói Khám',
+    examDate: null,
+    statusString: 'Chưa tiếp nhận',
+    isCheckedIn: false,
+    cccd: '001193076543',
+    phoneNumber: '0978901234',
+    contractId: 'ctr-001',
+    contractName: 'Đợt Khám Sức Khỏe CBNV 2026 (FPT Software)',
+    packageId: 'pkg-001',
+    packageName: 'Gói Khám Tiêu Chuẩn Doanh Nghiệp'
+  }
+];
+
+const CORE_KSK_FALLBACK_CODES = ['DV_THE_LUC', 'DV_NOI_TONG_QUAT', 'DV_MAT', 'DV_TMH', 'DV_RHM', 'DV_DA_LIEU', 'DV_SIEU_AM', 'DV_XQUANG', 'XN_CBC', 'XN_GLU'];
+
 export const ReceptionQueuePage: React.FC = () => {
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<'kiosk' | 'board' | 'doctor' | 'tv'>('board');
+  const [activeTab, setActiveTab] = useState<'reception' | 'kiosk' | 'board' | 'doctor' | 'tv'>('reception');
+
+  // Reception Desk State (100% Live PostgreSQL)
+  const [roster, setRoster] = useState<ReceptionRosterItem[]>([]);
+  const [contracts, setContracts] = useState<BranchContractItem[]>([]);
+  const [medicalServices, setMedicalServices] = useState<MasterMedicalServiceItem[]>([]);
+  const [packages, setPackages] = useState<B2bPackageSummaryItem[]>([]);
+  const [selectedContractId, setSelectedContractId] = useState<string>('');
+  const [rosterSearch, setRosterSearch] = useState<string>('');
+  const [rosterStatusFilter, setRosterStatusFilter] = useState<'all' | 'pending' | 'checked_in'>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const PAGE_SIZE = 20;
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [printedDossierIds, setPrintedDossierIds] = useState<Record<string, boolean>>({});
+  const [selectedRosterItem, setSelectedRosterItem] = useState<ReceptionRosterItem | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+  const [isPrintSheetOpen, setIsPrintSheetOpen] = useState<boolean>(false);
+  const [consentModal, setConsentModal] = useState<{
+    encounterId: string;
+    encounterCode: string;
+    patientId: string;
+    patientName: string;
+    formType: PatientFormType;
+  } | null>(null);
+  const [isPrintTubeOpen, setIsPrintTubeOpen] = useState<boolean>(false);
+  const [isBatchPrintModalOpen, setIsBatchPrintModalOpen] = useState<boolean>(false);
+  const [batchPrintMode, setBatchPrintMode] = useState<'unprinted' | 'all_contract'>('unprinted');
+  const [printItem, setPrintItem] = useState<ReceptionRosterItem | null>(null);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const confirmBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Detail Modal Form State (uPatientServiceList + Confirm & Edit)
+  const [detailFullName, setDetailFullName] = useState<string>('');
+  const [detailDob, setDetailDob] = useState<string>('');
+  const [detailGender, setDetailGender] = useState<'Nam' | 'Nữ'>('Nam');
+  const [detailCccd, setDetailCccd] = useState<string>('');
+  const [detailPhone, setDetailPhone] = useState<string>('');
+  const [detailDepartment, setDetailDepartment] = useState<string>('');
+  const [detailHasBloodTaken, setDetailHasBloodTaken] = useState<boolean>(true);
+  const [detailIsPriority, setDetailIsPriority] = useState<boolean>(false);
+  const [detailIsPregnant, setDetailIsPregnant] = useState<boolean>(false);
+  const [detailAdditionalServices, setDetailAdditionalServices] = useState<string[]>([]);
+  const [paymentMode, setPaymentMode] = useState<'direct' | 'deposit' | 'covered'>('direct');
+  const [depositAmount, setDepositAmount] = useState<number>(500000);
+
+  // Add New Patient Modal State
+  const [isAddNewModalOpen, setIsAddNewModalOpen] = useState<boolean>(false);
+  const [newName, setNewName] = useState<string>('');
+  const [newDob, setNewDob] = useState<string>('1990-01-01');
+  const [newGender, setNewGender] = useState<'Nam' | 'Nữ'>('Nam');
+  const [newCccd, setNewCccd] = useState<string>('');
+  const [newPhone, setNewPhone] = useState<string>('');
+  const [newDepartment, setNewDepartment] = useState<string>('Khách lẻ');
+  const [newHasBloodTaken, setNewHasBloodTaken] = useState<boolean>(false);
 
   // Core state
   const [rooms, setRooms] = useState<ClinicRoomLoad[]>(INITIAL_ROOMS);
@@ -430,6 +747,430 @@ export const ReceptionQueuePage: React.FC = () => {
   const [selectedDoctorRoomCode, setSelectedDoctorRoomCode] = useState<string>('P.101');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [lastNotification, setLastNotification] = useState<string | null>(null);
+
+  // Dossier print status helper (VTL-* / FPT-* pre-printed by default)
+  const isItemDossierPrinted = useCallback(
+    (item: ReceptionRosterItem) => {
+      if (printedDossierIds[item.id] !== undefined) return printedDossierIds[item.id];
+      return /^(VTL|FPT)-/i.test(item.fileNum || '');
+    },
+    [printedDossierIds]
+  );
+
+  // Load real data from Backend API on mount
+  const loadData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const [boardData, activeTickets, rosterData, contractsData, servicesData, packagesData] = await Promise.all([
+        queueApiService.getQueueBoard().catch(() => null),
+        queueApiService.getActiveTickets().catch(() => null),
+        queueApiService.getReceptionRoster(selectedContractId || undefined, rosterSearch || undefined).catch(() => null),
+        queueApiService.getB2bContracts().catch(() => [] as BranchContractItem[]),
+        queueApiService.getMedicalServices().catch(() => [] as MasterMedicalServiceItem[]),
+        queueApiService.getPackages().catch(() => [] as B2bPackageSummaryItem[])
+      ]);
+
+      if (boardData && boardData.rooms) {
+        setRooms(boardData.rooms);
+      }
+      if (activeTickets) {
+        setTickets(activeTickets);
+      }
+      if (rosterData) {
+        setRoster(rosterData);
+      }
+      if (contractsData) {
+        setContracts(contractsData);
+      }
+      if (servicesData && servicesData.length > 0) {
+        setMedicalServices(servicesData);
+      }
+      if (packagesData && packagesData.length > 0) {
+        setPackages(packagesData);
+      }
+    } catch (e) {
+      console.warn('Backend API error loading reception workspace:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedContractId, rosterSearch]);
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 5000); // Polling every 5s for realtime queue updates
+    return () => clearInterval(interval);
+  }, [loadData]);
+
+  // Extract normalized search query (supports Vietnam CCCD QR format: cccd|cmnd|name|...)
+  const normalizedRosterQuery = useMemo(() => {
+    const raw = rosterSearch.trim();
+    if (!raw) return '';
+    return (raw.includes('|') ? raw.split('|')[0] : raw).trim().toLowerCase();
+  }, [rosterSearch]);
+
+  // Contract-filtered roster (used for Batch Print & base filtering)
+  const contractFilteredRoster = useMemo(() => {
+    if (!selectedContractId) return roster;
+    return roster.filter(
+      item =>
+        item.contractId === selectedContractId ||
+        (selectedContractId === 'ctr-001' && (item.contractName?.includes('FPT') || item.department?.includes('FPT'))) ||
+        (selectedContractId === 'ctr-002' && (item.contractName?.includes('Viettel') || item.department?.includes('Viettel')))
+    );
+  }, [roster, selectedContractId]);
+
+  // Base filtered roster (Contract + Search, before status chip filter)
+  const baseFilteredRoster = useMemo(() => {
+    if (!normalizedRosterQuery) return contractFilteredRoster;
+    const q = normalizedRosterQuery;
+    return contractFilteredRoster.filter(
+      item =>
+        item.fullName.toLowerCase().includes(q) ||
+        (item.fileNum && item.fileNum.toLowerCase().includes(q)) ||
+        (item.cccd && item.cccd.toLowerCase().includes(q)) ||
+        (item.phoneNumber && item.phoneNumber.toLowerCase().includes(q)) ||
+        (item.department && item.department.toLowerCase().includes(q)) ||
+        (item.ticketNumber && item.ticketNumber.toLowerCase().includes(q)) ||
+        (item.contractName && item.contractName.toLowerCase().includes(q))
+    );
+  }, [contractFilteredRoster, normalizedRosterQuery]);
+
+  // Roster KPI counts based on contract + search view
+  const rosterStats = useMemo(() => {
+    const total = baseFilteredRoster.length;
+    const checkedIn = baseFilteredRoster.filter(r => r.isCheckedIn).length;
+    const notCheckedIn = total - checkedIn;
+    return { total, checkedIn, notCheckedIn };
+  }, [baseFilteredRoster]);
+
+  // Status-chip filtered roster for table
+  const filteredRoster = useMemo(() => {
+    if (rosterStatusFilter === 'pending') return baseFilteredRoster.filter(r => !r.isCheckedIn);
+    if (rosterStatusFilter === 'checked_in') return baseFilteredRoster.filter(r => r.isCheckedIn);
+    return baseFilteredRoster;
+  }, [baseFilteredRoster, rosterStatusFilter]);
+
+  // Reset pagination when search/filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedContractId, rosterSearch, rosterStatusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRoster.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedRoster = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredRoster.slice(start, start + PAGE_SIZE);
+  }, [filteredRoster, safePage]);
+
+  // Batch print items for current selected contract
+  const batchPrintUnprintedCount = useMemo(
+    () => contractFilteredRoster.filter(item => !isItemDossierPrinted(item)).length,
+    [contractFilteredRoster, isItemDossierPrinted]
+  );
+
+  const batchPrintItems = useMemo(() => {
+    if (batchPrintMode === 'unprinted') {
+      return contractFilteredRoster.filter(item => !isItemDossierPrinted(item));
+    }
+    return contractFilteredRoster;
+  }, [contractFilteredRoster, batchPrintMode, isItemDossierPrinted]);
+
+  // Duplicate CCCD / Phone warning inside Detail Modal
+  const duplicateWarning = useMemo(() => {
+    if (!isDetailModalOpen || !selectedRosterItem) return null;
+    const c = detailCccd.trim();
+    const p = detailPhone.trim();
+    if (!c && !p) return null;
+    const dup = roster.find(
+      other =>
+        other.id !== selectedRosterItem.id &&
+        ((c && other.cccd && other.cccd.trim() === c) || (p && other.phoneNumber && other.phoneNumber.trim() === p))
+    );
+    if (!dup) return null;
+    return `Phát hiện trùng CCCD/SĐT với hồ sơ ${dup.fileNum ? `[${dup.fileNum}] ` : ''}${dup.fullName}`;
+  }, [isDetailModalOpen, selectedRosterItem, detailCccd, detailPhone, roster]);
+
+  // Auto-focus search/scanner input when on Reception tab and all modals are closed
+  useEffect(() => {
+    if (
+      activeTab === 'reception' &&
+      !isDetailModalOpen &&
+      !isPrintSheetOpen &&
+      !isPrintTubeOpen &&
+      !isAddNewModalOpen &&
+      !isBatchPrintModalOpen
+    ) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    activeTab,
+    isDetailModalOpen,
+    isPrintSheetOpen,
+    isPrintTubeOpen,
+    isAddNewModalOpen,
+    isBatchPrintModalOpen
+  ]);
+
+  // Keyboard shortcuts inside Reception Detail Modal (Ctrl+Enter to submit, Esc to close)
+  useEffect(() => {
+    if (!isDetailModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        confirmBtnRef.current?.click();
+      } else if (e.key === 'Escape') {
+        setIsDetailModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDetailModalOpen]);
+
+  // Open Reception Detail Modal (uPatientServiceList)
+  const handleOpenReceptionDetail = (item: ReceptionRosterItem) => {
+    setSelectedRowId(item.id);
+    setSelectedRosterItem(item);
+    setDetailFullName(item.fullName || '');
+    setDetailDob(
+      item.dateOfBirth
+        ? item.dateOfBirth.slice(0, 10)
+        : item.birthYear
+        ? `${item.birthYear}-01-01`
+        : '1990-01-01'
+    );
+    setDetailGender(item.genderString === 'Nữ' ? 'Nữ' : 'Nam');
+    setDetailCccd(item.cccd || '');
+    setDetailPhone(item.phoneNumber || '');
+    setDetailDepartment(item.department || '');
+    setDetailHasBloodTaken(item.hasBloodTaken);
+    setDetailIsPriority(item.isPriority);
+    setDetailIsPregnant(false);
+    setDetailAdditionalServices([]);
+    setPaymentMode('direct');
+    setDepositAmount(500000);
+    setIsDetailModalOpen(true);
+  };
+
+  // Enter on QR CCCD / Quick Search input -> auto-open Detail Modal on exact or unique match
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (!normalizedRosterQuery) return;
+
+    const exactMatch = baseFilteredRoster.find(
+      item =>
+        (item.cccd && item.cccd.trim().toLowerCase() === normalizedRosterQuery) ||
+        (item.fileNum && item.fileNum.trim().toLowerCase() === normalizedRosterQuery)
+    );
+    if (exactMatch) {
+      handleOpenReceptionDetail(exactMatch);
+      return;
+    }
+
+    if (filteredRoster.length === 1) {
+      handleOpenReceptionDetail(filteredRoster[0]);
+      return;
+    }
+
+    if (baseFilteredRoster.length === 1) {
+      handleOpenReceptionDetail(baseFilteredRoster[0]);
+    }
+  };
+
+  // Confirm Reception & Issue STT
+  const handleConfirmReceptionCheckin = async () => {
+    if (!selectedRosterItem) return;
+
+    const editedFullName = detailFullName.trim().toUpperCase() || selectedRosterItem.fullName;
+    const editedDob = detailDob || selectedRosterItem.dateOfBirth || null;
+    const editedBirthYear = editedDob
+      ? parseInt(editedDob.slice(0, 4), 10) || selectedRosterItem.birthYear
+      : selectedRosterItem.birthYear;
+    const editedCccd = detailCccd.trim();
+    const editedPhone = detailPhone.trim();
+    const editedDepartment = detailDepartment.trim() || selectedRosterItem.department;
+
+    try {
+      setIsLoading(true);
+      const effectiveContractId =
+        selectedRosterItem.contractId && selectedRosterItem.contractId.length >= 32
+          ? selectedRosterItem.contractId
+          : selectedContractId && selectedContractId.length >= 32
+          ? selectedContractId
+          : undefined;
+      const effectivePackageId =
+        selectedRosterItem.packageId && selectedRosterItem.packageId.length >= 32
+          ? selectedRosterItem.packageId
+          : undefined;
+
+      const ticketResult = await queueApiService.checkin({
+        cccd: editedCccd || undefined,
+        employeeCode: selectedRosterItem.fileNum || undefined,
+        patientId: selectedRosterItem.patientId || undefined,
+        patientName: editedFullName,
+        birthDate: editedDob || undefined,
+        gender: detailGender,
+        phoneNumber: editedPhone || undefined,
+        isPriority: detailIsPriority,
+        contractId: effectiveContractId,
+        packageId: effectivePackageId,
+        hasBloodTaken: detailHasBloodTaken,
+        hasAdditionalServices: detailAdditionalServices.length > 0,
+        selectedServiceCodes: detailAdditionalServices.length > 0 ? detailAdditionalServices : undefined,
+        additionalServiceCodes: detailAdditionalServices.length > 0 ? detailAdditionalServices : undefined,
+        isFasting: true,
+        isPregnantOrSuspected: detailIsPregnant,
+        paymentMode: detailAdditionalServices.length > 0 || paymentMode === 'deposit' ? paymentMode : 'covered',
+        collectionAction:
+          paymentMode === 'deposit'
+            ? 'AdvanceDeposit'
+            : paymentMode === 'covered'
+            ? 'CoveredNoCharge'
+            : detailAdditionalServices.length > 0
+            ? 'SendToCashier'
+            : 'CoveredNoCharge',
+        depositAmount: paymentMode === 'deposit' ? depositAmount : undefined
+      });
+
+      const updatedItem: ReceptionRosterItem = {
+        ...selectedRosterItem,
+        patientId: ticketResult.patientId,
+        encounterId: ticketResult.encounterId,
+        encounterCode: ticketResult.encounterCode,
+        fullName: editedFullName,
+        dateOfBirth: editedDob,
+        birthYear: editedBirthYear,
+        genderString: detailGender,
+        cccd: editedCccd,
+        phoneNumber: editedPhone,
+        department: editedDepartment,
+        isCheckedIn: true,
+        ticketId: ticketResult.id,
+        ticketNumber: ticketResult.ticketNumber,
+        statusString: 'Đã tiếp nhận',
+        examDate: new Date().toISOString(),
+        hasBloodTaken: detailHasBloodTaken,
+        isPriority: detailIsPriority
+      };
+
+      setRoster(prev => prev.map(r => (r.id === selectedRosterItem.id ? updatedItem : r)));
+      setTickets(prev => [ticketResult, ...prev]);
+
+      setIsDetailModalOpen(false);
+      setRosterSearch('');
+      setPrintItem(updatedItem);
+
+      const firstRoomName = ticketResult.assignments?.[0]?.roomName || 'buồng khám';
+      const receiptPart = ticketResult.receiptNumber ? ` | Phiếu thu ${ticketResult.receiptNumber}` : '';
+      const encPart = ticketResult.encounterCode ? ` | HS ${ticketResult.encounterCode}` : '';
+      setLastNotification(`Đã tiếp nhận ${updatedItem.fullName} (STT ${ticketResult.ticketNumber}${encPart}${receiptPart}) → ${firstRoomName}`);
+
+      await loadData();
+    } catch (e: any) {
+      setLastNotification(`❌ Tiếp nhận thất bại: ${e?.message || 'Lỗi kết nối Backend API'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Print Handlers
+  const handlePrintSheet = (item: ReceptionRosterItem) => {
+    setPrintItem(item);
+    setIsPrintSheetOpen(true);
+  };
+
+  const handlePrintTube = (item: ReceptionRosterItem) => {
+    setPrintItem(item);
+    setIsPrintTubeOpen(true);
+  };
+
+  // Add New Walk-in Patient Handler (Real DB registration + check-in)
+  const handleAddNewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) {
+      setLastNotification('❌ Vui lòng nhập họ và tên người bệnh.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const ticketResult = await queueApiService.registerWalkin({
+        fullName: newName.trim().toUpperCase(),
+        birthDate: newDob || '1990-01-01',
+        gender: newGender,
+        identityCardNumber: newCccd.trim() || undefined,
+        phoneNumber: newPhone.trim() || undefined,
+        autoCheckin: true
+      });
+
+      const newItem: ReceptionRosterItem = {
+        id: ticketResult.id,
+        employeeId: null,
+        patientId: ticketResult.patientId,
+        encounterId: ticketResult.encounterId,
+        encounterCode: ticketResult.encounterCode,
+        ticketId: ticketResult.id,
+        ticketNumber: ticketResult.ticketNumber,
+        isPriority: false,
+        fileNum: ticketResult.encounterCode || ticketResult.patientCode || ticketResult.ticketNumber,
+        fullName: ticketResult.patientName,
+        dateOfBirth: newDob,
+        birthYear: parseInt(newDob.slice(0, 4)) || 1990,
+        genderString: newGender,
+        department: newDepartment.trim() || 'Khách lẻ vãng lai',
+        hasBloodTaken: newHasBloodTaken,
+        examTypeString: 'Khách Lẻ',
+        examDate: new Date().toISOString(),
+        statusString: 'Đã tiếp nhận',
+        isCheckedIn: true,
+        cccd: newCccd.trim(),
+        phoneNumber: newPhone.trim(),
+        contractId: null,
+        contractName: 'Khám Sức Khỏe Tự Túc / Khách Lẻ',
+        packageId: null,
+        packageName: 'Đăng Ký Khám Lẻ'
+      };
+
+      setRoster(prev => [newItem, ...prev]);
+      setTickets(prev => [ticketResult, ...prev]);
+      setIsAddNewModalOpen(false);
+      setNewName('');
+      setNewCccd('');
+      setNewPhone('');
+      setNewDepartment('Khách lẻ');
+      setNewHasBloodTaken(false);
+      setPrintItem(newItem);
+      setLastNotification(
+        `Đã đăng ký & tiếp nhận khách lẻ ${ticketResult.patientName} (HS ${ticketResult.encounterCode || ticketResult.patientCode} • STT ${ticketResult.ticketNumber})`
+      );
+      await loadData();
+    } catch (err: any) {
+      setLastNotification(`❌ Đăng ký khách lẻ thất bại: ${err?.message || 'Lỗi kết nối Backend API'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // B2B Sales Handoff Handler
+  const handleB2bHandoff = async () => {
+    if (!selectedContractId) {
+      setLastNotification('❌ Vui lòng chọn Hợp đồng Đợt khám trước khi nhận bàn giao danh sách.');
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const handedOver = await queueApiService.handoffB2B(selectedContractId, undefined, false);
+      setLastNotification(`Đã tiếp nhận bàn giao ${handedOver.length} nhân sự B2B từ hợp đồng vào Quầy Tiếp Nhận.`);
+      await loadData();
+    } catch (err: any) {
+      setLastNotification(`❌ Nhận bàn giao B2B thất bại: ${err?.message || 'Lỗi kết nối API'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Kiosk Form State
   const [kioskCccd, setKioskCccd] = useState<string>('');
@@ -461,6 +1202,40 @@ export const ReceptionQueuePage: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [printedTicket]);
+
+  // Live DB Package Checklist & Additional Services derived from B2B Packages + MasterData Services
+  const activePackageServices = useMemo(() => {
+    const pkg = selectedRosterItem?.packageId
+      ? packages.find(p => p.id === selectedRosterItem.packageId)
+      : packages[0];
+    if (pkg && pkg.services && pkg.services.length > 0) {
+      return pkg.services.map(s => ({
+        code: s.serviceCode,
+        name: s.serviceName,
+        room: s.serviceCode.startsWith('XN_') ? 'P.XN01' : s.serviceCode.includes('SIEU_AM') ? 'P.SA01' : s.serviceCode.includes('XQUANG') ? 'P.XQ01' : 'P.KSK'
+      }));
+    }
+    return medicalServices
+      .filter(s => CORE_KSK_FALLBACK_CODES.includes(s.serviceCode) || s.serviceCode.startsWith('DV_') || s.serviceCode.startsWith('XN_'))
+      .slice(0, 12)
+      .map(s => ({
+        code: s.serviceCode,
+        name: s.serviceName,
+        room: s.serviceCode.startsWith('XN_') ? 'P.XN01' : 'P.CLS'
+      }));
+  }, [selectedRosterItem, packages, medicalServices]);
+
+  const additionalCatalogServices = useMemo(() => {
+    const inPackageCodes = new Set(activePackageServices.map(s => s.code));
+    return medicalServices
+      .filter(s => s.isActive && !inPackageCodes.has(s.serviceCode))
+      .slice(0, 30)
+      .map(s => ({
+        code: s.serviceCode,
+        name: s.serviceName,
+        price: Number(s.standardPrice) || 0
+      }));
+  }, [medicalServices, activePackageServices]);
 
   // Derived Statistics
   const stats = useMemo(() => {
@@ -515,11 +1290,44 @@ export const ReceptionQueuePage: React.FC = () => {
   }, [tickets, selectedDoctorRoomCode]);
 
   // Handle Check-in submit from Kiosk
-  const handleKioskCheckin = () => {
+  const handleKioskCheckin = async () => {
     if (!kioskPatientName.trim() && !kioskCccd.trim()) {
-      alert('Vui lòng nhập Họ tên hoặc quét CCCD / Mã nhân viên.');
+      setLastNotification('Vui lòng nhập Họ tên hoặc quét CCCD / Mã nhân viên.');
       return;
     }
+
+    try {
+      setIsLoading(true);
+      // Call Backend API to auto parse QR, classify stream, lock STT and route assignments
+      const ticketResult = await queueApiService.checkin({
+        qrCode: kioskCccd.includes('|') ? kioskCccd : undefined,
+        cccd: kioskCccd.includes('|') ? undefined : kioskCccd,
+        patientName: kioskPatientName || undefined,
+        hasBloodTaken: kioskHasBloodTaken,
+        hasAdditionalServices: kioskHasAdditionalServices,
+        isFasting: kioskIsFasting,
+        isPregnantOrSuspected: kioskIsPregnant
+      });
+
+      setTickets(prev => [ticketResult, ...prev]);
+      setPrintedTicket(ticketResult);
+
+      // Reset inputs
+      setKioskCccd('');
+      setKioskPatientName('');
+      setKioskHasAdditionalServices(false);
+      setKioskIsPregnant(false);
+
+      const firstRoomName = ticketResult.assignments?.[0]?.roomName || 'buồng khám';
+      const announceText = `Xin mời số phiếu ${ticketResult.ticketNumber}, ${ticketResult.patientName} đến ${firstRoomName}`;
+      setLastNotification(announceText);
+      speakNotification(announceText);
+
+      // Refresh board data
+      await loadData();
+    } catch (err: any) {
+      console.error('Checkin API error, falling back to local simulation:', err);
+      // Fallback local simulation if backend is offline
 
     let stream: ReceptionStreamType = 'StreamA_FastTrack';
     if (kioskHasAdditionalServices) {
@@ -709,17 +1517,38 @@ export const ReceptionQueuePage: React.FC = () => {
     const announceText = `Xin mời số phiếu ${ticketNumber}, ${newTicket.patientName} đến ${firstRoom.roomName}`;
     setLastNotification(announceText);
     speakNotification(announceText);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Doctor Station: Call next patient
-  const handleDoctorCallNext = () => {
+  const handleDoctorCallNext = async () => {
+    try {
+      setIsLoading(true);
+      const res = await queueApiService.callNextPatient(selectedDoctorRoomCode);
+      if (res.hasPatient && res.assignment) {
+        const callMsg = `Xin mời số ${res.assignment.ticketNumber}, ${res.assignment.patientName} vào ${res.assignment.roomName}`;
+        setLastNotification(callMsg);
+        speakNotification(callMsg);
+        await loadData();
+        return;
+      } else {
+        setLastNotification(res.message || 'Không có bệnh nhân chờ.');
+      }
+    } catch (e) {
+      console.warn('CallNext API failed, running local simulation fallback.');
+    } finally {
+      setIsLoading(false);
+    }
+
     if (roomCurrentServing) {
-      alert('Vui lòng hoàn thành lượt khám hiện tại trước khi gọi bệnh nhân tiếp theo.');
+      setLastNotification('Vui lòng hoàn thành lượt khám hiện tại trước khi gọi bệnh nhân tiếp theo.');
       return;
     }
 
     if (roomWaitingQueue.length === 0) {
-      alert(`Phòng ${selectedDoctorRoom.roomCode} hiện không còn bệnh nhân nào đang chờ.`);
+      setLastNotification(`Phòng ${selectedDoctorRoom.roomCode} hiện không còn bệnh nhân nào đang chờ.`);
       return;
     }
 
@@ -732,7 +1561,7 @@ export const ReceptionQueuePage: React.FC = () => {
     );
 
     if (isBusyElsewhere) {
-      alert(`Bệnh nhân ${nextAssignment.patientName} (${nextAssignment.ticketNumber}) hiện đang được khám ở phòng khác. Vui lòng gọi người tiếp theo!`);
+      setLastNotification(`Bệnh nhân ${nextAssignment.patientName} (${nextAssignment.ticketNumber}) hiện đang được khám ở phòng khác. Vui lòng gọi người tiếp theo!`);
       return;
     }
 
@@ -743,7 +1572,7 @@ export const ReceptionQueuePage: React.FC = () => {
         a => a.id !== nextAssignment.id && a.status !== 'Finished' && a.status !== 'Skipped'
       );
       if (hasUnfinishedSpecialties) {
-        alert(`Bệnh nhân ${nextAssignment.patientName} chưa hoàn thành đủ các phòng chuyên khoa. Chưa thể tổng kết!`);
+        setLastNotification(`Bệnh nhân ${nextAssignment.patientName} chưa hoàn thành đủ các phòng chuyên khoa. Chưa thể tổng kết!`);
         return;
       }
     }
@@ -785,10 +1614,22 @@ export const ReceptionQueuePage: React.FC = () => {
   };
 
   // Doctor Station: Complete Consultation
-  const handleDoctorCompleteConsultation = () => {
+  const handleDoctorCompleteConsultation = async () => {
     if (!roomCurrentServing) return;
 
     const { assignment, ticket } = roomCurrentServing;
+
+    try {
+      setIsLoading(true);
+      await queueApiService.completeAssignment(assignment.id);
+      await loadData();
+      setLastNotification(`✓ Đã hoàn tất khám phòng [${selectedDoctorRoom.roomCode}]. Hệ thống đã tự động đẩy bệnh nhân vào hàng đợi phòng kế tiếp.`);
+      return;
+    } catch (e) {
+      console.warn('Complete API failed, running local state update fallback.');
+    } finally {
+      setIsLoading(false);
+    }
 
     // Complete current assignment and advance patient
     setTickets(prev =>
@@ -830,7 +1671,7 @@ export const ReceptionQueuePage: React.FC = () => {
       )
     );
 
-    alert(`✓ Đã hoàn tất khám phòng [${selectedDoctorRoom.roomCode}]. Hệ thống đã tự động đẩy bệnh nhân vào hàng đợi phòng kế tiếp.`);
+    setLastNotification(`✓ Đã hoàn tất khám phòng [${selectedDoctorRoom.roomCode}]. Hệ thống đã tự động đẩy bệnh nhân vào hàng đợi phòng kế tiếp.`);
   };
 
   return (
@@ -861,6 +1702,18 @@ export const ReceptionQueuePage: React.FC = () => {
         {/* Tab Switcher */}
         <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 space-x-1">
           <button
+            onClick={() => setActiveTab('reception')}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer ${
+              activeTab === 'reception'
+                ? 'bg-white text-blue-700 shadow-xs border border-slate-200'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Tiếp Nhận</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('board')}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer ${
               activeTab === 'board'
@@ -869,7 +1722,7 @@ export const ReceptionQueuePage: React.FC = () => {
             }`}
           >
             <Activity className="w-3.5 h-3.5" />
-            <span>Bảng Điều Phối Trung Tâm</span>
+            <span>Điều Phối</span>
           </button>
 
           <button
@@ -881,7 +1734,7 @@ export const ReceptionQueuePage: React.FC = () => {
             }`}
           >
             <QrCode className="w-3.5 h-3.5" />
-            <span>Kiosk Tiếp Nhận Tự Động</span>
+            <span>Kiosk QR</span>
           </button>
 
           <button
@@ -893,7 +1746,7 @@ export const ReceptionQueuePage: React.FC = () => {
             }`}
           >
             <Stethoscope className="w-3.5 h-3.5" />
-            <span>Bác Sĩ Gọi Số Buồng Khám</span>
+            <span>Bác Sĩ Gọi Số</span>
           </button>
 
           <button
@@ -905,92 +1758,483 @@ export const ReceptionQueuePage: React.FC = () => {
             }`}
           >
             <Monitor className="w-3.5 h-3.5" />
-            <span>Màn Hình LCD Hàng Đợi (TV)</span>
+            <span>Màn Hình TV</span>
           </button>
         </div>
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. KPI & BOTTLENECK ALERT BANNER
+          2. KPI & BOTTLENECK ALERT BANNER (HIDDEN ON RECEPTION TAB)
          ───────────────────────────────────────────────────────────── */}
-      <section className="bg-slate-50 border-b border-slate-200 px-4 py-2 shrink-0">
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-          {/* Quick Stats Chips */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded shadow-2xs">
-              <Users className="w-3.5 h-3.5 text-slate-500" />
-              <span className="text-slate-500 font-medium">Tổng tiếp nhận:</span>
-              <span className="font-bold text-slate-800">{stats.total}</span>
+      {activeTab !== 'reception' && (
+        <section className="bg-slate-50 border-b border-slate-200 px-4 py-2 shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+            {/* Quick Stats Chips */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded shadow-2xs">
+                <Users className="w-3.5 h-3.5 text-slate-500" />
+                <span className="text-slate-500 font-medium">Tổng tiếp nhận:</span>
+                <span className="font-bold text-slate-800">{stats.total}</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded text-amber-800">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                <span className="font-medium">Đang chờ:</span>
+                <span className="font-bold">{stats.totalWaiting}</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded text-blue-800">
+                <Radio className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+                <span className="font-medium">Đang khám:</span>
+                <span className="font-bold">{stats.totalServing}</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded text-emerald-800">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="font-medium">Đã xong:</span>
+                <span className="font-bold">{stats.totalCompleted}</span>
+              </div>
+
+              {/* Stream breakdowns */}
+              <div className="h-4 w-px bg-slate-300 mx-1" />
+
+              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[11px]">
+                Luồng 1 (Fast-Track): {stats.streamA}
+              </span>
+              <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold text-[11px]">
+                Luồng 2 (Khám bù): {stats.streamB}
+              </span>
+              <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-semibold text-[11px]">
+                Luồng 3 (Phát sinh): {stats.streamC}
+              </span>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded text-amber-800">
-              <Clock className="w-3.5 h-3.5 text-amber-600" />
-              <span className="font-medium">Đang chờ:</span>
-              <span className="font-bold">{stats.totalWaiting}</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded text-blue-800">
-              <Radio className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
-              <span className="font-medium">Đang khám:</span>
-              <span className="font-bold">{stats.totalServing}</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded text-emerald-800">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="font-medium">Đã xong:</span>
-              <span className="font-bold">{stats.totalCompleted}</span>
-            </div>
-
-            {/* Stream breakdowns */}
-            <div className="h-4 w-px bg-slate-300 mx-1" />
-
-            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[11px]">
-              Luồng 1 (Fast-Track): {stats.streamA}
-            </span>
-            <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold text-[11px]">
-              Luồng 2 (Khám bù): {stats.streamB}
-            </span>
-            <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-semibold text-[11px]">
-              Luồng 3 (Phát sinh): {stats.streamC}
-            </span>
+            {/* Status toast notification */}
+            {lastNotification && (
+              <div className="flex items-center gap-1.5 bg-slate-50 text-slate-700 px-3 py-1 rounded border border-slate-200 animate-fadeIn text-xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="font-medium truncate max-w-md">{lastNotification}</span>
+                <button onClick={() => setLastNotification(null)} className="ml-1 text-slate-400 hover:text-slate-600 cursor-pointer">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Sound / Last Announcement notification */}
-          {lastNotification && (
-            <div className="flex items-center gap-1.5 bg-blue-50 text-blue-800 px-3 py-1 rounded border border-blue-200 animate-fadeIn">
-              <Volume2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-              <span className="font-medium truncate max-w-md">{lastNotification}</span>
+          {/* Bottleneck Warning Banner */}
+          {stats.congestedRooms.length > 0 && (
+            <div className="mt-2 bg-rose-50 border border-rose-300 rounded-lg p-2.5 flex items-center justify-between text-xs text-rose-800">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 animate-bounce" />
+                <div>
+                  <span className="font-bold">CẢNH BÁO NGHẼN TẢI CỤC BỘ: </span>
+                  <span>
+                    Phòng {stats.congestedRooms.map(r => `${r.roomCode} (${r.roomName})`).join(', ')} đang vượt ngưỡng
+                    (≥12 người / ≥35 phút).
+                  </span>
+                  <span className="font-semibold text-rose-900 ml-1">
+                    Thuật toán DAG Smart Queueing đang tự động kích hoạt chế độ "Phân Tán Hàng Đợi", điều hướng bệnh nhân sang các phòng TMH, RHM, Da Liễu trước!
+                  </span>
+                </div>
+              </div>
+              <span className="px-2 py-1 bg-rose-600 text-white rounded font-bold text-[10px] uppercase tracking-wider shrink-0">
+                Active Dispersal
+              </span>
             </div>
           )}
-        </div>
-
-        {/* Bottleneck Warning Banner */}
-        {stats.congestedRooms.length > 0 && (
-          <div className="mt-2 bg-rose-50 border border-rose-300 rounded-lg p-2.5 flex items-center justify-between text-xs text-rose-800">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 animate-bounce" />
-              <div>
-                <span className="font-bold">CẢNH BÁO NGHẼN TẢI CỤC BỘ: </span>
-                <span>
-                  Phòng {stats.congestedRooms.map(r => `${r.roomCode} (${r.roomName})`).join(', ')} đang vượt ngưỡng
-                  (≥12 người / ≥35 phút).
-                </span>
-                <span className="font-semibold text-rose-900 ml-1">
-                  Thuật toán DAG Smart Queueing đang tự động kích hoạt chế độ "Phân Tán Hàng Đợi", điều hướng bệnh nhân sang các phòng TMH, RHM, Da Liễu trước!
-                </span>
-              </div>
-            </div>
-            <span className="px-2 py-1 bg-rose-600 text-white rounded font-bold text-[10px] uppercase tracking-wider shrink-0">
-              Active Dispersal
-            </span>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ─────────────────────────────────────────────────────────────
           3. MAIN CONTENT BODY ACCORDING TO ACTIVE TAB
          ───────────────────────────────────────────────────────────── */}
       <main className="flex-1 min-h-0 overflow-y-auto p-4">
+        {/* =========================================================
+            TAB 0: QUẦY TIẾP NHẬN & ĐÓN TIẾP (RECEPTION DESK - VSC PARITY)
+           ========================================================= */}
+        {activeTab === 'reception' && (
+          <div className="space-y-3">
+            {/* 1-Line Superfast Toolbar: Đợt Khám + Quét QR CCCD/Mã HS + Action Buttons */}
+            <div className="bg-white border border-slate-200 rounded-lg px-3 py-2.5 shadow-2xs flex flex-wrap xl:flex-nowrap items-center justify-between gap-2.5">
+              <div className="flex flex-wrap xl:flex-nowrap items-center gap-2.5 flex-1 min-w-0">
+                {/* SearchLookupCompany: Đợt khám */}
+                <div className="flex items-center space-x-1.5 shrink-0">
+                  <Building2 className="w-4 h-4 text-slate-500 shrink-0" />
+                  <label className="text-xs font-semibold text-slate-700 whitespace-nowrap">Đợt khám:</label>
+                  <select
+                    value={selectedContractId}
+                    onChange={e => {
+                      const cid = e.target.value;
+                      setSelectedContractId(cid);
+                      queueApiService
+                        .getReceptionRoster(cid || undefined, rosterSearch || undefined)
+                        .then(data => {
+                          setRoster(data || []);
+                        })
+                        .catch(() => {});
+                    }}
+                    className="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-md px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-hidden w-64 xl:w-72"
+                  >
+                    <option value="">--- Tất Cả Đợt Khám (Nhật Ký Hôm Nay) ---</option>
+                    {contracts.map(c => (
+                      <option key={c.id} value={c.id}>
+                        [{c.contractNumber}] {c.companyName} ({c.employeeCount ?? 0} CBNV)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Quét QR CCCD / Mã HS / Tìm nhanh */}
+                <div className="relative flex-1 min-w-[260px]">
+                  <QrCode className="w-3.5 h-3.5 text-blue-600 absolute left-2.5 top-2.5" />
+                  <input
+                    ref={searchInputRef}
+                    autoFocus
+                    type="text"
+                    value={rosterSearch}
+                    onChange={e => setRosterSearch(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    placeholder="Quét QR CCCD / Mã HS / Tìm nhanh (Enter để tiếp nhận)..."
+                    className="w-full bg-blue-50/40 border border-blue-300 text-slate-800 text-xs rounded-md pl-8 pr-7 py-1.5 focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-hidden"
+                  />
+                  {rosterSearch && (
+                    <button
+                      onClick={() => {
+                        setRosterSearch('');
+                        searchInputRef.current?.focus();
+                      }}
+                      className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      title="Xóa tìm kiếm"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2 shrink-0">
+                {selectedContractId && (
+                  <button
+                    onClick={handleB2bHandoff}
+                    className="flex items-center space-x-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-semibold transition cursor-pointer shadow-2xs whitespace-nowrap"
+                    title="Tiếp nhận danh sách CBNV từ hợp đồng B2B vào Quầy Tiếp Nhận"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Nhận DS Đoàn</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsAddNewModalOpen(true)}
+                  className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold transition cursor-pointer shadow-2xs whitespace-nowrap"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Khách Mới</span>
+                </button>
+                <button
+                  onClick={() => setIsBatchPrintModalOpen(true)}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 rounded-md text-xs font-semibold transition cursor-pointer shadow-2xs whitespace-nowrap"
+                  title="Xem trước & in hàng loạt hồ sơ chưa in theo Đợt khám"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-600" />
+                  <span>In Hàng Loạt</span>
+                </button>
+                <button
+                  onClick={() => loadData()}
+                  className="p-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-600 rounded-md transition cursor-pointer"
+                  title="Tải lại danh sách"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Compact KPI + Quick Status Filter Chips */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRosterStatusFilter(prev => (prev === 'pending' ? 'all' : 'pending'))}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border font-semibold transition cursor-pointer shadow-2xs ${
+                    rosterStatusFilter === 'pending'
+                      ? 'bg-amber-500 border-amber-600 text-white ring-2 ring-amber-200'
+                      : 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100'
+                  }`}
+                >
+                  <Clock className={`w-3.5 h-3.5 ${rosterStatusFilter === 'pending' ? 'text-white' : 'text-amber-600'}`} />
+                  <span>Chưa đến:</span>
+                  <span className="font-bold">{rosterStats.notCheckedIn}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRosterStatusFilter(prev => (prev === 'checked_in' ? 'all' : 'checked_in'))}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border font-semibold transition cursor-pointer shadow-2xs ${
+                    rosterStatusFilter === 'checked_in'
+                      ? 'bg-emerald-600 border-emerald-700 text-white ring-2 ring-emerald-200'
+                      : 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+                  }`}
+                >
+                  <CheckCircle2 className={`w-3.5 h-3.5 ${rosterStatusFilter === 'checked_in' ? 'text-white' : 'text-emerald-600'}`} />
+                  <span>Đã tiếp nhận:</span>
+                  <span className="font-bold">{rosterStats.checkedIn}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRosterStatusFilter('all')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border font-semibold transition cursor-pointer shadow-2xs ${
+                    rosterStatusFilter === 'all'
+                      ? 'bg-slate-800 border-slate-900 text-white'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <Users className={`w-3.5 h-3.5 ${rosterStatusFilter === 'all' ? 'text-white' : 'text-slate-500'}`} />
+                  <span>Tất cả:</span>
+                  <span className="font-bold">{rosterStats.total}</span>
+                </button>
+
+                <span className="hidden md:inline-block text-[11px] text-slate-400 pl-1">
+                  Mẹo: Double-click hoặc chọn dòng + Enter để mở nhanh
+                </span>
+              </div>
+
+              {lastNotification && (
+                <div className="flex items-center gap-1.5 bg-white text-slate-700 px-3 py-1 rounded border border-emerald-200 shadow-2xs animate-fadeIn text-xs">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="font-medium truncate max-w-md">{lastNotification}</span>
+                  <button onClick={() => setLastNotification(null)} className="ml-1 text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Roster Grid (11 Columns chuẩn VSC + Pagination) */}
+            <div className="bg-white border border-slate-200 rounded-lg shadow-2xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                      <th className="px-3 py-2.5 text-center w-14">STT</th>
+                      <th className="px-2.5 py-2.5 text-center w-14">Gấp</th>
+                      <th className="px-3 py-2.5 w-32">Mã Khám</th>
+                      <th className="px-3 py-2.5 min-w-[160px]">Họ Tên</th>
+                      <th className="px-2.5 py-2.5 text-center w-20">Năm Sinh</th>
+                      <th className="px-2.5 py-2.5 text-center w-16">Giới Tính</th>
+                      <th className="px-3 py-2.5 min-w-[140px]">Phòng Ban</th>
+                      <th className="px-2.5 py-2.5 text-center w-24">Lấy Máu</th>
+                      <th className="px-3 py-2.5 w-24">Loại Khám</th>
+                      <th className="px-3 py-2.5 w-32">Ngày Khám</th>
+                      <th className="px-3 py-2.5 text-right w-44">Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {paginatedRoster.length === 0 ? (
+                      <tr>
+                        <td colSpan={11} className="text-center py-8 text-slate-400">
+                          Không tìm thấy người bệnh nào trong danh sách.
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedRoster.map(item => {
+                        const isCheckedIn = item.isCheckedIn;
+                        const isSelected = selectedRowId === item.id;
+                        const isPrePrinted = /^(VTL|FPT)-/i.test(item.fileNum || '');
+                        const isSessionPrinted = printedDossierIds[item.id] === true;
+                        const isPrinted = isItemDossierPrinted(item);
+
+                        return (
+                          <tr
+                            key={item.id}
+                            tabIndex={0}
+                            onClick={() => setSelectedRowId(item.id)}
+                            onDoubleClick={() => handleOpenReceptionDetail(item)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleOpenReceptionDetail(item);
+                              }
+                            }}
+                            className={`transition cursor-pointer focus:outline-hidden ${
+                              isSelected
+                                ? 'bg-blue-50/80 ring-1 ring-inset ring-blue-400'
+                                : isCheckedIn
+                                ? 'bg-emerald-50/20 hover:bg-blue-50/40'
+                                : 'bg-white hover:bg-blue-50/40'
+                            }`}
+                          >
+                            {/* STT */}
+                            <td className="px-3 py-2 text-center">
+                              {item.ticketNumber ? (
+                                <span className="inline-block px-2 py-0.5 font-mono font-bold text-xs bg-blue-100 text-blue-800 rounded border border-blue-200">
+                                  {item.ticketNumber}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-mono">-</span>
+                              )}
+                            </td>
+
+                            {/* Gấp */}
+                            <td className="px-2.5 py-2 text-center">
+                              {item.isPriority ? (
+                                <span className="px-1.5 py-0.5 bg-rose-100 text-rose-700 font-bold text-[10px] rounded border border-rose-200">
+                                  GẤP
+                                </span>
+                              ) : (
+                                <span className="text-slate-300">-</span>
+                              )}
+                            </td>
+
+                            {/* Mã Khám + Trạng thái hồ sơ bản cứng */}
+                            <td className="px-3 py-2">
+                              <span className="font-mono text-slate-700 font-semibold block">
+                                {item.fileNum || item.id.slice(-6)}
+                              </span>
+                              {isPrinted ? (
+                                <span
+                                  className={`inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-semibold rounded border ${
+                                    isSessionPrinted
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : isPrePrinted
+                                      ? 'bg-sky-50 text-sky-700 border-sky-200'
+                                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  }`}
+                                >
+                                  {isSessionPrinted ? 'HS: Đã in' : 'HS: Đã in sẵn'}
+                                </span>
+                              ) : (
+                                <span className="inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-semibold rounded border bg-amber-50 text-amber-700 border-amber-200">
+                                  HS: Chưa in
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Họ Tên */}
+                            <td className="px-3 py-2">
+                              <span className="font-bold text-slate-900">{item.fullName}</span>
+                              {item.cccd && (
+                                <span className="block text-[10px] text-slate-400 font-mono">
+                                  CCCD: {item.cccd}
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Năm Sinh */}
+                            <td className="px-2.5 py-2 text-center text-slate-700">
+                              {item.birthYear || (item.dateOfBirth ? item.dateOfBirth.slice(0, 4) : '-')}
+                            </td>
+
+                            {/* Giới Tính */}
+                            <td className="px-2.5 py-2 text-center text-slate-700">
+                              {item.genderString}
+                            </td>
+
+                            {/* Phòng Ban */}
+                            <td className="px-3 py-2 text-slate-600 truncate max-w-[160px]" title={item.department}>
+                              {item.department || '-'}
+                            </td>
+
+                            {/* Lấy Máu */}
+                            <td className="px-2.5 py-2 text-center">
+                              {item.hasBloodTaken ? (
+                                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-semibold text-[10px] rounded-full border border-emerald-200">
+                                  Đã lấy
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 bg-amber-100 text-amber-800 font-semibold text-[10px] rounded-full border border-amber-200">
+                                  Chưa lấy
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Loại Khám */}
+                            <td className="px-3 py-2 text-slate-600">
+                              {item.examTypeString || 'Gói Khám'}
+                            </td>
+
+                            {/* Ngày Khám */}
+                            <td className="px-3 py-2 text-slate-500 text-[11px]">
+                              {item.examDate
+                                ? new Date(item.examDate).toLocaleDateString('vi-VN') +
+                                  ' ' +
+                                  new Date(item.examDate).toLocaleTimeString('vi-VN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                : '-'}
+                            </td>
+
+                            {/* Thao Tác */}
+                            <td className="px-3 py-2 text-right" onDoubleClick={e => e.stopPropagation()}>
+                              <div className="inline-flex items-center space-x-1.5">
+                                <button
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    handleOpenReceptionDetail(item);
+                                  }}
+                                  className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded text-xs font-semibold cursor-pointer shadow-2xs transition ${
+                                    !isCheckedIn
+                                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300'
+                                  }`}
+                                  title={!isCheckedIn ? 'Tiếp Nhận Bệnh Nhân' : 'Đã tiếp nhận (Nhấp để xem/sửa)'}
+                                >
+                                  <UserPlus className="w-3 h-3" />
+                                  <span>{!isCheckedIn ? 'Tiếp Nhận' : 'Đã Tiếp Nhận'}</span>
+                                </button>
+                                <button
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    handlePrintSheet(item);
+                                  }}
+                                  className="inline-flex items-center space-x-1 px-2.5 py-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded text-xs font-semibold cursor-pointer"
+                                  title="In Hồ Sơ Khám & Bảng Checklist (A5)"
+                                >
+                                  <Printer className="w-3 h-3" />
+                                  <span>In Hồ Sơ</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Bar (20 dòng/trang) */}
+              <div className="bg-slate-50 border-t border-slate-200 px-3 py-2 flex items-center justify-between text-xs text-slate-600">
+                <span className="font-medium">
+                  Trang <strong className="text-slate-900">{safePage}</strong> / {totalPages} - Tổng{' '}
+                  <strong className="text-slate-900">{filteredRoster.length}</strong> hồ sơ
+                </span>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    disabled={safePage <= 1}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className="inline-flex items-center space-x-1 px-2.5 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-semibold"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Trước</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={safePage >= totalPages}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className="inline-flex items-center space-x-1 px-2.5 py-1 bg-white border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-semibold"
+                  >
+                    <span>Sau</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* =========================================================
             TAB 1: BẢNG ĐIỀU PHỐI HÀNG ĐỢI TRUNG TÂM (CONTROL TOWER)
            ========================================================= */}
@@ -1007,10 +2251,7 @@ export const ReceptionQueuePage: React.FC = () => {
               </div>
 
               <button
-                onClick={() => {
-                  setIsLoading(true);
-                  setTimeout(() => setIsLoading(false), 400);
-                }}
+                onClick={() => loadData()}
                 className="flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-semibold transition cursor-pointer shadow-2xs"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -1211,7 +2452,7 @@ export const ReceptionQueuePage: React.FC = () => {
             TAB 2: KIOSK TIẾP NHẬN TỰ ĐỘNG (KIOSK CHECK-IN)
            ========================================================= */}
         {activeTab === 'kiosk' && (
-          <div className="max-w-3xl mx-auto space-y-5">
+          <div className="w-full space-y-4">
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
               <div className="flex items-center space-x-3 pb-4 border-b border-slate-200">
                 <div className="p-3 bg-blue-600 text-white rounded-xl shadow-sm">
@@ -1693,6 +2934,908 @@ export const ReceptionQueuePage: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* =========================================================
+          MODAL 1: CHI TIẾT DỊCH VỤ TIẾP NHẬN (CONFIRM & EDIT + uPatientServiceList)
+         ========================================================= */}
+      {isDetailModalOpen && selectedRosterItem && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full overflow-hidden border border-slate-200 max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-slate-800 text-white px-5 py-3.5 flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-2.5">
+                <FileText className="w-5 h-5 text-blue-400" />
+                <div>
+                  <h3 className="text-sm font-bold tracking-tight">Tiếp Nhận Bệnh Nhân (Xác Nhận & Hiệu Chỉnh)</h3>
+                  <p className="text-[11px] text-slate-300">
+                    Mã khám: <span className="font-mono font-bold text-white">{selectedRosterItem.fileNum || selectedRosterItem.id}</span> • {selectedRosterItem.contractName || 'Khám tự túc'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsDetailModalOpen(false)}
+                className="p-1 rounded-full text-slate-300 hover:text-white hover:bg-slate-700 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto space-y-4 text-xs">
+              {/* Hành chính người bệnh (Confirm & Edit) */}
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 space-y-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-slate-500 block text-[10px] uppercase font-bold mb-1">Họ và tên</label>
+                    <input
+                      type="text"
+                      value={detailFullName}
+                      onChange={e => setDetailFullName(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-bold text-slate-800 uppercase focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-500 block text-[10px] uppercase font-bold mb-1">Ngày sinh</label>
+                    <input
+                      type="date"
+                      value={detailDob}
+                      onChange={e => setDetailDob(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-semibold text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-500 block text-[10px] uppercase font-bold mb-1">Giới tính</label>
+                    <select
+                      value={detailGender}
+                      onChange={e => setDetailGender(e.target.value as 'Nam' | 'Nữ')}
+                      className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-semibold text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                    >
+                      <option value="Nam">Nam</option>
+                      <option value="Nữ">Nữ</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-slate-500 block text-[10px] uppercase font-bold mb-1">CCCD</label>
+                    <input
+                      type="text"
+                      value={detailCccd}
+                      onChange={e => setDetailCccd(e.target.value)}
+                      placeholder="12 số CCCD"
+                      className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-mono font-semibold text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-500 block text-[10px] uppercase font-bold mb-1">Số điện thoại (SĐT)</label>
+                    <input
+                      type="tel"
+                      value={detailPhone}
+                      onChange={e => setDetailPhone(e.target.value)}
+                      placeholder="09xx..."
+                      className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-mono font-semibold text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-500 block text-[10px] uppercase font-bold mb-1">Phòng ban / Đơn vị</label>
+                    <input
+                      type="text"
+                      value={detailDepartment}
+                      onChange={e => setDetailDepartment(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-semibold text-slate-800 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                {/* Cảnh báo trùng CCCD / SĐT */}
+                {duplicateWarning && (
+                  <div className="flex items-center space-x-2 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded text-amber-800 text-[11px] font-semibold">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>{duplicateWarning}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Bộ cờ điều phối nghiệp vụ (Business Flags) */}
+              <div className="border border-blue-200 bg-blue-50/50 rounded-lg p-3.5 space-y-2">
+                <span className="font-bold text-blue-900 block text-[11px] uppercase tracking-wider">
+                  Cờ Điều Phối & An Toàn Bệnh Nhân
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Cờ lấy máu */}
+                  <label className="flex items-start space-x-2 p-2 bg-white rounded border border-slate-200 cursor-pointer hover:border-blue-300 transition">
+                    <input
+                      type="checkbox"
+                      checked={detailHasBloodTaken}
+                      onChange={e => setDetailHasBloodTaken(e.target.checked)}
+                      className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <div>
+                      <span className="font-bold text-slate-800 block">Đã Lấy Máu</span>
+                      <span className="text-[10px] text-slate-500">
+                        {detailHasBloodTaken ? '→ Luồng 1 (Fast-Track)' : '→ Luồng 2 (Khám bù: Lấy mẫu P.XN01)'}
+                      </span>
+                    </div>
+                  </label>
+
+                  {/* Cờ ưu tiên */}
+                  <label className="flex items-start space-x-2 p-2 bg-white rounded border border-slate-200 cursor-pointer hover:border-rose-300 transition">
+                    <input
+                      type="checkbox"
+                      checked={detailIsPriority}
+                      onChange={e => setDetailIsPriority(e.target.checked)}
+                      className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
+                    />
+                    <div>
+                      <span className="font-bold text-rose-800 block">Ưu Tiên (Gấp / VIP)</span>
+                      <span className="text-[10px] text-slate-500">Được gọi trước trong hàng đợi</span>
+                    </div>
+                  </label>
+
+                  {/* Cờ thai sản */}
+                  <label className="flex items-start space-x-2 p-2 bg-white rounded border border-slate-200 cursor-pointer hover:border-amber-300 transition">
+                    <input
+                      type="checkbox"
+                      checked={detailIsPregnant}
+                      onChange={e => setDetailIsPregnant(e.target.checked)}
+                      className="mt-0.5 rounded text-amber-600 focus:ring-amber-500"
+                    />
+                    <div>
+                      <span className="font-bold text-amber-800 block">Khám Thai / Nghi Có Thai</span>
+                      <span className="text-[10px] text-slate-500">Kích hoạt PregnancyShield (Chặn X-Quang)</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Bảng Dịch Vụ: Trong gói vs Chỉ định thêm */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Dịch vụ trong gói */}
+                <div className="border border-slate-200 rounded-lg p-3 bg-white space-y-2">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span className="font-bold text-slate-800">Checklist Dịch Vụ Trong Gói</span>
+                    <span className="px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-bold">
+                      {activePackageServices.length} dịch vụ
+                    </span>
+                  </div>
+                  <div className="max-h-52 overflow-y-auto border border-slate-100 rounded">
+                    <table className="w-full text-[11px] text-left border-collapse">
+                      <thead className="bg-slate-50 text-slate-500 font-bold sticky top-0 border-b border-slate-200">
+                        <tr>
+                          <th className="px-2 py-1.5">Dịch vụ</th>
+                          <th className="px-2 py-1.5 text-center w-14">Phòng</th>
+                          <th className="px-2 py-1.5 text-right w-28">Trạng thái thực hiện</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {activePackageServices.length === 0 ? (
+                          <tr>
+                            <td colSpan={3} className="px-2 py-3 text-center text-slate-400">
+                              Chưa cấu hình dịch vụ gói trong DB (hoặc chọn thêm dịch vụ lẻ bên phải).
+                            </td>
+                          </tr>
+                        ) : (
+                          activePackageServices.map(srv => {
+                            const isBloodTest = srv.code.startsWith('XN_') || srv.room === 'P.XN01';
+                            const isSampleTaken = isBloodTest && detailHasBloodTaken;
+                            return (
+                              <tr key={srv.code} className="hover:bg-slate-50/70">
+                                <td className="px-2 py-1.5 text-slate-700 font-medium">{srv.name}</td>
+                                <td className="px-2 py-1.5 text-center font-mono text-[10px] text-slate-500">
+                                  {srv.room}
+                                </td>
+                                <td className="px-2 py-1.5 text-right whitespace-nowrap">
+                                  {isSampleTaken ? (
+                                    <span className="inline-block px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[10px] border border-emerald-200">
+                                      ☑ Đã lấy mẫu
+                                    </span>
+                                  ) : (
+                                    <span className="inline-block px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded font-medium text-[10px] border border-slate-200">
+                                      ☐ Chưa khám
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Dịch vụ ngoài gói (Phát sinh) */}
+                <div className="border border-slate-200 rounded-lg p-3 bg-white space-y-2">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span className="font-bold text-slate-800">Chỉ Định Thêm Ngoài Gói</span>
+                    {detailAdditionalServices.length > 0 && (
+                      <span className="px-1.5 py-0.5 bg-rose-100 text-rose-800 rounded text-[10px] font-bold">
+                        {detailAdditionalServices.length} chỉ định (Luồng 3)
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    {additionalCatalogServices.map(srv => {
+                      const isSelected = detailAdditionalServices.includes(srv.code);
+                      return (
+                        <label
+                          key={srv.code}
+                          className={`flex items-center justify-between py-1 px-2 rounded border cursor-pointer transition text-[11px] ${
+                            isSelected
+                              ? 'bg-rose-50 border-rose-300 text-rose-900'
+                              : 'bg-slate-50 border-slate-100 hover:border-slate-300 text-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={e => {
+                                if (e.target.checked) {
+                                  setDetailAdditionalServices(prev => [...prev, srv.code]);
+                                } else {
+                                  setDetailAdditionalServices(prev => prev.filter(c => c !== srv.code));
+                                }
+                              }}
+                              className="rounded text-rose-600 focus:ring-rose-500"
+                            />
+                            <span>{srv.name}</span>
+                          </div>
+                          <span className="font-semibold text-slate-600 text-[10px]">
+                            {srv.price.toLocaleString('vi-VN')} đ
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {detailAdditionalServices.length > 0 && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg space-y-2 mt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-amber-900 text-[11px] uppercase tracking-wide">
+                          Viện Phí Phát Sinh: {detailAdditionalServices.reduce((sum, code) => {
+                            const srv = additionalCatalogServices.find(s => s.code === code);
+                            return sum + (srv?.price || 0);
+                          }, 0).toLocaleString('vi-VN')} đ
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-[11px]">
+                        <label className={`flex items-center justify-center p-1.5 rounded border cursor-pointer text-center transition ${paymentMode === 'direct' ? 'bg-amber-100 border-amber-400 font-bold text-amber-900' : 'bg-white border-slate-200 text-slate-700'}`}>
+                          <input type="radio" name="payMode" checked={paymentMode === 'direct'} onChange={() => setPaymentMode('direct')} className="sr-only" />
+                          <span>Thu thẳng</span>
+                        </label>
+                        <label className={`flex items-center justify-center p-1.5 rounded border cursor-pointer text-center transition ${paymentMode === 'deposit' ? 'bg-amber-100 border-amber-400 font-bold text-amber-900' : 'bg-white border-slate-200 text-slate-700'}`}>
+                          <input type="radio" name="payMode" checked={paymentMode === 'deposit'} onChange={() => setPaymentMode('deposit')} className="sr-only" />
+                          <span>Tạm ứng</span>
+                        </label>
+                        <label className={`flex items-center justify-center p-1.5 rounded border cursor-pointer text-center transition ${paymentMode === 'covered' ? 'bg-amber-100 border-amber-400 font-bold text-amber-900' : 'bg-white border-slate-200 text-slate-700'}`}>
+                          <input type="radio" name="payMode" checked={paymentMode === 'covered'} onChange={() => setPaymentMode('covered')} className="sr-only" />
+                          <span>Công ty bảo lãnh</span>
+                        </label>
+                      </div>
+                      {paymentMode === 'deposit' && (
+                        <div className="flex items-center space-x-2 text-[11px] pt-1">
+                          <span className="text-slate-600 font-medium">Số tiền tạm ứng:</span>
+                          <input
+                            type="number"
+                            step="50000"
+                            value={depositAmount}
+                            onChange={e => setDepositAmount(Number(e.target.value))}
+                            className="w-28 px-2 py-0.5 bg-white border border-slate-300 rounded text-right font-mono font-bold text-slate-800"
+                          />
+                          <span className="text-slate-500">đ (Quyết toán cuối buổi)</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-100 px-5 py-3 border-t border-slate-200 flex items-center justify-between shrink-0">
+              <button
+                onClick={() => setIsDetailModalOpen(false)}
+                className="px-4 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-md text-xs font-semibold cursor-pointer"
+              >
+                Đóng (Esc)
+              </button>
+              <button
+                ref={confirmBtnRef}
+                onClick={handleConfirmReceptionCheckin}
+                disabled={isLoading}
+                className="flex items-center space-x-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-bold cursor-pointer shadow-xs disabled:opacity-50"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Tiếp Nhận (Ctrl+Enter)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          MODAL 2: IN PHIẾU HƯỚNG DẪN KHÁM SỨC KHỎE
+         ========================================================= */}
+      {isPrintSheetOpen && printItem && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-2">
+                <Printer className="w-4 h-4" />
+                <span className="font-bold text-xs uppercase tracking-wider">Hồ Sơ Khám & Bảng Checklist</span>
+              </div>
+              <button
+                onClick={() => setIsPrintSheetOpen(false)}
+                className="text-white/80 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Print Sheet Content (Preview A5) */}
+            <div className="p-6 space-y-4 text-xs font-sans text-slate-800 bg-white">
+              {/* Header phòng khám */}
+              <div className="text-center border-b border-slate-200 pb-3">
+                <div className="font-bold text-[11px] text-slate-500 uppercase tracking-widest">
+                  SMARTCLINIC HEALTHCARE
+                </div>
+                <h2 className="text-sm font-black text-slate-900 uppercase mt-0.5">
+                  PHIẾU HƯỚNG DẪN KHÁM SỨC KHỎE ĐỊNH KỲ
+                </h2>
+                <div className="text-[10px] text-slate-500">Mẫu ban hành theo Thông tư 32/2023/TT-BYT</div>
+              </div>
+
+              {/* Barcode & STT Banner */}
+              <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Số Thứ Tự</span>
+                  <span className="font-mono font-black text-3xl text-blue-700">
+                    {printItem.ticketNumber || 'A001'}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Mã Hồ Sơ</span>
+                  <span className="font-mono font-bold text-sm text-slate-800">{printItem.fileNum || printItem.id}</span>
+                  <div className="font-mono text-[9px] tracking-widest text-slate-400 mt-0.5">
+                    *||||| | |||| |||*
+                  </div>
+                </div>
+              </div>
+
+              {/* Bệnh nhân info */}
+              <div className="space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Họ và tên:</span>
+                  <span className="font-bold text-slate-900 text-sm">{printItem.fullName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Năm sinh / Giới:</span>
+                  <span className="font-semibold text-slate-800">
+                    {printItem.birthYear || printItem.dateOfBirth?.slice(0, 4)} • {printItem.genderString}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Đơn vị / Đợt khám:</span>
+                  <span className="font-semibold text-slate-800">{printItem.contractName || printItem.department}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Thời gian tiếp nhận:</span>
+                  <span className="text-slate-700">
+                    {printItem.examDate ? new Date(printItem.examDate).toLocaleTimeString('vi-VN') : new Date().toLocaleTimeString('vi-VN')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Bảng danh sách buồng khám cần đi */}
+              <div className="border border-slate-200 rounded overflow-hidden">
+                <table className="w-full text-[11px] text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                      <th className="px-2 py-1.5 w-8 text-center">STT</th>
+                      <th className="px-2 py-1.5">Phòng Khám</th>
+                      <th className="px-2 py-1.5 w-14 text-center">Phòng</th>
+                      <th className="px-2 py-1.5 w-40 text-right">Ghi Chú / Ký Tên</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    <tr>
+                      <td className="px-2 py-1 text-center font-bold">1</td>
+                      <td className="px-2 py-1">Xét Nghiệm Máu (CBC, Glucose)</td>
+                      <td className="px-2 py-1 text-center font-mono">P.XN01</td>
+                      <td className="px-2 py-1 text-right font-semibold">
+                        {printItem.hasBloodTaken ? (
+                          <span className="text-emerald-700">☑ Đã lấy mẫu (Ngoại viện)</span>
+                        ) : (
+                          <span className="text-slate-600">☐ Chưa khám</span>
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-1 text-center font-bold">2</td>
+                      <td className="px-2 py-1">Khám Thể Lực & Nội Tổng Quát</td>
+                      <td className="px-2 py-1 text-center font-mono">P.101</td>
+                      <td className="px-2 py-1 text-right text-slate-600">☐ Chưa khám</td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-1 text-center font-bold">3</td>
+                      <td className="px-2 py-1">Khám Mắt (Thị Lực)</td>
+                      <td className="px-2 py-1 text-center font-mono">P.104</td>
+                      <td className="px-2 py-1 text-right text-slate-600">☐ Chưa khám</td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-1 text-center font-bold">4</td>
+                      <td className="px-2 py-1">Khám Tai Mũi Họng</td>
+                      <td className="px-2 py-1 text-center font-mono">P.105</td>
+                      <td className="px-2 py-1 text-right text-slate-600">☐ Chưa khám</td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-1 text-center font-bold">5</td>
+                      <td className="px-2 py-1">Khám Răng Hàm Mặt</td>
+                      <td className="px-2 py-1 text-center font-mono">P.106</td>
+                      <td className="px-2 py-1 text-right text-slate-600">☐ Chưa khám</td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-1 text-center font-bold">6</td>
+                      <td className="px-2 py-1">Siêu Âm Bụng Tổng Quát</td>
+                      <td className="px-2 py-1 text-center font-mono">P.SA01</td>
+                      <td className="px-2 py-1 text-right text-slate-600">☐ Chưa khám</td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-1 text-center font-bold">7</td>
+                      <td className="px-2 py-1">Chụp X-Quang Tim Phổi</td>
+                      <td className="px-2 py-1 text-center font-mono">P.XQ01</td>
+                      <td className="px-2 py-1 text-right text-slate-600">☐ Chưa khám</td>
+                    </tr>
+                    <tr className="bg-blue-50/50">
+                      <td className="px-2 py-1 text-center font-bold text-blue-700">8</td>
+                      <td className="px-2 py-1 font-semibold text-blue-900">Bác Sĩ Trưởng Đoàn Tổng Kết</td>
+                      <td className="px-2 py-1 text-center font-mono font-bold text-blue-700">P.TK01</td>
+                      <td className="px-2 py-1 text-right text-slate-600">☐ Chưa khám</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Chú ý */}
+              <div className="text-[10px] text-slate-500 italic">
+                * Quý khách vui lòng giữ phiếu trong suốt quá trình khám và nộp lại tại Phòng Tổng Kết P.TK01 sau khi hoàn tất.
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="p-3 bg-slate-100 border-t border-slate-200 flex flex-wrap gap-2">
+              <button
+                onClick={() =>
+                  setConsentModal({
+                    encounterId: (printItem as any).encounterId || printItem.id,
+                    encounterCode: printItem.ticketNumber || printItem.fileNum || 'HS-TN',
+                    patientId: printItem.patientId || printItem.id,
+                    patientName: printItem.fullName,
+                    formType: PatientFormType.TT32_HistoryCommitment,
+                  })
+                }
+                className="px-3 py-2 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold text-xs flex items-center space-x-1 cursor-pointer"
+              >
+                <FileSignature className="w-3.5 h-3.5" />
+                <span>Ký Tiền sử TT32</span>
+              </button>
+              <button
+                onClick={() =>
+                  setConsentModal({
+                    encounterId: (printItem as any).encounterId || printItem.id,
+                    encounterCode: printItem.ticketNumber || printItem.fileNum || 'HS-TN',
+                    patientId: printItem.patientId || printItem.id,
+                    patientName: printItem.fullName,
+                    formType: PatientFormType.ReceptionChecklist,
+                  })
+                }
+                className="px-3 py-2 bg-amber-50 border border-amber-300 hover:bg-amber-100 text-amber-800 rounded-lg font-semibold text-xs flex items-center space-x-1 cursor-pointer"
+              >
+                <FileSignature className="w-3.5 h-3.5" />
+                <span>Ký Checklist</span>
+              </button>
+              <button
+                onClick={() => {
+                  setPrintedDossierIds(prev => ({ ...prev, [printItem.id]: true }));
+                  window.print();
+                }}
+                className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>In Hồ Sơ</span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsPrintSheetOpen(false);
+                  setIsPrintTubeOpen(true);
+                }}
+                className="px-3 py-2 bg-purple-50 border border-purple-300 hover:bg-purple-100 text-purple-700 rounded-lg font-semibold text-xs flex items-center space-x-1 cursor-pointer"
+                title="In tem mã vạch dán ống máu"
+              >
+                <Tag className="w-3.5 h-3.5" />
+                <span>In Tem</span>
+              </button>
+              <button
+                onClick={() => setIsPrintSheetOpen(false)}
+                className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg font-semibold text-xs text-slate-700 cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          MODAL 3: IN TEM DÁN ỐNG MÁU (PHLEBOTOMY TUBE BARCODE LABEL)
+         ========================================================= */}
+      {isPrintTubeOpen && printItem && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200 flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-purple-700 text-white px-4 py-2.5 flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-2">
+                <Tag className="w-4 h-4" />
+                <span className="font-bold text-xs uppercase tracking-wider">In Tem Dán Ống Máu (35x22mm)</span>
+              </div>
+              <button
+                onClick={() => setIsPrintTubeOpen(false)}
+                className="text-white/80 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Barcode Tube Label Simulation */}
+            <div className="p-6 bg-slate-50 flex items-center justify-center">
+              <div className="bg-white border-2 border-dashed border-slate-400 p-3 rounded-md shadow-xs w-64 space-y-1">
+                <div className="flex items-center justify-between text-[11px] font-black uppercase text-slate-900">
+                  <span className="truncate max-w-[150px]">{printItem.fullName}</span>
+                  <span className="font-mono text-purple-700">{printItem.genderString}</span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-600 font-mono">
+                  <span>NS: {printItem.birthYear || printItem.dateOfBirth?.slice(0, 4)}</span>
+                  <span>MÃ: {printItem.fileNum || printItem.id}</span>
+                </div>
+
+                {/* Simulated Barcode */}
+                <div className="py-1 text-center">
+                  <div className="font-mono text-xl tracking-widest text-slate-900 leading-none select-none">
+                    ||||| | |||| ||| | ||||
+                  </div>
+                  <div className="font-mono text-[9px] text-slate-500 tracking-wider">
+                    *{printItem.fileNum || printItem.id}*
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[9px] font-semibold text-slate-600 border-t border-slate-200 pt-1">
+                  <span>XN: CBC, GLU, URINE</span>
+                  <span>{new Date().toLocaleDateString('vi-VN')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="p-3 bg-slate-100 border-t border-slate-200 flex space-x-2">
+              <button
+                onClick={() => window.print()}
+                className="flex-1 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-lg font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>In Tem Nhiệt</span>
+              </button>
+              <button
+                onClick={() => setIsPrintTubeOpen(false)}
+                className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg font-semibold text-xs text-slate-700 cursor-pointer"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          MODAL 4: THÊM NGƯỜI BỆNH LẺ / BỔ SUNG NGOÀI DANH SÁCH
+         ========================================================= */}
+      {isAddNewModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 flex flex-col">
+            <div className="bg-slate-800 text-white px-4 py-2.5 flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-2">
+                <Plus className="w-4 h-4 text-blue-400" />
+                <span className="font-bold text-xs uppercase tracking-wider">Thêm Người Bệnh Mới</span>
+              </div>
+              <button
+                onClick={() => setIsAddNewModalOpen(false)}
+                className="text-slate-300 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddNewSubmit} className="p-5 space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-700 font-semibold mb-1">Họ và tên *</label>
+                <input
+                  type="text"
+                  required
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  placeholder="Ví dụ: NGUYỄN VĂN AN"
+                  className="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 font-bold uppercase focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Ngày sinh</label>
+                  <input
+                    type="date"
+                    value={newDob}
+                    onChange={e => setNewDob(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Giới tính</label>
+                  <select
+                    value={newGender}
+                    onChange={e => setNewGender(e.target.value as 'Nam' | 'Nữ')}
+                    className="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                  >
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Số CCCD</label>
+                  <input
+                    type="text"
+                    value={newCccd}
+                    onChange={e => setNewCccd(e.target.value)}
+                    placeholder="12 số CCCD"
+                    className="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 font-mono focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Số điện thoại</label>
+                  <input
+                    type="tel"
+                    value={newPhone}
+                    onChange={e => setNewPhone(e.target.value)}
+                    placeholder="0912..."
+                    className="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-semibold mb-1">Phòng ban / Đơn vị</label>
+                <input
+                  type="text"
+                  value={newDepartment}
+                  onChange={e => setNewDepartment(e.target.value)}
+                  placeholder="Khách lẻ / Bổ sung đợt khám"
+                  className="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="pt-1">
+                <label className="flex items-center space-x-2 p-2 bg-slate-50 rounded border border-slate-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newHasBloodTaken}
+                    onChange={e => setNewHasBloodTaken(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="font-semibold text-slate-700">Đã lấy máu trước đó (LayMauNgoai)</span>
+                </label>
+              </div>
+
+              <div className="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddNewModalOpen(false)}
+                  className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded text-slate-700 font-semibold cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold cursor-pointer shadow-xs"
+                >
+                  Lưu & Tiếp Nhận
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          MODAL 5: IN HỒ SƠ HÀNG LOẠT THEO ĐỢT KHÁM
+         ========================================================= */}
+      {isBatchPrintModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 max-h-[85vh] flex flex-col">
+            <div className="bg-slate-800 text-white px-5 py-3 flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-2">
+                <Printer className="w-4 h-4 text-blue-400" />
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider">In Hồ Sơ Hàng Loạt (A5)</h3>
+                  <p className="text-[11px] text-slate-300">
+                    Đợt khám: {contracts.find(c => c.id === selectedContractId)?.contractNumber || 'Tất cả đợt khám'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBatchPrintModalOpen(false)}
+                className="text-slate-300 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3 overflow-y-auto text-xs">
+              {/* Phạm vi in */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <label
+                  className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition ${
+                    batchPrintMode === 'unprinted'
+                      ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="batchPrintMode"
+                      checked={batchPrintMode === 'unprinted'}
+                      onChange={() => setBatchPrintMode('unprinted')}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>Chỉ in hồ sơ chưa in</span>
+                  </div>
+                  <span className="px-2 py-0.5 bg-white border border-slate-200 rounded font-mono text-[11px]">
+                    {batchPrintUnprintedCount} HS
+                  </span>
+                </label>
+
+                <label
+                  className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition ${
+                    batchPrintMode === 'all_contract'
+                      ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="batchPrintMode"
+                      checked={batchPrintMode === 'all_contract'}
+                      onChange={() => setBatchPrintMode('all_contract')}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>In toàn bộ đợt khám đang chọn</span>
+                  </div>
+                  <span className="px-2 py-0.5 bg-white border border-slate-200 rounded font-mono text-[11px]">
+                    {contractFilteredRoster.length} HS
+                  </span>
+                </label>
+              </div>
+
+              {/* Danh sách xem trước */}
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <div className="bg-slate-100 px-3 py-1.5 border-b border-slate-200 flex items-center justify-between text-[11px] font-bold text-slate-600">
+                  <span>Xem trước danh sách sẽ in ({batchPrintItems.length} hồ sơ)</span>
+                  <span className="font-normal text-slate-500">Khổ A5 • Thông tư 32/2023/TT-BYT</span>
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  <table className="w-full text-[11px] text-left border-collapse">
+                    <thead className="bg-slate-50 text-slate-500 font-bold sticky top-0 border-b border-slate-200">
+                      <tr>
+                        <th className="px-2.5 py-1.5 w-10 text-center">#</th>
+                        <th className="px-2.5 py-1.5 w-24">Mã HS</th>
+                        <th className="px-2.5 py-1.5">Họ Tên</th>
+                        <th className="px-2.5 py-1.5 text-center w-16">Năm Sinh</th>
+                        <th className="px-2.5 py-1.5 text-center w-24">Lấy Máu</th>
+                        <th className="px-2.5 py-1.5 text-right w-28">Trạng Thái In</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {batchPrintItems.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-6 text-slate-400">
+                            Không có hồ sơ nào cần in trong chế độ đã chọn.
+                          </td>
+                        </tr>
+                      ) : (
+                        batchPrintItems.map((item, idx) => {
+                          const printed = isItemDossierPrinted(item);
+                          return (
+                            <tr key={item.id} className="hover:bg-slate-50">
+                              <td className="px-2.5 py-1.5 text-center text-slate-400">{idx + 1}</td>
+                              <td className="px-2.5 py-1.5 font-mono font-semibold text-slate-700">
+                                {item.fileNum || item.id.slice(-6)}
+                              </td>
+                              <td className="px-2.5 py-1.5 font-bold text-slate-800">{item.fullName}</td>
+                              <td className="px-2.5 py-1.5 text-center text-slate-600">
+                                {item.birthYear || item.dateOfBirth?.slice(0, 4) || '-'}
+                              </td>
+                              <td className="px-2.5 py-1.5 text-center">
+                                {item.hasBloodTaken ? (
+                                  <span className="text-emerald-700 font-semibold">Đã lấy</span>
+                                ) : (
+                                  <span className="text-amber-700 font-semibold">Chưa lấy</span>
+                                )}
+                              </td>
+                              <td className="px-2.5 py-1.5 text-right">
+                                {printed ? (
+                                  <span className="px-1.5 py-0.5 bg-sky-50 text-sky-700 border border-sky-200 rounded text-[10px] font-semibold">
+                                    Đã in
+                                  </span>
+                                ) : (
+                                  <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[10px] font-semibold">
+                                    Chưa in
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsBatchPrintModalOpen(false)}
+                className="px-4 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded-md text-xs font-semibold text-slate-700 cursor-pointer"
+              >
+                Đóng
+              </button>
+              <button
+                type="button"
+                disabled={batchPrintItems.length === 0}
+                onClick={() => {
+                  const updates: Record<string, boolean> = {};
+                  for (const item of batchPrintItems) {
+                    updates[item.id] = true;
+                  }
+                  setPrintedDossierIds(prev => ({ ...prev, ...updates }));
+                  window.print();
+                  setLastNotification(`Đã gửi lệnh in hàng loạt ${batchPrintItems.length} hồ sơ.`);
+                  setIsBatchPrintModalOpen(false);
+                }}
+                className="flex items-center space-x-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-bold cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>In {batchPrintItems.length} Hồ Sơ</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {consentModal && (
+        <PatientSignaturePadModal
+          isOpen={true}
+          onClose={() => setConsentModal(null)}
+          encounterId={consentModal.encounterId}
+          encounterCode={consentModal.encounterCode}
+          patientId={consentModal.patientId}
+          patientName={consentModal.patientName}
+          defaultFormType={consentModal.formType}
+          staffName="Nhân viên Tiếp nhận"
+        />
       )}
     </div>
   );

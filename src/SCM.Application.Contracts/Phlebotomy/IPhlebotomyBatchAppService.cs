@@ -12,4 +12,5 @@ public interface IPhlebotomyBatchAppService
     Task<int> AssignEmployeesAsync(Guid batchId, AssignEmployeesToBatchDto input);
     Task<CheckinEmployeeResultDto> CheckinEmployeeAsync(Guid batchId, Guid employeeId, CheckinEmployeeDto input);
     Task<List<BatchEmployeeDetailDto>> GetBatchEmployeesAsync(Guid batchId);
+    Task<PreExamBloodResultGateDto> CheckPreExamBloodResultGateAsync(Guid employeeId);
 }

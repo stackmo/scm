@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SCM.Application.Contracts.B2B;
 using SCM.Application.Contracts.B2B.Dtos;
 using SCM.Domain.B2B;
+using SCM.Domain.B2B.Validators;
 using SCM.Domain.Shared;
 using SCM.Domain.Shared.Enums;
 using SCM.Domain.Shared.Exceptions;
@@ -34,6 +35,29 @@ public class PackageAppService : IPackageAppService
         return MapToDto(package);
     }
 
+    public async Task<List<PackageDto>> GetListAsync(PackageScope? scope = null, bool? activeOnly = null)
+    {
+        var query = _context.Packages
+            .AsNoTracking()
+            .Include(x => x.Company)
+            .Include(x => x.Contract)
+            .Include(x => x.TargetGroups)
+            .Include(x => x.Services)
+            .AsQueryable();
+
+        if (scope.HasValue)
+            query = query.Where(x => x.Scope == scope.Value);
+
+        if (activeOnly == true)
+            query = query.Where(x => x.IsActive);
+
+        var list = await query
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
+
+        return list.Select(MapToDto).ToList();
+    }
+
     public async Task<List<PackageDto>> GetListByCompanyAsync(Guid companyId)
     {
         var list = await _context.Packages
@@ -51,13 +75,25 @@ public class PackageAppService : IPackageAppService
 
     public async Task<PackageDto> CreateAsync(CreateUpdatePackageDto input)
     {
-        var company = await _context.Companies.FirstOrDefaultAsync(x => x.Id == input.CompanyId);
-        if (company == null)
-            throw new BusinessException(SCMErrorCodes.CompanyNotFound, $"Không tìm thấy doanh nghiệp có Id = {input.CompanyId}.");
+        Company? company = null;
+        CompanyContract? contract = null;
 
-        var contract = await _context.CompanyContracts.FirstOrDefaultAsync(x => x.Id == input.ContractId);
-        if (contract == null)
-            throw new BusinessException(SCMErrorCodes.ContractNotFound, $"Không tìm thấy hợp đồng có Id = {input.ContractId}.");
+        if (input.Scope == PackageScope.B2BCorporate)
+        {
+            if (!input.CompanyId.HasValue || input.CompanyId.Value == Guid.Empty)
+                throw new BusinessException(SCMErrorCodes.CompanyNotFound, $"Không tìm thấy doanh nghiệp có Id = {input.CompanyId}.");
+
+            company = await _context.Companies.FirstOrDefaultAsync(x => x.Id == input.CompanyId.Value);
+            if (company == null)
+                throw new BusinessException(SCMErrorCodes.CompanyNotFound, $"Không tìm thấy doanh nghiệp có Id = {input.CompanyId}.");
+
+            if (!input.ContractId.HasValue || input.ContractId.Value == Guid.Empty)
+                throw new BusinessException(SCMErrorCodes.ContractNotFound, $"Không tìm thấy hợp đồng có Id = {input.ContractId}.");
+
+            contract = await _context.CompanyContracts.FirstOrDefaultAsync(x => x.Id == input.ContractId.Value);
+            if (contract == null)
+                throw new BusinessException(SCMErrorCodes.ContractNotFound, $"Không tìm thấy hợp đồng có Id = {input.ContractId}.");
+        }
 
         var code = input.Code.Trim().ToUpperInvariant();
         var exists = await _context.Packages.AnyAsync(x => x.Code == code);
@@ -71,7 +107,15 @@ public class PackageAppService : IPackageAppService
             contractId: input.ContractId,
             contractType: input.ContractType,
             isNationalSyncRequired: input.IsNationalSyncRequired,
-            nationalTemplateCode: input.NationalTemplateCode
+            nationalTemplateCode: input.NationalTemplateCode,
+            scope: input.Scope,
+            targetPrice: input.TargetPrice,
+            applicableGender: input.ApplicableGender,
+            minAge: input.MinAge,
+            maxAge: input.MaxAge,
+            validFrom: input.ValidFrom,
+            validTo: input.ValidTo,
+            isActive: input.IsActive
         );
 
         _context.Packages.Add(package);
@@ -105,7 +149,15 @@ public class PackageAppService : IPackageAppService
         }
 
         package.Name = input.Name.Trim();
+        package.Scope = input.Scope;
         package.ContractType = input.ContractType;
+        package.TargetPrice = input.TargetPrice >= 0 ? input.TargetPrice : package.TargetPrice;
+        package.ApplicableGender = input.ApplicableGender;
+        package.MinAge = input.MinAge;
+        package.MaxAge = input.MaxAge;
+        package.ValidFrom = input.ValidFrom;
+        package.ValidTo = input.ValidTo;
+        package.IsActive = input.IsActive;
         package.IsNationalSyncRequired = input.IsNationalSyncRequired;
         package.NationalTemplateCode = input.NationalTemplateCode;
 
@@ -188,9 +240,11 @@ public class PackageAppService : IPackageAppService
 
         if (input.TargetGroupId.HasValue)
         {
-            var groupExists = await _context.PackageTargetGroups.AnyAsync(x => x.Id == input.TargetGroupId.Value && x.PackageId == input.PackageId);
-            if (!groupExists)
+            var targetGroup = await _context.PackageTargetGroups.FirstOrDefaultAsync(x => x.Id == input.TargetGroupId.Value && x.PackageId == input.PackageId);
+            if (targetGroup == null)
                 throw new BusinessException(SCMErrorCodes.TargetGroupNotFound, $"Không tìm thấy nhóm đối tượng có Id = {input.TargetGroupId.Value}.");
+
+            TargetGroupRuleEngine.ValidateServiceForTargetGroup(targetGroup.TargetGender, input.ServiceCode, input.ServiceName);
         }
 
         var maxOrder = await _context.PackageServices
@@ -229,6 +283,14 @@ public class PackageAppService : IPackageAppService
         if (package == null)
             throw new BusinessException(SCMErrorCodes.PackageNotFound, $"Không tìm thấy gói khám có Id = {input.PackageId}.");
 
+        PackageTargetGroup? batchTargetGroup = null;
+        if (input.TargetGroupId.HasValue)
+        {
+            batchTargetGroup = await _context.PackageTargetGroups.FirstOrDefaultAsync(x => x.Id == input.TargetGroupId.Value && x.PackageId == input.PackageId);
+            if (batchTargetGroup == null)
+                throw new BusinessException(SCMErrorCodes.TargetGroupNotFound, $"Không tìm thấy nhóm đối tượng có Id = {input.TargetGroupId.Value}.");
+        }
+
         var maxOrder = await _context.PackageServices
             .Where(x => x.PackageId == input.PackageId && x.TargetGroupId == input.TargetGroupId)
             .Select(x => (int?)x.OrderIndex)
@@ -240,6 +302,11 @@ public class PackageAppService : IPackageAppService
 
         foreach (var srvInput in input.Services)
         {
+            if (batchTargetGroup != null)
+            {
+                TargetGroupRuleEngine.ValidateServiceForTargetGroup(batchTargetGroup.TargetGender, srvInput.ServiceCode, srvInput.ServiceName);
+            }
+
             var regType = srvInput.RegisterType != default ? srvInput.RegisterType : input.DefaultRegisterType;
             var isOutsource = srvInput.IsSpecimenOutsource || input.DefaultIsSpecimenOutsource;
 
@@ -371,12 +438,20 @@ public class PackageAppService : IPackageAppService
             Id = entity.Id,
             Code = entity.Code,
             Name = entity.Name,
+            Scope = entity.Scope,
             CompanyId = entity.CompanyId,
-            CompanyName = entity.Company?.Name ?? string.Empty,
+            CompanyName = entity.Company?.Name ?? (entity.Scope == PackageScope.ClinicRetail ? "Gói Phòng Khám" : string.Empty),
             ContractId = entity.ContractId,
             ContractNumber = entity.Contract?.ContractNumber ?? string.Empty,
             ContractType = entity.ContractType,
             Status = entity.Status,
+            TargetPrice = entity.TargetPrice,
+            ApplicableGender = entity.ApplicableGender,
+            MinAge = entity.MinAge,
+            MaxAge = entity.MaxAge,
+            ValidFrom = entity.ValidFrom,
+            ValidTo = entity.ValidTo,
+            IsActive = entity.IsActive,
             IsNationalSyncRequired = entity.IsNationalSyncRequired,
             NationalTemplateCode = entity.NationalTemplateCode,
             CreatedAt = entity.CreatedAt,
@@ -391,7 +466,16 @@ public class PackageAppService : IPackageAppService
                 OrderIndex = g.OrderIndex,
                 IsActive = g.IsActive
             }).ToList(),
-            Services = entity.Services.OrderBy(s => s.OrderIndex).Select(MapServiceToDto).ToList()
+            Services = entity.Services
+                .OrderBy(s =>
+                {
+                    var group = entity.TargetGroups.FirstOrDefault(g => g.Id == s.TargetGroupId);
+                    return group?.OrderIndex ?? int.MaxValue;
+                })
+                .ThenBy(s => s.OrderIndex)
+                .ThenBy(s => s.ServiceCode)
+                .Select(MapServiceToDto)
+                .ToList()
         };
     }
 
